@@ -227,6 +227,11 @@ public enum ShelfFinish: String, CaseIterable, Codable, Sendable {
     case neonAcrylic = "Neon Acrylic"
 }
 
+public enum WidgetVisibility: String, CaseIterable, Codable, Sendable {
+    case desktopOnly = "Show only on desktop"
+    case showEverywhere = "Show everywhere"
+}
+
 public enum WindowLevelPlacement: String, CaseIterable, Codable, Sendable {
     case desktop = "Keep on Desktop"
     case floating = "Above all windows"
@@ -302,6 +307,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
 
     // Window & Behavior
     public var windowPlacement: WindowLevelPlacement
+    public var visibility: WidgetVisibility
     public var floatOnTrackChange: Bool
     public var experienceMode: ExperienceMode
     public var isFloatingOverlayVisible: Bool
@@ -340,6 +346,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         artistStyle: TypographyLineConfig = TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle),
         albumStyle: TypographyLineConfig = TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .regular, fontSize: 12, isWhiteText: true, shadow: .none),
         windowPlacement: WindowLevelPlacement = .desktop,
+        visibility: WidgetVisibility = .desktopOnly,
         floatOnTrackChange: Bool = false,
         experienceMode: ExperienceMode = .dual,
         isFloatingOverlayVisible: Bool = true,
@@ -375,6 +382,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.artistStyle = artistStyle
         self.albumStyle = albumStyle
         self.windowPlacement = windowPlacement
+        self.visibility = visibility
         self.floatOnTrackChange = floatOnTrackChange
         self.experienceMode = experienceMode
         self.isFloatingOverlayVisible = isFloatingOverlayVisible
@@ -392,7 +400,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         case artworkSize, cornerRadius, artworkShadow, lightingEffect, showSpinningRecord, shelfFinish
         case backdropMaterial, backdropCornerRadius, showPlaybackControls, controlsPlacement, controlsSize, showLikeControl, showProgressBar
         case trackNameStyle, artistStyle, albumStyle, windowPlacement, floatOnTrackChange
-        case experienceMode, isFloatingOverlayVisible, showAlbumArtworkInDock
+        case experienceMode, isFloatingOverlayVisible, showAlbumArtworkInDock, visibility
         case liquidGlassLevel, liquidGlassTint, liquidGlassFluidPulse, liquidGlassCustomOpacity, liquidGlassCustomBlur, liquidGlassRimShine
     }
 
@@ -422,6 +430,12 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.artistStyle = try container.decodeIfPresent(TypographyLineConfig.self, forKey: .artistStyle) ?? TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle)
         self.albumStyle = try container.decodeIfPresent(TypographyLineConfig.self, forKey: .albumStyle) ?? TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .regular, fontSize: 12, isWhiteText: true, shadow: .none)
         self.windowPlacement = try container.decodeIfPresent(WindowLevelPlacement.self, forKey: .windowPlacement) ?? .desktop
+        let decodedVis = try container.decodeIfPresent(WidgetVisibility.self, forKey: .visibility)
+        if let decodedVis = decodedVis {
+            self.visibility = decodedVis
+        } else {
+            self.visibility = (self.windowPlacement == .floating) ? .showEverywhere : .desktopOnly
+        }
         self.floatOnTrackChange = try container.decodeIfPresent(Bool.self, forKey: .floatOnTrackChange) ?? false
         self.experienceMode = try container.decodeIfPresent(ExperienceMode.self, forKey: .experienceMode) ?? .dual
         self.isFloatingOverlayVisible = try container.decodeIfPresent(Bool.self, forKey: .isFloatingOverlayVisible) ?? true
@@ -461,6 +475,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         try container.encode(artistStyle, forKey: .artistStyle)
         try container.encode(albumStyle, forKey: .albumStyle)
         try container.encode(windowPlacement, forKey: .windowPlacement)
+        try container.encode(visibility, forKey: .visibility)
         try container.encode(floatOnTrackChange, forKey: .floatOnTrackChange)
         try container.encode(experienceMode, forKey: .experienceMode)
         try container.encode(isFloatingOverlayVisible, forKey: .isFloatingOverlayVisible)

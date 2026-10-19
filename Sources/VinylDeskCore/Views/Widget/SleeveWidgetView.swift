@@ -367,35 +367,37 @@ public struct SleeveWidgetView: View {
             if theme.showPlaybackControls && theme.controlsPlacement == .inlineWithText {
                 Spacer(minLength: 4)
 
-                HStack(spacing: theme.controlsSize.buttonPadding) {
-                    let iconSize = theme.controlsSize.iconSize * 0.85
-                    let btnWidth = max(26, iconSize * 2.3)
-                    let btnHeight = max(22, iconSize * 2.0)
+                HStack(spacing: theme.controlsSize.buttonPadding * 1.2) {
+                    let iconSize = max(11, theme.controlsSize.iconSize * 0.85)
+                    let circleSize = max(28, iconSize * 2.2)
+                    let playCircleSize = max(32, iconSize * 2.5)
+                    let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
+                    let buttonFg = isLightBackground ? Color.primary : Color.white
 
                     Button(action: { coordinator.previousTrack() }) {
                         Image(systemName: "backward.fill")
                             .font(.system(size: iconSize, weight: .semibold))
-                            .foregroundColor(buttonColor)
-                            .frame(width: btnWidth, height: btnHeight)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
+                            .foregroundColor(buttonFg)
+                            .frame(width: circleSize, height: circleSize)
+                            .background(Circle().fill(buttonBg))
                     }
                     .buttonStyle(PlainButtonStyle())
 
                     Button(action: { coordinator.togglePlayPause() }) {
                         Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: iconSize * 1.1, weight: .bold))
-                            .foregroundColor(buttonColor)
-                            .frame(width: btnWidth, height: btnHeight)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
+                            .font(.system(size: iconSize * 1.15, weight: .bold))
+                            .foregroundColor(buttonFg)
+                            .frame(width: playCircleSize, height: playCircleSize)
+                            .background(Circle().fill(buttonBg))
                     }
                     .buttonStyle(PlainButtonStyle())
 
                     Button(action: { coordinator.nextTrack() }) {
                         Image(systemName: "forward.fill")
                             .font(.system(size: iconSize, weight: .semibold))
-                            .foregroundColor(buttonColor)
-                            .frame(width: btnWidth, height: btnHeight)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
+                            .foregroundColor(buttonFg)
+                            .frame(width: circleSize, height: circleSize)
+                            .background(Circle().fill(buttonBg))
                     }
                     .buttonStyle(PlainButtonStyle())
 
@@ -403,9 +405,9 @@ public struct SleeveWidgetView: View {
                         Button(action: { controlsState.isLiked.toggle() }) {
                             Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
                                 .font(.system(size: iconSize, weight: .medium))
-                                .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
-                                .frame(width: btnWidth, height: btnHeight)
-                                .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
+                                .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
+                                .frame(width: circleSize, height: circleSize)
+                                .background(Circle().fill(buttonBg))
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -486,34 +488,47 @@ public struct SleeveWidgetView: View {
                 if theme.showPlaybackControls {
                     let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
                     if isVisible {
-                        let iconSize = theme.controlsSize.iconSize * 0.75
+                        let iconSize = max(10, theme.controlsSize.iconSize * 0.75)
+                        let circleSize = max(24, iconSize * 2.2)
+                        let playCircleSize = max(28, iconSize * 2.5)
+                        let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
+                        let buttonFg = isLightBackground ? Color.primary : Color.white
+
                         HStack(spacing: theme.controlsSize.buttonPadding) {
                             Button(action: { coordinator.previousTrack() }) {
                                 Image(systemName: "backward.fill")
-                                    .font(.system(size: iconSize))
-                                    .foregroundColor(buttonColor)
+                                    .font(.system(size: iconSize, weight: .semibold))
+                                    .foregroundColor(buttonFg)
+                                    .frame(width: circleSize, height: circleSize)
+                                    .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.togglePlayPause() }) {
                                 Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
                                     .font(.system(size: iconSize * 1.15, weight: .bold))
-                                    .foregroundColor(buttonColor)
+                                    .foregroundColor(buttonFg)
+                                    .frame(width: playCircleSize, height: playCircleSize)
+                                    .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.nextTrack() }) {
                                 Image(systemName: "forward.fill")
-                                    .font(.system(size: iconSize))
-                                    .foregroundColor(buttonColor)
+                                    .font(.system(size: iconSize, weight: .semibold))
+                                    .foregroundColor(buttonFg)
+                                    .frame(width: circleSize, height: circleSize)
+                                    .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             if theme.showLikeControl {
                                 Button(action: { controlsState.isLiked.toggle() }) {
                                     Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
-                                        .font(.system(size: iconSize))
-                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
+                                        .font(.system(size: iconSize, weight: .medium))
+                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
+                                        .frame(width: circleSize, height: circleSize)
+                                        .background(Circle().fill(buttonBg))
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -579,32 +594,34 @@ public struct SleeveWidgetView: View {
                         let iconSize = max(11, theme.controlsSize.iconSize * (posterDim < 180 ? 0.75 : 1.0))
                         let circleSize = iconSize * 2.2
                         let playCircleSize = iconSize * 2.6
+                        let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
+                        let buttonFg = isLightBackground ? Color.primary : Color.white
 
                         HStack(spacing: theme.controlsSize.buttonPadding * 1.5) {
                             Button(action: { coordinator.previousTrack() }) {
                                 Image(systemName: "backward.fill")
-                                    .font(.system(size: iconSize))
-                                    .foregroundColor(buttonColor)
+                                    .font(.system(size: iconSize, weight: .semibold))
+                                    .foregroundColor(buttonFg)
                                     .frame(width: circleSize, height: circleSize)
-                                    .background(Circle().fill(isLightBackground ? Color.white.opacity(0.70) : Color.black.opacity(0.35)))
+                                    .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.togglePlayPause() }) {
                                 Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
                                     .font(.system(size: iconSize * 1.2, weight: .bold))
-                                    .foregroundColor(buttonColor)
+                                    .foregroundColor(buttonFg)
                                     .frame(width: playCircleSize, height: playCircleSize)
-                                    .background(Circle().fill(isLightBackground ? Color.white.opacity(0.80) : Color.black.opacity(0.45)))
+                                    .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.nextTrack() }) {
                                 Image(systemName: "forward.fill")
-                                    .font(.system(size: iconSize))
-                                    .foregroundColor(buttonColor)
+                                    .font(.system(size: iconSize, weight: .semibold))
+                                    .foregroundColor(buttonFg)
                                     .frame(width: circleSize, height: circleSize)
-                                    .background(Circle().fill(isLightBackground ? Color.white.opacity(0.70) : Color.black.opacity(0.35)))
+                                    .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
 
@@ -612,9 +629,9 @@ public struct SleeveWidgetView: View {
                                 Button(action: { controlsState.isLiked.toggle() }) {
                                     Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
                                         .font(.system(size: iconSize, weight: .medium))
-                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
+                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
                                         .frame(width: circleSize, height: circleSize)
-                                        .background(Circle().fill(isLightBackground ? Color.white.opacity(0.70) : Color.black.opacity(0.35)))
+                                        .background(Circle().fill(buttonBg))
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -689,25 +706,36 @@ public struct SleeveWidgetView: View {
                     let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
                     if isVisible {
                         let iconSize = max(10, theme.controlsSize.iconSize * 0.8)
+                        let circleSize = max(24, iconSize * 2.2)
+                        let playCircleSize = max(28, iconSize * 2.5)
+                        let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
+                        let buttonFg = isLightBackground ? Color.primary : Color.white
+
                         HStack(spacing: theme.controlsSize.buttonPadding) {
                             Button(action: { coordinator.previousTrack() }) {
                                 Image(systemName: "backward.fill")
-                                    .font(.system(size: iconSize))
-                                    .foregroundColor(buttonColor)
+                                    .font(.system(size: iconSize, weight: .semibold))
+                                    .foregroundColor(buttonFg)
+                                    .frame(width: circleSize, height: circleSize)
+                                    .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.togglePlayPause() }) {
                                 Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
                                     .font(.system(size: iconSize * 1.15, weight: .bold))
-                                    .foregroundColor(buttonColor)
+                                    .foregroundColor(buttonFg)
+                                    .frame(width: playCircleSize, height: playCircleSize)
+                                    .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.nextTrack() }) {
                                 Image(systemName: "forward.fill")
-                                    .font(.system(size: iconSize))
-                                    .foregroundColor(buttonColor)
+                                    .font(.system(size: iconSize, weight: .semibold))
+                                    .foregroundColor(buttonFg)
+                                    .frame(width: circleSize, height: circleSize)
+                                    .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
 
@@ -715,7 +743,9 @@ public struct SleeveWidgetView: View {
                                 Button(action: { controlsState.isLiked.toggle() }) {
                                     Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
                                         .font(.system(size: iconSize, weight: .medium))
-                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
+                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
+                                        .frame(width: circleSize, height: circleSize)
+                                        .background(Circle().fill(buttonBg))
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }

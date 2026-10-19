@@ -284,8 +284,10 @@ struct VinylDeskWidgetEntryView: View {
                     HStack {
                         Button(intent: PreviousTrackIntent()) {
                             Image(systemName: "backward.fill")
-                                .font(.system(size: iconSize))
+                                .font(.system(size: iconSize, weight: .semibold))
                                 .foregroundColor(.white)
+                                .frame(width: 26, height: 26)
+                                .background(Circle().fill(Color.white.opacity(0.24)))
                         }
                         .buttonStyle(.plain)
 
@@ -295,6 +297,8 @@ struct VinylDeskWidgetEntryView: View {
                             Image(systemName: entry.track.isPlaying ? "pause.fill" : "play.fill")
                                 .font(.system(size: iconSize * 1.15, weight: .bold))
                                 .foregroundColor(.white)
+                                .frame(width: 30, height: 30)
+                                .background(Circle().fill(Color.white.opacity(0.24)))
                         }
                         .buttonStyle(.plain)
 
@@ -302,8 +306,10 @@ struct VinylDeskWidgetEntryView: View {
 
                         Button(intent: NextTrackIntent()) {
                             Image(systemName: "forward.fill")
-                                .font(.system(size: iconSize))
+                                .font(.system(size: iconSize, weight: .semibold))
                                 .foregroundColor(.white)
+                                .frame(width: 26, height: 26)
+                                .background(Circle().fill(Color.white.opacity(0.24)))
                         }
                         .buttonStyle(.plain)
                     }
@@ -372,13 +378,13 @@ struct VinylDeskWidgetEntryView: View {
 
             if entry.theme.showPlaybackControls {
                 let iconSize = entry.theme.controlsSize.iconSize * 0.85
-                HStack(spacing: entry.theme.controlsSize.buttonPadding) {
+                HStack(spacing: entry.theme.controlsSize.buttonPadding * 1.2) {
                     Button(intent: PreviousTrackIntent()) {
                         Image(systemName: "backward.fill")
-                            .font(.system(size: iconSize))
+                            .font(.system(size: iconSize, weight: .semibold))
                             .foregroundColor(.white)
-                            .frame(width: 30, height: 26)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
+                            .frame(width: 28, height: 28)
+                            .background(Circle().fill(Color.white.opacity(0.24)))
                     }
                     .buttonStyle(.plain)
 
@@ -386,17 +392,17 @@ struct VinylDeskWidgetEntryView: View {
                         Image(systemName: entry.track.isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: iconSize * 1.15, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 32, height: 26)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.15)))
+                            .frame(width: 32, height: 32)
+                            .background(Circle().fill(Color.white.opacity(0.24)))
                     }
                     .buttonStyle(.plain)
 
                     Button(intent: NextTrackIntent()) {
                         Image(systemName: "forward.fill")
-                            .font(.system(size: iconSize))
+                            .font(.system(size: iconSize, weight: .semibold))
                             .foregroundColor(.white)
-                            .frame(width: 30, height: 26)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
+                            .frame(width: 28, height: 28)
+                            .background(Circle().fill(Color.white.opacity(0.24)))
                     }
                     .buttonStyle(.plain)
                 }

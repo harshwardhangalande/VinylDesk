@@ -60,31 +60,43 @@ public final class DesktopWidgetController {
 
     private init() {
         SleeveThemeManager.shared.$currentTheme
-            .map { ($0.windowPlacement, $0.experienceMode, $0.isFloatingOverlayVisible) }
+            .map { ($0.visibility, $0.windowPlacement) }
             .removeDuplicates { $0 == $1 }
-            .sink { [weak self] placement, mode, isVisible in
-                self?.updateWindowLevel(for: placement)
-                self?.updateVisibility(mode: mode, isVisible: isVisible)
+            .sink { [weak self] visibility, placement in
+                self?.applyVisibility(visibility, fallbackPlacement: placement)
             }
             .store(in: &cancellables)
     }
 
+    public func applyVisibility(_ visibility: WidgetVisibility, fallbackPlacement: WindowLevelPlacement? = nil) {
+        guard let panel = self.window else { return }
+        let isEverywhere = (visibility == .showEverywhere) || (fallbackPlacement == .floating)
+        if isEverywhere {
+            // Show everywhere: floating above all application windows
+            panel.level = .floating
+            panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        } else {
+            // Show only on desktop: rests directly on desktop wallpaper beneath normal app windows
+            panel.level = NSWindow.Level(rawValue: -1)
+            panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        }
+        // Always keep panel ordered front in the window hierarchy (never hidden)
+        panel.orderFront(nil)
+    }
+
     public func updateVisibility(mode: ExperienceMode, isVisible: Bool) {
         guard let panel = self.window else { return }
-        let shouldShow = isVisible && (mode != .widgetOnly)
-        if shouldShow {
-            panel.orderFront(nil)
-        } else {
+        if !isVisible {
             panel.orderOut(nil)
+        } else {
+            applyVisibility(SleeveThemeManager.shared.currentTheme.visibility)
         }
     }
 
     public func show() {
         if window != nil {
-            updateVisibility(
-                mode: SleeveThemeManager.shared.currentTheme.experienceMode,
-                isVisible: SleeveThemeManager.shared.currentTheme.isFloatingOverlayVisible
-            )
+            let theme = SleeveThemeManager.shared.currentTheme
+            applyVisibility(theme.visibility, fallbackPlacement: theme.windowPlacement)
             return
         }
 
@@ -99,10 +111,7 @@ public final class DesktopWidgetController {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
-        let placement = SleeveThemeManager.shared.currentTheme.windowPlacement
-        panel.level = (placement == .floating) ? .floating : .normal
         panel.isMovableByWindowBackground = true
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isReleasedWhenClosed = false
 
         let wrapper = DesktopWidgetWrapperView { [weak self] newSize in
@@ -122,14 +131,12 @@ public final class DesktopWidgetController {
         self.window = panel
 
         let theme = SleeveThemeManager.shared.currentTheme
-        if theme.isFloatingOverlayVisible && theme.experienceMode != .widgetOnly {
-            panel.orderFront(nil)
-        }
+        applyVisibility(theme.visibility, fallbackPlacement: theme.windowPlacement)
     }
 
     public func updateWindowLevel(for placement: WindowLevelPlacement) {
-        guard let panel = self.window else { return }
-        panel.level = (placement == .floating) ? .floating : .normal
+        let vis: WidgetVisibility = (placement == .floating) ? .showEverywhere : .desktopOnly
+        applyVisibility(vis, fallbackPlacement: placement)
     }
 
     public func updateSize(_ newSize: CGSize) {

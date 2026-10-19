@@ -18,14 +18,22 @@ public struct SleeveControlsView: View {
     }
 
     public var body: some View {
+        let iconSize = theme.controlsSize.iconSize
+        let circleSize = iconSize * 1.9
+        let playCircleSize = iconSize * 2.1
+        let circleBg = isOverlay ? Color.white.opacity(0.24) : Color.primary.opacity(0.12)
+        let fgColor = isOverlay ? Color.white : Color.primary
+
         HStack(spacing: theme.controlsSize.buttonPadding) {
             // Previous Button
             Button(action: {
                 coordinator.previousTrack()
             }) {
                 Image(systemName: "backward.fill")
-                    .font(.system(size: theme.controlsSize.iconSize, weight: .semibold))
-                    .foregroundColor(buttonColor)
+                    .font(.system(size: iconSize * 0.9, weight: .semibold))
+                    .foregroundColor(fgColor)
+                    .frame(width: circleSize, height: circleSize)
+                    .background(isOverlay ? Circle().fill(circleBg) : nil)
             }
             .buttonStyle(PlainButtonStyle())
 
@@ -34,13 +42,10 @@ public struct SleeveControlsView: View {
                 coordinator.togglePlayPause()
             }) {
                 Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: theme.controlsSize.iconSize * 1.25, weight: .bold))
-                    .foregroundColor(buttonColor)
-                    .frame(width: theme.controlsSize.iconSize * 1.8, height: theme.controlsSize.iconSize * 1.8)
-                    .background(
-                        isOverlay ? Color.white.opacity(0.18) : Color.primary.opacity(0.10)
-                    )
-                    .clipShape(Circle())
+                    .font(.system(size: iconSize * 1.15, weight: .bold))
+                    .foregroundColor(fgColor)
+                    .frame(width: playCircleSize, height: playCircleSize)
+                    .background(Circle().fill(circleBg))
             }
             .buttonStyle(PlainButtonStyle())
 
@@ -49,8 +54,10 @@ public struct SleeveControlsView: View {
                 coordinator.nextTrack()
             }) {
                 Image(systemName: "forward.fill")
-                    .font(.system(size: theme.controlsSize.iconSize, weight: .semibold))
-                    .foregroundColor(buttonColor)
+                    .font(.system(size: iconSize * 0.9, weight: .semibold))
+                    .foregroundColor(fgColor)
+                    .frame(width: circleSize, height: circleSize)
+                    .background(isOverlay ? Circle().fill(circleBg) : nil)
             }
             .buttonStyle(PlainButtonStyle())
 

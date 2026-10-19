@@ -194,28 +194,20 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        // Floating Overlay Toggle
-        let overlayItem = NSMenuItem(title: "Show Floating Screen Overlay", action: #selector(toggleFloatingOverlay), keyEquivalent: "")
-        overlayItem.target = self
-        if themeManager.currentTheme.isFloatingOverlayVisible && themeManager.currentTheme.experienceMode != .widgetOnly {
-            overlayItem.state = .on
-        }
-        menu.addItem(overlayItem)
-
-        // Experience Mode Submenu
-        let expMenu = NSMenu(title: "Experience Mode")
-        for mode in ExperienceMode.allCases {
-            let item = NSMenuItem(title: mode.rawValue, action: #selector(selectExperienceMode(_:)), keyEquivalent: "")
+        // Visibility Submenu
+        let visMenu = NSMenu(title: "Visibility")
+        for vis in WidgetVisibility.allCases {
+            let item = NSMenuItem(title: vis.rawValue, action: #selector(selectWidgetVisibility(_:)), keyEquivalent: "")
             item.target = self
-            item.representedObject = mode
-            if themeManager.currentTheme.experienceMode == mode {
+            item.representedObject = vis
+            if themeManager.currentTheme.visibility == vis {
                 item.state = .on
             }
-            expMenu.addItem(item)
+            visMenu.addItem(item)
         }
-        let expParentItem = NSMenuItem(title: "Experience Mode", action: nil, keyEquivalent: "")
-        expParentItem.submenu = expMenu
-        menu.addItem(expParentItem)
+        let visParentItem = NSMenuItem(title: "Visibility: \(themeManager.currentTheme.visibility.rawValue)", action: nil, keyEquivalent: "")
+        visParentItem.submenu = visMenu
+        menu.addItem(visParentItem)
 
         menu.addItem(NSMenuItem.separator())
 
@@ -291,6 +283,14 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
     @objc private func selectLiquidGlassTint(_ sender: NSMenuItem) {
         if let tint = sender.representedObject as? LiquidGlassTint {
             SleeveThemeManager.shared.currentTheme.liquidGlassTint = tint
+            SleeveThemeManager.shared.saveCurrentTheme()
+        }
+    }
+
+    @objc private func selectWidgetVisibility(_ sender: NSMenuItem) {
+        if let vis = sender.representedObject as? WidgetVisibility {
+            SleeveThemeManager.shared.currentTheme.visibility = vis
+            SleeveThemeManager.shared.currentTheme.windowPlacement = (vis == .desktopOnly) ? .desktop : .floating
             SleeveThemeManager.shared.saveCurrentTheme()
         }
     }

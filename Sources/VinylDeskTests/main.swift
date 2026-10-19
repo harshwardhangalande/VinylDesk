@@ -278,6 +278,33 @@ struct TestRunner {
             assert(decoded.showAlbumArtworkInDock == true, "showAlbumArtworkInDock should preserve true state after encoding/decoding")
         }
 
+        // Test 17: Simplified Widget Visibility (Show only on desktop & Show everywhere)
+        test("Simplified Widget Visibility (desktop only & show everywhere)") {
+            assert(WidgetVisibility.allCases.count == 2, "WidgetVisibility must have 2 cases")
+            assert(WidgetVisibility.desktopOnly.rawValue == "Show only on desktop")
+            assert(WidgetVisibility.showEverywhere.rawValue == "Show everywhere")
+
+            var theme = SleeveThemeConfig.presetTimeDashboard
+            theme.visibility = .desktopOnly
+            theme.windowPlacement = .desktop
+
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(theme)
+            let decoded = try JSONDecoder().decode(SleeveThemeConfig.self, from: data)
+            assert(decoded.visibility == .desktopOnly, "Decoded theme should preserve desktopOnly visibility")
+
+            // Test window level updates in DesktopWidgetController
+            let controller = DesktopWidgetController.shared
+            controller.show()
+            controller.applyVisibility(.desktopOnly)
+            assert(controller.window?.level.rawValue == -1, "desktopOnly window level should be -1 (.belowNormal)")
+            assert(controller.window?.isVisible == true, "desktopOnly window must stay visible, never hidden")
+
+            controller.applyVisibility(.showEverywhere)
+            assert(controller.window?.level == .floating, "showEverywhere window level should be .floating")
+            assert(controller.window?.isVisible == true, "showEverywhere window must stay visible")
+        }
+
         print("\n===============================")
         print("Test Suite Summary: \(passed) passed, \(failed) failed")
         print("===============================\n")

@@ -11,82 +11,68 @@ public struct InterfaceInspectorView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                // Experience Mode (Dual Mode)
+                // Visibility
                 SleeveSectionCard {
                     HStack {
-                        Text("✨ Desktop Experience Mode")
+                        Text("Visibility")
                             .font(.system(size: 13, weight: .semibold))
                         Spacer()
-                        Text("Dual Mode Ready")
-                            .font(.system(size: 10, weight: .bold))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Capsule().fill(Color.purple.opacity(0.3)))
-                            .foregroundColor(.purple)
                     }
 
-                    Text("Choose how you want VinylDesk to appear on your Mac:")
+                    Text("Choose where Vinyl appears on your screen:")
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
 
-                    VStack(spacing: 8) {
-                        ForEach(ExperienceMode.allCases, id: \.self) { mode in
-                            Button(action: {
-                                themeManager.currentTheme.experienceMode = mode
+                    HStack(spacing: 12) {
+                        SleeveOptionCard(
+                            title: "Show only on desktop",
+                            isSelected: themeManager.currentTheme.visibility == .desktopOnly,
+                            action: {
+                                themeManager.currentTheme.visibility = .desktopOnly
+                                themeManager.currentTheme.windowPlacement = .desktop
                                 themeManager.saveCurrentTheme()
-                            }) {
-                                HStack(spacing: 10) {
-                                    Image(systemName: themeManager.currentTheme.experienceMode == mode ? "checkmark.circle.fill" : "circle")
-                                        .foregroundColor(themeManager.currentTheme.experienceMode == mode ? .cyan : .secondary)
-
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(mode.rawValue)
-                                            .font(.system(size: 12, weight: themeManager.currentTheme.experienceMode == mode ? .bold : .medium))
-                                            .foregroundColor(.white)
-                                        Text(descriptionForMode(mode))
-                                            .font(.system(size: 10))
-                                            .foregroundColor(.secondary)
-                                    }
-
-                                    Spacer()
-                                }
-                                .padding(10)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(themeManager.currentTheme.experienceMode == mode ? Color(red: 0.15, green: 0.35, blue: 0.55).opacity(0.6) : Color(white: 0.18))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(themeManager.currentTheme.experienceMode == mode ? Color.cyan.opacity(0.7) : Color.white.opacity(0.06), lineWidth: 1)
-                                        )
-                                )
                             }
-                            .buttonStyle(PlainButtonStyle())
+                        ) {
+                            VStack(spacing: 5) {
+                                Image(systemName: "menubar.dock.rectangle")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(themeManager.currentTheme.visibility == .desktopOnly ? .cyan : .secondary)
+                                Text("On Desktop")
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        SleeveOptionCard(
+                            title: "Show everywhere",
+                            isSelected: themeManager.currentTheme.visibility == .showEverywhere,
+                            action: {
+                                themeManager.currentTheme.visibility = .showEverywhere
+                                themeManager.currentTheme.windowPlacement = .floating
+                                themeManager.saveCurrentTheme()
+                            }
+                        ) {
+                            VStack(spacing: 5) {
+                                Image(systemName: "macwindow.on.rectangle")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(themeManager.currentTheme.visibility == .showEverywhere ? .cyan : .secondary)
+                                Text("Above Windows")
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
 
-                    Toggle("Show Floating Screen Overlay", isOn: Binding(
-                        get: { themeManager.currentTheme.isFloatingOverlayVisible },
-                        set: { themeManager.currentTheme.isFloatingOverlayVisible = $0; themeManager.saveCurrentTheme() }
-                    ))
-                    .toggleStyle(SwitchToggleStyle())
-                    .padding(.top, 4)
-
-                    // Helper banner for WidgetKit desktop widgets
-                    HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "info.circle.fill")
-                            .font(.system(size: 13))
-                            .foregroundColor(.cyan)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("How to add Native macOS Desktop Widget:")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundColor(.white)
-                            Text("Right-click anywhere on your desktop wallpaper → select 'Edit Widgets...' → search for 'VinylDesk' → drag the widget onto your desktop.")
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
-                        }
+                    HStack(spacing: 6) {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                        Text(themeManager.currentTheme.visibility == .desktopOnly
+                             ? "Pinned to your desktop wallpaper, resting beneath other application windows."
+                             : "Floats on top of all application windows so it is always accessible.")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
                     }
-                    .padding(10)
-                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue.opacity(0.12)))
                     .padding(.top, 2)
                 }
 

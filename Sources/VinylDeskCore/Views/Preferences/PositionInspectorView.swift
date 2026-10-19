@@ -11,16 +11,17 @@ public struct PositionInspectorView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                // Window Placement
+                // Visibility
                 SleeveSectionCard {
-                    Text("Window Placement")
+                    Text("Visibility")
                         .font(.system(size: 13, weight: .semibold))
 
                     HStack(spacing: 12) {
                         SleeveOptionCard(
-                            title: "Keep on Desktop",
-                            isSelected: themeManager.currentTheme.windowPlacement == .desktop,
+                            title: "Show only on desktop",
+                            isSelected: themeManager.currentTheme.visibility == .desktopOnly,
                             action: {
+                                themeManager.currentTheme.visibility = .desktopOnly
                                 themeManager.currentTheme.windowPlacement = .desktop
                                 themeManager.saveCurrentTheme()
                             }
@@ -32,9 +33,10 @@ public struct PositionInspectorView: View {
                         }
 
                         SleeveOptionCard(
-                            title: "Above all windows",
-                            isSelected: themeManager.currentTheme.windowPlacement == .floating,
+                            title: "Show everywhere",
+                            isSelected: themeManager.currentTheme.visibility == .showEverywhere,
                             action: {
+                                themeManager.currentTheme.visibility = .showEverywhere
                                 themeManager.currentTheme.windowPlacement = .floating
                                 themeManager.saveCurrentTheme()
                             }
