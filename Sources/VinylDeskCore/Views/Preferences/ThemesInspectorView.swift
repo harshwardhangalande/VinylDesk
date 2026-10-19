@@ -1,11 +1,11 @@
 import SwiftUI
 
 public struct ThemesInspectorView: View {
-    @ObservedObject var themeManager: SleeveThemeManager
+    @ObservedObject var themeManager: VinylThemeManager
     @StateObject private var state = ThemesInspectorState()
 
     @MainActor
-    public init(themeManager: SleeveThemeManager) {
+    public init(themeManager: VinylThemeManager) {
         self.themeManager = themeManager
     }
 
@@ -13,7 +13,7 @@ public struct ThemesInspectorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // MARK: - My Themes (Custom User Themes)
-                SleeveSectionCard {
+                VinylSectionCard {
                     HStack {
                         Text("My Themes")
                             .font(.system(size: 13, weight: .semibold))
@@ -124,7 +124,7 @@ public struct ThemesInspectorView: View {
                 }
 
                 // MARK: - Included Presets
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Included Presets")
                         .font(.system(size: 13, weight: .semibold))
 
@@ -161,7 +161,7 @@ public struct ThemesInspectorView: View {
                     }
                 }
 
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Theme Management")
                         .font(.system(size: 13, weight: .semibold))
 
@@ -203,7 +203,7 @@ public struct ThemesInspectorView: View {
     }
 
     @ViewBuilder
-    private func presetIcon(for preset: SleeveThemeConfig) -> some View {
+    private func presetIcon(for preset: VinylThemeConfig) -> some View {
         switch preset.layout {
         case .stacked:
             Image(systemName: "square.stack.fill").font(.system(size: 18)).foregroundColor(.cyan)

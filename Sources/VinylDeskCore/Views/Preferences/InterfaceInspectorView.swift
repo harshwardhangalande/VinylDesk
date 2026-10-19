@@ -1,10 +1,10 @@
 import SwiftUI
 
 public struct InterfaceInspectorView: View {
-    @ObservedObject var themeManager: SleeveThemeManager
+    @ObservedObject var themeManager: VinylThemeManager
 
     @MainActor
-    public init(themeManager: SleeveThemeManager) {
+    public init(themeManager: VinylThemeManager) {
         self.themeManager = themeManager
     }
 
@@ -12,7 +12,7 @@ public struct InterfaceInspectorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // Visibility
-                SleeveSectionCard {
+                VinylSectionCard {
                     HStack {
                         Text("Visibility")
                             .font(.system(size: 13, weight: .semibold))
@@ -24,7 +24,7 @@ public struct InterfaceInspectorView: View {
                         .foregroundColor(.secondary)
 
                     HStack(spacing: 12) {
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Show only on desktop",
                             isSelected: themeManager.currentTheme.visibility == .desktopOnly,
                             action: {
@@ -43,7 +43,7 @@ public struct InterfaceInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Show everywhere",
                             isSelected: themeManager.currentTheme.visibility == .showEverywhere,
                             action: {
@@ -77,7 +77,7 @@ public struct InterfaceInspectorView: View {
                 }
 
                 // Backdrop Material
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Backdrop Material")
                         .font(.system(size: 13, weight: .semibold))
 
@@ -131,7 +131,7 @@ public struct InterfaceInspectorView: View {
 
                 // Liquid Glass Advanced Controls
                 if themeManager.currentTheme.backdropMaterial == .liquidGlass || themeManager.currentTheme.backdropMaterial == .glass {
-                    SleeveSectionCard {
+                    VinylSectionCard {
                         HStack {
                             Text("Liquid Glass Intensity")
                                 .font(.system(size: 13, weight: .semibold))
@@ -304,7 +304,7 @@ public struct InterfaceInspectorView: View {
                 }
 
                 // Playback Controls
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Playback Controls")
                         .font(.system(size: 13, weight: .semibold))
 
@@ -320,7 +320,7 @@ public struct InterfaceInspectorView: View {
                             .padding(.top, 4)
 
                         HStack(spacing: 12) {
-                            SleeveOptionCard(
+                            VinylOptionCard(
                                 title: "On artwork hover",
                                 isSelected: themeManager.currentTheme.controlsPlacement == .onHover,
                                 action: {
@@ -335,7 +335,7 @@ public struct InterfaceInspectorView: View {
                                 }
                             }
 
-                            SleeveOptionCard(
+                            VinylOptionCard(
                                 title: "Inline with text",
                                 isSelected: themeManager.currentTheme.controlsPlacement == .inlineWithText,
                                 action: {

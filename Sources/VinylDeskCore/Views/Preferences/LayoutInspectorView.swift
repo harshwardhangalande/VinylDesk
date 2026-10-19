@@ -1,10 +1,10 @@
 import SwiftUI
 
 public struct LayoutInspectorView: View {
-    @ObservedObject var themeManager: SleeveThemeManager
+    @ObservedObject var themeManager: VinylThemeManager
 
     @MainActor
-    public init(themeManager: SleeveThemeManager) {
+    public init(themeManager: VinylThemeManager) {
         self.themeManager = themeManager
     }
 
@@ -12,13 +12,13 @@ public struct LayoutInspectorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // Layout Selector Grid
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Layout Style")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.primary)
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Horizontal",
                             isSelected: themeManager.currentTheme.layout == .horizontal,
                             action: { themeManager.currentTheme.layout = .horizontal; themeManager.saveCurrentTheme() }
@@ -32,7 +32,7 @@ public struct LayoutInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Vertical",
                             isSelected: themeManager.currentTheme.layout == .vertical,
                             action: { themeManager.currentTheme.layout = .vertical; themeManager.saveCurrentTheme() }
@@ -43,7 +43,7 @@ public struct LayoutInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Stacked",
                             isSelected: themeManager.currentTheme.layout == .stacked,
                             action: { themeManager.currentTheme.layout = .stacked; themeManager.saveCurrentTheme() }
@@ -54,7 +54,7 @@ public struct LayoutInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Text only",
                             isSelected: themeManager.currentTheme.layout == .textOnly,
                             action: { themeManager.currentTheme.layout = .textOnly; themeManager.saveCurrentTheme() }
@@ -65,7 +65,7 @@ public struct LayoutInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Retro Vinyl",
                             isSelected: themeManager.currentTheme.layout == .vintageVinyl,
                             action: {
@@ -80,7 +80,7 @@ public struct LayoutInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Wooden Shelf",
                             isSelected: themeManager.currentTheme.layout == .woodenShelf,
                             action: {
@@ -94,7 +94,7 @@ public struct LayoutInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Time Dashboard",
                             isSelected: themeManager.currentTheme.layout == .timeDashboard,
                             action: {
@@ -112,7 +112,7 @@ public struct LayoutInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Split Banner",
                             isSelected: themeManager.currentTheme.layout == .splitBanner,
                             action: {
@@ -129,7 +129,7 @@ public struct LayoutInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Artwork Poster",
                             isSelected: themeManager.currentTheme.layout == .artworkPoster,
                             action: {
@@ -140,7 +140,7 @@ public struct LayoutInspectorView: View {
                             RoundedRectangle(cornerRadius: 4).fill(Color.red.opacity(0.8)).frame(width: 24, height: 24)
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Compact Square",
                             isSelected: themeManager.currentTheme.layout == .compactSquare,
                             action: {
@@ -155,7 +155,7 @@ public struct LayoutInspectorView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 3))
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Squircle Card",
                             isSelected: themeManager.currentTheme.layout == .artworkCard,
                             action: {
@@ -176,7 +176,7 @@ public struct LayoutInspectorView: View {
                 }
 
                 // Alignment Controls
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Alignment")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.primary)

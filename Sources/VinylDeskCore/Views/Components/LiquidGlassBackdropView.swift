@@ -63,14 +63,14 @@ public enum ArtworkColorExtractor {
 // MARK: - Liquid Glass Backdrop View
 
 public struct LiquidGlassBackdropView: View {
-    let theme: SleeveThemeConfig
+    let theme: VinylThemeConfig
     @ObservedObject var coordinator: MusicCoordinator
     var isLightBackground: Bool
     @StateObject private var shimmerState = LiquidShimmerState()
 
     @MainActor
     public init(
-        theme: SleeveThemeConfig,
+        theme: VinylThemeConfig,
         coordinator: MusicCoordinator,
         isLightBackground: Bool = false
     ) {

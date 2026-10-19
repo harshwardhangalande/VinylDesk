@@ -1,9 +1,9 @@
 import SwiftUI
 import AppKit
 
-public struct SleeveArtworkView: View {
+public struct VinylArtworkView: View {
     @ObservedObject var coordinator: MusicCoordinator
-    let theme: SleeveThemeConfig
+    let theme: VinylThemeConfig
     var isHovered: Bool = false
     var onHoverChanged: ((Bool) -> Void)? = nil
 
@@ -12,7 +12,7 @@ public struct SleeveArtworkView: View {
     @MainActor
     public init(
         coordinator: MusicCoordinator,
-        theme: SleeveThemeConfig,
+        theme: VinylThemeConfig,
         isHovered: Bool = false,
         onHoverChanged: ((Bool) -> Void)? = nil
     ) {
@@ -54,7 +54,7 @@ public struct SleeveArtworkView: View {
                     .fill(Color.black.opacity(0.45))
                     .frame(width: theme.artworkSize, height: theme.artworkSize)
                     .overlay(
-                        SleeveControlsView(coordinator: coordinator, theme: theme, isOverlay: true)
+                        VinylControlsView(coordinator: coordinator, theme: theme, isOverlay: true)
                     )
                     .transition(.opacity)
             }
@@ -69,14 +69,14 @@ public struct SleeveArtworkView: View {
     @ViewBuilder
     private var vinylArtworkPresentation: some View {
         HStack(spacing: -theme.artworkSize * 0.42) {
-            // Album Sleeve Jacket
+            // Album Vinyl Jacket
             ZStack {
                 albumCoverImage
                     .frame(width: theme.artworkSize, height: theme.artworkSize)
                     .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
                     .overlay(lightingOverlay)
                     .overlay(
-                        // Sleeve spine & worn edge effect
+                        // Vinyl spine & worn edge effect
                         RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous)
                             .stroke(Color.white.opacity(0.12), lineWidth: 1)
                     )
@@ -92,14 +92,14 @@ public struct SleeveArtworkView: View {
                         .fill(Color.black.opacity(0.45))
                         .frame(width: theme.artworkSize, height: theme.artworkSize)
                         .overlay(
-                            SleeveControlsView(coordinator: coordinator, theme: theme, isOverlay: true)
+                            VinylControlsView(coordinator: coordinator, theme: theme, isOverlay: true)
                         )
                         .transition(.opacity)
                 }
             }
             .zIndex(2)
 
-            // Spinning Vinyl Disc Extruding from Sleeve
+            // Spinning Vinyl Disc Extruding from Vinyl
             ZStack {
                 // Vinyl outer body
                 Circle()
@@ -196,7 +196,7 @@ public struct SleeveArtworkView: View {
                         .fill(Color.black.opacity(0.45))
                         .frame(width: theme.artworkSize, height: theme.artworkSize)
                         .overlay(
-                            SleeveControlsView(coordinator: coordinator, theme: theme, isOverlay: true)
+                            VinylControlsView(coordinator: coordinator, theme: theme, isOverlay: true)
                         )
                         .transition(.opacity)
                 }

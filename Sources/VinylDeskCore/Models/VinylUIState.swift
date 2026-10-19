@@ -7,7 +7,7 @@ public final class ArtworkState: ObservableObject {
 }
 
 @MainActor
-public final class SleeveControlsState: ObservableObject {
+public final class VinylControlsState: ObservableObject {
     @Published public var isLiked: Bool = false
     public init() {}
 }

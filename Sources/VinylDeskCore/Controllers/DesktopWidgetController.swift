@@ -18,7 +18,7 @@ public struct WidgetSizeKey: PreferenceKey {
 
 public struct DesktopWidgetWrapperView: View {
     @ObservedObject var coordinator = MusicCoordinator.shared
-    @ObservedObject var themeManager = SleeveThemeManager.shared
+    @ObservedObject var themeManager = VinylThemeManager.shared
     var onSizeChanged: (CGSize) -> Void
 
     public init(onSizeChanged: @escaping (CGSize) -> Void) {
@@ -26,7 +26,7 @@ public struct DesktopWidgetWrapperView: View {
     }
 
     public var body: some View {
-        SleeveWidgetView(coordinator: coordinator, theme: themeManager.currentTheme)
+        VinylWidgetView(coordinator: coordinator, theme: themeManager.currentTheme)
             .fixedSize()
             .background(
                 GeometryReader { geo in
@@ -59,7 +59,7 @@ public final class DesktopWidgetController {
     }
 
     private init() {
-        SleeveThemeManager.shared.$currentTheme
+        VinylThemeManager.shared.$currentTheme
             .map { ($0.visibility, $0.windowPlacement) }
             .removeDuplicates { $0 == $1 }
             .sink { [weak self] visibility, placement in
@@ -89,13 +89,13 @@ public final class DesktopWidgetController {
         if !isVisible {
             panel.orderOut(nil)
         } else {
-            applyVisibility(SleeveThemeManager.shared.currentTheme.visibility)
+            applyVisibility(VinylThemeManager.shared.currentTheme.visibility)
         }
     }
 
     public func show() {
         if window != nil {
-            let theme = SleeveThemeManager.shared.currentTheme
+            let theme = VinylThemeManager.shared.currentTheme
             applyVisibility(theme.visibility, fallbackPlacement: theme.windowPlacement)
             return
         }
@@ -130,7 +130,7 @@ public final class DesktopWidgetController {
 
         self.window = panel
 
-        let theme = SleeveThemeManager.shared.currentTheme
+        let theme = VinylThemeManager.shared.currentTheme
         applyVisibility(theme.visibility, fallbackPlacement: theme.windowPlacement)
     }
 

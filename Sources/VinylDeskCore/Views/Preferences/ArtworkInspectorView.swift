@@ -1,10 +1,10 @@
 import SwiftUI
 
 public struct ArtworkInspectorView: View {
-    @ObservedObject var themeManager: SleeveThemeManager
+    @ObservedObject var themeManager: VinylThemeManager
 
     @MainActor
-    public init(themeManager: SleeveThemeManager) {
+    public init(themeManager: VinylThemeManager) {
         self.themeManager = themeManager
     }
 
@@ -12,24 +12,24 @@ public struct ArtworkInspectorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // Size Presets & Slider
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Artwork Size")
                         .font(.system(size: 13, weight: .semibold))
 
                     HStack(spacing: 8) {
-                        SleeveSegmentButton(title: "S", isSelected: isApprox(themeManager.currentTheme.artworkSize, 100)) {
+                        VinylSegmentButton(title: "S", isSelected: isApprox(themeManager.currentTheme.artworkSize, 100)) {
                             themeManager.currentTheme.artworkSize = 100
                             themeManager.saveCurrentTheme()
                         }
-                        SleeveSegmentButton(title: "M", isSelected: isApprox(themeManager.currentTheme.artworkSize, 140)) {
+                        VinylSegmentButton(title: "M", isSelected: isApprox(themeManager.currentTheme.artworkSize, 140)) {
                             themeManager.currentTheme.artworkSize = 140
                             themeManager.saveCurrentTheme()
                         }
-                        SleeveSegmentButton(title: "L", isSelected: isApprox(themeManager.currentTheme.artworkSize, 180)) {
+                        VinylSegmentButton(title: "L", isSelected: isApprox(themeManager.currentTheme.artworkSize, 180)) {
                             themeManager.currentTheme.artworkSize = 180
                             themeManager.saveCurrentTheme()
                         }
-                        SleeveSegmentButton(title: "XL", isSelected: isApprox(themeManager.currentTheme.artworkSize, 220)) {
+                        VinylSegmentButton(title: "XL", isSelected: isApprox(themeManager.currentTheme.artworkSize, 220)) {
                             themeManager.currentTheme.artworkSize = 220
                             themeManager.saveCurrentTheme()
                         }
@@ -78,13 +78,13 @@ public struct ArtworkInspectorView: View {
                 }
 
                 // Shadow Style Cards
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Shadow Depth")
                         .font(.system(size: 13, weight: .semibold))
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                         ForEach(ShadowStyle.allCases, id: \.self) { shadow in
-                            SleeveOptionCard(
+                            VinylOptionCard(
                                 title: shadow.rawValue,
                                 isSelected: themeManager.currentTheme.artworkShadow == shadow,
                                 action: {
@@ -107,12 +107,12 @@ public struct ArtworkInspectorView: View {
                 }
 
                 // Lighting Effect Cards
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Lighting Effect")
                         .font(.system(size: 13, weight: .semibold))
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "None",
                             isSelected: themeManager.currentTheme.lightingEffect == .none,
                             action: {
@@ -125,7 +125,7 @@ public struct ArtworkInspectorView: View {
                                 .frame(width: 28, height: 28)
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Spotlight",
                             isSelected: themeManager.currentTheme.lightingEffect == .spotlight,
                             action: {
@@ -148,7 +148,7 @@ public struct ArtworkInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Glare",
                             isSelected: themeManager.currentTheme.lightingEffect == .glare,
                             action: {
@@ -173,7 +173,7 @@ public struct ArtworkInspectorView: View {
                 }
 
                 // Vintage Additions
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Vintage Vinyl Additions")
                         .font(.system(size: 13, weight: .semibold))
 

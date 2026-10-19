@@ -1,17 +1,17 @@
 import SwiftUI
 
 public struct HotkeysInspectorView: View {
-    @ObservedObject var themeManager: SleeveThemeManager
+    @ObservedObject var themeManager: VinylThemeManager
 
     @MainActor
-    public init(themeManager: SleeveThemeManager) {
+    public init(themeManager: VinylThemeManager) {
         self.themeManager = themeManager
     }
 
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Keyboard Shortcuts")
                         .font(.system(size: 13, weight: .semibold))
 
@@ -29,7 +29,7 @@ public struct HotkeysInspectorView: View {
                     }
                 }
 
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Dock & Menu Bar")
                         .font(.system(size: 13, weight: .semibold))
 

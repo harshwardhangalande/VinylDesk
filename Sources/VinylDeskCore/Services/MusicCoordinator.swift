@@ -22,7 +22,7 @@ public final class MusicCoordinator: ObservableObject {
         setupNotificationObservers()
         startPolling()
 
-        SleeveThemeManager.shared.$currentTheme
+        VinylThemeManager.shared.$currentTheme
             .map { $0.showAlbumArtworkInDock }
             .removeDuplicates()
             .sink { [weak self] isEnabled in
@@ -117,7 +117,7 @@ public final class MusicCoordinator: ObservableObject {
             SharedWidgetStorage.shared.saveTrack(newTrack)
             DockIconManager.shared.updateDockIcon(
                 artworkData: newTrack.artworkData,
-                isEnabled: SleeveThemeManager.shared.currentTheme.showAlbumArtworkInDock
+                isEnabled: VinylThemeManager.shared.currentTheme.showAlbumArtworkInDock
             )
         } else {
             // Only update position if drifted significantly (> 3 seconds)
@@ -134,7 +134,7 @@ public final class MusicCoordinator: ObservableObject {
             SharedWidgetStorage.shared.saveTrack(currentTrack)
             DockIconManager.shared.updateDockIcon(
                 artworkData: data,
-                isEnabled: SleeveThemeManager.shared.currentTheme.showAlbumArtworkInDock
+                isEnabled: VinylThemeManager.shared.currentTheme.showAlbumArtworkInDock
             )
         }
     }

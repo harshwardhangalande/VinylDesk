@@ -26,14 +26,14 @@ public enum PreferencesTab: String, CaseIterable, Identifiable {
     }
 }
 
-public struct SleevePreferencesView: View {
-    @ObservedObject var themeManager: SleeveThemeManager
+public struct VinylPreferencesView: View {
+    @ObservedObject var themeManager: VinylThemeManager
     @ObservedObject var coordinator: MusicCoordinator
     @StateObject private var windowState = PreferencesWindowState()
 
     @MainActor
     public init(
-        themeManager: SleeveThemeManager,
+        themeManager: VinylThemeManager,
         coordinator: MusicCoordinator
     ) {
         self.themeManager = themeManager
@@ -305,7 +305,7 @@ public struct SleevePreferencesView: View {
 
 struct FittedWidgetPreview: View {
     @ObservedObject var coordinator: MusicCoordinator
-    let theme: SleeveThemeConfig
+    let theme: VinylThemeConfig
     let isLightBackground: Bool
     let maxWidth: CGFloat
     let maxHeight: CGFloat
@@ -321,7 +321,7 @@ struct FittedWidgetPreview: View {
 
     var body: some View {
         ZStack {
-            SleeveWidgetView(
+            VinylWidgetView(
                 coordinator: coordinator,
                 theme: theme,
                 isLightBackground: isLightBackground

@@ -101,7 +101,7 @@ struct TrackEntry: TimelineEntry {
     let date: Date
     let track: SharedWidgetTrack
     let artwork: NSImage?
-    let theme: SleeveThemeConfig
+    let theme: VinylThemeConfig
 }
 
 // MARK: - Widget Views

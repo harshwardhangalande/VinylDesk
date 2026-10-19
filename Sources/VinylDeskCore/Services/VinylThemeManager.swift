@@ -2,37 +2,39 @@ import SwiftUI
 import Combine
 
 @MainActor
-public final class SleeveThemeManager: ObservableObject {
-    public static let shared = SleeveThemeManager()
+public final class VinylThemeManager: ObservableObject {
+    public static let shared = VinylThemeManager()
 
-    private let userDefaultsKey = "VinylDesk.SleeveTheme.Current"
-    private let userThemesKey = "VinylDesk.SleeveTheme.UserThemes"
+    private let userDefaultsKey = "VinylDesk.VinylTheme.Current"
+    private let userThemesKey = "VinylDesk.VinylTheme.UserThemes"
     private let saveSubject = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
 
-    @Published public var currentTheme: SleeveThemeConfig
-    @Published public var presets: [SleeveThemeConfig]
-    @Published public var userThemes: [SleeveThemeConfig] = []
+    @Published public var currentTheme: VinylThemeConfig
+    @Published public var presets: [VinylThemeConfig]
+    @Published public var userThemes: [VinylThemeConfig] = []
     @Published public var isProUnlocked: Bool = true
     @Published public var previewLightMode: Bool = false
     @Published public var isPreviewHidden: Bool = false
 
     private init() {
-        self.presets = SleeveThemeConfig.allPresets
+        self.presets = VinylThemeConfig.allPresets
 
-        // Load custom user themes if any
-        if let userThemesData = UserDefaults.standard.data(forKey: userThemesKey),
-           let savedUserThemes = try? JSONDecoder().decode([SleeveThemeConfig].self, from: userThemesData) {
+        // Load custom user themes if any (with legacy migration fallback)
+        let legacyThemesKey = "VinylDesk.SleeveTheme.UserThemes"
+        if let userThemesData = UserDefaults.standard.data(forKey: userThemesKey) ?? UserDefaults.standard.data(forKey: legacyThemesKey),
+           let savedUserThemes = try? JSONDecoder().decode([VinylThemeConfig].self, from: userThemesData) {
             self.userThemes = savedUserThemes
         } else {
             self.userThemes = []
         }
 
-        if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
-           let saved = try? JSONDecoder().decode(SleeveThemeConfig.self, from: data) {
+        let legacyDefaultsKey = "VinylDesk.SleeveTheme.Current"
+        if let data = UserDefaults.standard.data(forKey: userDefaultsKey) ?? UserDefaults.standard.data(forKey: legacyDefaultsKey),
+           let saved = try? JSONDecoder().decode(VinylThemeConfig.self, from: data) {
             self.currentTheme = saved
         } else {
-            self.currentTheme = SleeveThemeConfig.presetStack
+            self.currentTheme = VinylThemeConfig.presetStack
         }
 
         // Sync initial theme to widget storage
@@ -46,7 +48,7 @@ public final class SleeveThemeManager: ObservableObject {
             .store(in: &cancellables)
     }
 
-    public func selectPreset(_ preset: SleeveThemeConfig) {
+    public func selectPreset(_ preset: VinylThemeConfig) {
         self.currentTheme = preset
         persistThemeDirectly()
     }
@@ -85,7 +87,7 @@ public final class SleeveThemeManager: ObservableObject {
         persistUserThemes()
 
         if currentTheme.id == id {
-            self.currentTheme = presets.first ?? SleeveThemeConfig.presetStack
+            self.currentTheme = presets.first ?? VinylThemeConfig.presetStack
             persistThemeDirectly()
         }
     }
@@ -97,7 +99,7 @@ public final class SleeveThemeManager: ObservableObject {
     }
 
     public func resetToDefault() {
-        self.currentTheme = SleeveThemeConfig.presetStack
+        self.currentTheme = VinylThemeConfig.presetStack
         persistThemeDirectly()
     }
 
@@ -113,7 +115,7 @@ public final class SleeveThemeManager: ObservableObject {
 
     public func importThemeJSON(_ json: String) -> Bool {
         guard let data = json.data(using: .utf8),
-              let decoded = try? JSONDecoder().decode(SleeveThemeConfig.self, from: data) else {
+              let decoded = try? JSONDecoder().decode(VinylThemeConfig.self, from: data) else {
             return false
         }
         self.currentTheme = decoded

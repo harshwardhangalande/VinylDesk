@@ -3,7 +3,7 @@ import AppKit
 
 // MARK: - Layout Enums
 
-public enum SleeveLayout: String, CaseIterable, Codable, Sendable {
+public enum VinylLayout: String, CaseIterable, Codable, Sendable {
     case horizontal = "Horizontal"
     case vertical = "Vertical"
     case stacked = "Stacked"
@@ -270,14 +270,14 @@ public struct TypographyLineConfig: Codable, Equatable, Sendable {
     }
 }
 
-// MARK: - Master Sleeve Theme Config
+// MARK: - Master Vinyl Theme Config
 
-public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
+public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
     public var id: String
     public var name: String
 
     // Layout
-    public var layout: SleeveLayout
+    public var layout: VinylLayout
     public var flipHorizontal: Bool
     public var horizontalAlign: HorizontalAlign
     public var verticalAlign: VerticalAlign
@@ -324,7 +324,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
     public init(
         id: String = UUID().uuidString,
         name: String = "Custom Theme",
-        layout: SleeveLayout = .horizontal,
+        layout: VinylLayout = .horizontal,
         flipHorizontal: Bool = false,
         horizontalAlign: HorizontalAlign = .left,
         verticalAlign: VerticalAlign = .middle,
@@ -408,7 +408,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
         self.name = try container.decodeIfPresent(String.self, forKey: .name) ?? "Custom Theme"
-        self.layout = try container.decodeIfPresent(SleeveLayout.self, forKey: .layout) ?? .horizontal
+        self.layout = try container.decodeIfPresent(VinylLayout.self, forKey: .layout) ?? .horizontal
         self.flipHorizontal = try container.decodeIfPresent(Bool.self, forKey: .flipHorizontal) ?? false
         self.horizontalAlign = try container.decodeIfPresent(HorizontalAlign.self, forKey: .horizontalAlign) ?? .left
         self.verticalAlign = try container.decodeIfPresent(VerticalAlign.self, forKey: .verticalAlign) ?? .middle
@@ -488,9 +488,9 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         try container.encode(liquidGlassRimShine, forKey: .liquidGlassRimShine)
     }
 
-    // MARK: - Built-in Presets Matching Sleeve 3 & Sleeve 3.3
+    // MARK: - Built-in Presets Matching Vinyl & VinylDesk
 
-    public static let presetStack = SleeveThemeConfig(
+    public static let presetStack = VinylThemeConfig(
         id: "preset-stack",
         name: "Stack",
         layout: .stacked,
@@ -520,7 +520,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         liquidGlassFluidPulse: true
     )
 
-    public static let presetHorizontalCard = SleeveThemeConfig(
+    public static let presetHorizontalCard = VinylThemeConfig(
         id: "preset-horizontal-card",
         name: "Ider",
         layout: .horizontal,
@@ -547,7 +547,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let presetColeSerif = SleeveThemeConfig(
+    public static let presetColeSerif = VinylThemeConfig(
         id: "preset-cole",
         name: "Cole",
         layout: .vertical,
@@ -574,7 +574,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let presetMinimal = SleeveThemeConfig(
+    public static let presetMinimal = VinylThemeConfig(
         id: "preset-minimal",
         name: "Minimal",
         layout: .textOnly,
@@ -601,7 +601,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let presetRetroVinyl = SleeveThemeConfig(
+    public static let presetRetroVinyl = VinylThemeConfig(
         id: "preset-retro-vinyl",
         name: "Retro Vinyl",
         layout: .vintageVinyl,
@@ -628,7 +628,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let presetWoodenShelf = SleeveThemeConfig(
+    public static let presetWoodenShelf = VinylThemeConfig(
         id: "preset-wooden-shelf",
         name: "Wooden Shelf",
         layout: .woodenShelf,
@@ -655,7 +655,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let presetTimeDashboard = SleeveThemeConfig(
+    public static let presetTimeDashboard = VinylThemeConfig(
         id: "preset-time-dashboard",
         name: "Time Dashboard",
         layout: .timeDashboard,
@@ -682,7 +682,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let presetArtworkPoster = SleeveThemeConfig(
+    public static let presetArtworkPoster = VinylThemeConfig(
         id: "preset-artwork-poster",
         name: "Artwork Poster",
         layout: .artworkPoster,
@@ -709,7 +709,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let presetCompactSquare = SleeveThemeConfig(
+    public static let presetCompactSquare = VinylThemeConfig(
         id: "preset-compact-square",
         name: "Compact Square",
         layout: .compactSquare,
@@ -736,7 +736,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let presetSplitBanner = SleeveThemeConfig(
+    public static let presetSplitBanner = VinylThemeConfig(
         id: "preset-split-banner",
         name: "Split Banner",
         layout: .splitBanner,
@@ -763,7 +763,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let presetArtworkCard = SleeveThemeConfig(
+    public static let presetArtworkCard = VinylThemeConfig(
         id: "preset-artwork-card",
         name: "Squircle Card",
         layout: .artworkCard,
@@ -790,7 +790,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
-    public static let allPresets: [SleeveThemeConfig] = [
+    public static let allPresets: [VinylThemeConfig] = [
         .presetTimeDashboard,
         .presetSplitBanner,
         .presetArtworkPoster,
@@ -804,3 +804,18 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         .presetWoodenShelf
     ]
 }
+
+// MARK: - Backward Compatibility Typealiases
+
+public typealias SleeveThemeConfig = VinylThemeConfig
+public typealias SleeveThemeManager = VinylThemeManager
+public typealias SleeveLayout = VinylLayout
+public typealias SleevePreferencesView = VinylPreferencesView
+public typealias SleeveWidgetView = VinylWidgetView
+public typealias SleeveTypographyView = VinylTypographyView
+public typealias SleeveControlsView = VinylControlsView
+public typealias SleeveArtworkView = VinylArtworkView
+public typealias SleeveOptionCard = VinylOptionCard
+public typealias SleeveSectionCard = VinylSectionCard
+public typealias SleeveSegmentButton = VinylSegmentButton
+public typealias SleeveControlsState = VinylControlsState

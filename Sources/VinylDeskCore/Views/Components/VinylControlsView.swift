@@ -1,15 +1,15 @@
 import SwiftUI
 
-public struct SleeveControlsView: View {
+public struct VinylControlsView: View {
     @ObservedObject var coordinator: MusicCoordinator
-    let theme: SleeveThemeConfig
+    let theme: VinylThemeConfig
     var isOverlay: Bool = false
-    @StateObject private var state = SleeveControlsState()
+    @StateObject private var state = VinylControlsState()
 
     @MainActor
     public init(
         coordinator: MusicCoordinator,
-        theme: SleeveThemeConfig,
+        theme: VinylThemeConfig,
         isOverlay: Bool = false
     ) {
         self.coordinator = coordinator

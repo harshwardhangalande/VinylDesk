@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Selectable Card Option
 
-public struct SleeveOptionCard<Content: View>: View {
+public struct VinylOptionCard<Content: View>: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
@@ -50,7 +50,7 @@ public struct SleeveOptionCard<Content: View>: View {
 
 // MARK: - Segmented Size Selector Button
 
-public struct SleeveSegmentButton: View {
+public struct VinylSegmentButton: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
@@ -83,7 +83,7 @@ public struct SleeveSegmentButton: View {
 
 // MARK: - Section Card Container
 
-public struct SleeveSectionCard<Content: View>: View {
+public struct VinylSectionCard<Content: View>: View {
     let content: () -> Content
 
     public init(@ViewBuilder content: @escaping () -> Content) {

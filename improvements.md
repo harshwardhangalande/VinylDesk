@@ -16,7 +16,7 @@
   watchdog termination.
   1. Severe RAM Churn from 1-Second Image Re-Decoding: Because
   track position updates mutate the entire currentTrack struct
-  every 1 second, SleeveArtworkView and LiquidGlassBackdropView
+  every 1 second, VinylArtworkView and LiquidGlassBackdropView
   decode uncompressed bitmaps (up to 64MB) and recompute dominant
   color matrices every second on the main thread.
   1. Missing Window Level & Snapping Synchronization: The Window
@@ -57,7 +57,7 @@
   Second Tick
 
   • Category: Performance & Memory (RAM)
-  • Location: SleeveArtworkView.swift:264-268
+  • Location: VinylArtworkView.swift:264-268
   • Problem: In albumCoverImage, NSImage(data: data) is created
   inside the SwiftUI view body:
     if let data = coordinator.currentTrack.artworkData,
@@ -66,12 +66,12 @@
 
   • Evidence: Every 1 second, MusicCoordinator.onTimerTick()
   increments currentTrack.position += 1.0. Mutating @Published
-  public var currentTrack: TrackInfo causes SleeveArtworkView.body
+  public var currentTrack: TrackInfo causes VinylArtworkView.body
   to execute every second. For high-resolution artwork (e.g.
   3000×3000px), NSImage(data:) decodes a ~36MB–64MB uncompressed
   32-bit pixel buffer in RAM every single second, which is
   immediately thrown away and re-allocated. For the Retro Vinyl
-  layout, this happens twice per second (sleeve jacket + center
+  layout, this happens twice per second (vinyl jacket + center
   record label).
   • Impact: Constant memory thrashing, high garbage collection /
   autorelease pool overhead, elevated RAM footprint (150MB–400MB
@@ -178,7 +178,7 @@
   #### 8. [Medium] Excessive UserDefaults I/O on Continuous Slider
   Movement
   • Category: Performance & Disk/Memory I/O
-  • Location: SleeveThemeManager.swift:31-35
+  • Location: VinylThemeManager.swift:31-35
   • Problem: saveCurrentTheme() serializes the entire theme to
   JSON and writes to UserDefaults.standard on every step of every
   slider (opacity, blur, corner radius, artwork size, container
@@ -213,7 +213,7 @@
   • Impact: Updating the progress bar requires mutating
   currentTrack, which triggers objectWillChange on
   MusicCoordinator. As a result, views that do not show progress
-  (such as SleeveArtworkView, LiquidGlassBackdropView,
+  (such as VinylArtworkView, LiquidGlassBackdropView,
   WindowDragGripView) re-evaluate their body every second.
   • Recommended Fix: Split playback progress into a separate
   @Published public var playbackPosition: Double property or
@@ -258,7 +258,7 @@
   presentation views. However, PositionInspectorView contains a
   duplicate window lookup rather than calling
   DesktopWidgetController.
-  • Type Safety: Strong use of Swift enums (SleeveLayout,
+  • Type Safety: Strong use of Swift enums (VinylLayout,
   BackdropMaterial, LiquidGlassLevel, LiquidGlassTint) with type-
   safe styling.
   • Error Handling: Graceful fallback to demo mode when neither
@@ -272,7 +272,7 @@
   • Results: 10 passed, 0 failed.
       • TrackInfo progress calculation & clamping
       • Time formatting & demo fallback
-      • Sleeve 3 presets & JSON roundtrip
+      • Vinyl presets & JSON roundtrip
       • Shadow & corner radius math
       • Theme manager switching
       • Liquid glass level & tint attributes

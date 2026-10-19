@@ -69,9 +69,9 @@ struct TestRunner {
             assert(!demo.title.isEmpty, "Demo track must have title")
         }
 
-        // Test 5: Sleeve Theme Presets Verification
-        test("Sleeve 3 theme presets verification") {
-            let presets = SleeveThemeConfig.allPresets
+        // Test 5: Vinyl Theme Presets Verification
+        test("Vinyl theme presets verification") {
+            let presets = VinylThemeConfig.allPresets
             assert(presets.count >= 6, "Must provide at least 6 presets (Stack, Ider, Cole, Minimal, Retro Vinyl, Wooden Shelf)")
 
             let names = presets.map { $0.name }
@@ -83,36 +83,36 @@ struct TestRunner {
             assert(names.contains("Wooden Shelf"), "Must contain Wooden Shelf theme")
         }
 
-        // Test 6: Sleeve Theme JSON Serialization & Deserialization
-        test("Sleeve Theme JSON roundtrip export & import") {
-            let originalTheme = SleeveThemeConfig.presetRetroVinyl
+        // Test 6: Vinyl Theme JSON Serialization & Deserialization
+        test("Vinyl Theme JSON roundtrip export & import") {
+            let originalTheme = VinylThemeConfig.presetRetroVinyl
             let encoder = JSONEncoder()
             let data = try encoder.encode(originalTheme)
             let jsonString = String(data: data, encoding: .utf8)!
             assert(!jsonString.isEmpty, "Encoded JSON must not be empty")
 
             let decoder = JSONDecoder()
-            let decodedTheme = try decoder.decode(SleeveThemeConfig.self, from: data)
+            let decodedTheme = try decoder.decode(VinylThemeConfig.self, from: data)
             assert(decodedTheme.id == originalTheme.id, "Theme IDs must match")
             assert(decodedTheme.layout == .vintageVinyl, "Layout must be vintageVinyl")
             assert(decodedTheme.showSpinningRecord == true, "Spinning record must be enabled")
         }
 
-        // Test 7: Sleeve Shadow and Corner Radius Attributes
+        // Test 7: Vinyl Shadow and Corner Radius Attributes
         test("Shadow styles and corner radii") {
             assert(ShadowStyle.none.radius == 0, "None shadow must have 0 radius")
             assert(ShadowStyle.deep.radius > ShadowStyle.regular.radius, "Deep shadow radius must exceed regular")
             assert(ShadowStyle.deep.opacity > ShadowStyle.subtle.opacity, "Deep shadow opacity must exceed subtle")
         }
 
-        // Test 8: Sleeve Theme Manager switching
-        test("SleeveThemeManager preset switching") {
-            let manager = SleeveThemeManager.shared
-            manager.selectPreset(SleeveThemeConfig.presetWoodenShelf)
+        // Test 8: Vinyl Theme Manager switching
+        test("VinylThemeManager preset switching") {
+            let manager = VinylThemeManager.shared
+            manager.selectPreset(VinylThemeConfig.presetWoodenShelf)
             assert(manager.currentTheme.name == "Wooden Shelf", "Active theme should be Wooden Shelf")
             assert(manager.currentTheme.layout == .woodenShelf, "Layout should be woodenShelf")
 
-            manager.selectPreset(SleeveThemeConfig.presetStack)
+            manager.selectPreset(VinylThemeConfig.presetStack)
             assert(manager.currentTheme.name == "Stack", "Active theme should be Stack")
         }
 
@@ -139,7 +139,7 @@ struct TestRunner {
             }
             """
             let data = legacyJson.data(using: .utf8)!
-            let decoded = try JSONDecoder().decode(SleeveThemeConfig.self, from: data)
+            let decoded = try JSONDecoder().decode(VinylThemeConfig.self, from: data)
             assert(decoded.name == "Legacy Theme", "Name should decode properly")
             assert(decoded.liquidGlassLevel == .low, "Missing liquidGlassLevel should default to .low")
             assert(decoded.liquidGlassTint == .neutral, "Missing liquidGlassTint should default to .neutral")
@@ -184,7 +184,7 @@ struct TestRunner {
 
         // Test 12: New Screenshot Layouts and Presets Verification
         test("Screenshot widget presets and layouts verification") {
-            let presets = SleeveThemeConfig.allPresets
+            let presets = VinylThemeConfig.allPresets
             let names = presets.map { $0.name }
             assert(names.contains("Time Dashboard"), "Must contain Time Dashboard preset")
             assert(names.contains("Split Banner"), "Must contain Split Banner preset")
@@ -192,11 +192,11 @@ struct TestRunner {
             assert(names.contains("Compact Square"), "Must contain Compact Square preset")
             assert(names.contains("Squircle Card"), "Must contain Squircle Card preset")
 
-            assert(SleeveLayout.allCases.contains(.timeDashboard), "SleeveLayout must contain timeDashboard")
-            assert(SleeveLayout.allCases.contains(.splitBanner), "SleeveLayout must contain splitBanner")
-            assert(SleeveLayout.allCases.contains(.artworkPoster), "SleeveLayout must contain artworkPoster")
-            assert(SleeveLayout.allCases.contains(.compactSquare), "SleeveLayout must contain compactSquare")
-            assert(SleeveLayout.allCases.contains(.artworkCard), "SleeveLayout must contain artworkCard")
+            assert(VinylLayout.allCases.contains(.timeDashboard), "VinylLayout must contain timeDashboard")
+            assert(VinylLayout.allCases.contains(.splitBanner), "VinylLayout must contain splitBanner")
+            assert(VinylLayout.allCases.contains(.artworkPoster), "VinylLayout must contain artworkPoster")
+            assert(VinylLayout.allCases.contains(.compactSquare), "VinylLayout must contain compactSquare")
+            assert(VinylLayout.allCases.contains(.artworkCard), "VinylLayout must contain artworkCard")
         }
 
         // Test 13: SharedWidgetStorage & Dual Mode Verification
@@ -219,29 +219,29 @@ struct TestRunner {
 
             // Verify ExperienceMode cases
             assert(ExperienceMode.allCases.count == 3, "ExperienceMode must have 3 modes")
-            let theme = SleeveThemeConfig.presetTimeDashboard
+            let theme = VinylThemeConfig.presetTimeDashboard
             assert(theme.experienceMode == .dual, "Default experienceMode should be dual")
             assert(theme.isFloatingOverlayVisible == true, "Default isFloatingOverlayVisible should be true")
         }
 
         // Test 14: Dynamic Typography and Controls Configurations for New Themes
         test("Dynamic Typography & Controls Configurations for New Themes") {
-            let dashboard = SleeveThemeConfig.presetTimeDashboard
+            let dashboard = VinylThemeConfig.presetTimeDashboard
             assert(dashboard.liquidGlassLevel == .low, "presetTimeDashboard liquidGlassLevel should default to .low")
             assert(dashboard.trackNameStyle.fontDesign == .sans, "presetTimeDashboard font design should be sans")
             assert(dashboard.trackNameStyle.fontWeight == .bold, "presetTimeDashboard font weight should be bold")
 
-            let banner = SleeveThemeConfig.presetSplitBanner
+            let banner = VinylThemeConfig.presetSplitBanner
             assert(banner.showPlaybackControls == true, "Split Banner showPlaybackControls should be true")
             assert(banner.controlsPlacement == .inlineWithText, "Split Banner controlsPlacement should be inlineWithText")
             assert(banner.controlsSize == .medium, "Split Banner controlsSize should be medium")
             assert(banner.trackNameStyle.isVisible == true, "Split Banner track name must be visible")
 
-            let compact = SleeveThemeConfig.presetCompactSquare
+            let compact = VinylThemeConfig.presetCompactSquare
             assert(compact.controlsSize == .small, "Compact Square controlsSize should be small")
             assert(compact.albumStyle.isVisible == false, "Compact Square album should be hidden by default")
 
-            let poster = SleeveThemeConfig.presetArtworkPoster
+            let poster = VinylThemeConfig.presetArtworkPoster
             assert(poster.trackNameStyle.fontSize == 18, "Artwork poster track font size should be 18")
             assert(poster.artworkSize == 300, "Artwork poster size should be 300")
         }
@@ -249,12 +249,12 @@ struct TestRunner {
         // Test 15: Theme Syncing & My Themes Management
         test("Theme Syncing to Widget Storage & My Themes Management") {
             let storage = SharedWidgetStorage.shared
-            let banner = SleeveThemeConfig.presetSplitBanner
+            let banner = VinylThemeConfig.presetSplitBanner
             storage.saveTheme(banner)
             let loaded = storage.loadTheme()
-            assert(loaded.name == banner.name || loaded.name == SleeveThemeConfig.presetTimeDashboard.name, "Theme should load successfully")
+            assert(loaded.name == banner.name || loaded.name == VinylThemeConfig.presetTimeDashboard.name, "Theme should load successfully")
 
-            let mgr = SleeveThemeManager.shared
+            let mgr = VinylThemeManager.shared
             let countBefore = mgr.userThemes.count
             mgr.saveCurrentAsCustomTheme(name: "Test Custom Theme")
             assert(mgr.userThemes.count == countBefore + 1, "User themes count should increment by 1")
@@ -268,13 +268,13 @@ struct TestRunner {
 
         // Test 16: Dock Icon Album Artwork toggle configuration & roundtrip
         test("Dock Icon Album Artwork toggle configuration & roundtrip") {
-            var theme = SleeveThemeConfig.presetRetroVinyl
+            var theme = VinylThemeConfig.presetRetroVinyl
             assert(theme.showAlbumArtworkInDock == false, "Default showAlbumArtworkInDock should be false")
             theme.showAlbumArtworkInDock = true
 
             let encoder = JSONEncoder()
             let data = try encoder.encode(theme)
-            let decoded = try JSONDecoder().decode(SleeveThemeConfig.self, from: data)
+            let decoded = try JSONDecoder().decode(VinylThemeConfig.self, from: data)
             assert(decoded.showAlbumArtworkInDock == true, "showAlbumArtworkInDock should preserve true state after encoding/decoding")
         }
 
@@ -284,13 +284,13 @@ struct TestRunner {
             assert(WidgetVisibility.desktopOnly.rawValue == "Show only on desktop")
             assert(WidgetVisibility.showEverywhere.rawValue == "Show everywhere")
 
-            var theme = SleeveThemeConfig.presetTimeDashboard
+            var theme = VinylThemeConfig.presetTimeDashboard
             theme.visibility = .desktopOnly
             theme.windowPlacement = .desktop
 
             let encoder = JSONEncoder()
             let data = try encoder.encode(theme)
-            let decoded = try JSONDecoder().decode(SleeveThemeConfig.self, from: data)
+            let decoded = try JSONDecoder().decode(VinylThemeConfig.self, from: data)
             assert(decoded.visibility == .desktopOnly, "Decoded theme should preserve desktopOnly visibility")
 
             // Test window level updates in DesktopWidgetController

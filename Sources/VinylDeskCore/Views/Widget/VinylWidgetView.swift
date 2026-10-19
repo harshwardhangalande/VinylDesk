@@ -1,16 +1,16 @@
 import SwiftUI
 
-public struct SleeveWidgetView: View {
+public struct VinylWidgetView: View {
     @ObservedObject var coordinator: MusicCoordinator
-    let theme: SleeveThemeConfig
+    let theme: VinylThemeConfig
     var isLightBackground: Bool = false
     @StateObject private var hoverState = WidgetHoverState()
-    @StateObject private var controlsState = SleeveControlsState()
+    @StateObject private var controlsState = VinylControlsState()
 
     @MainActor
     public init(
         coordinator: MusicCoordinator,
-        theme: SleeveThemeConfig,
+        theme: VinylThemeConfig,
         isLightBackground: Bool = false
     ) {
         self.coordinator = coordinator
@@ -312,7 +312,7 @@ public struct SleeveWidgetView: View {
                     .fill(Color.black.opacity(0.45))
                     .frame(width: size, height: size)
                     .overlay(
-                        SleeveControlsView(coordinator: coordinator, theme: theme, isOverlay: true)
+                        VinylControlsView(coordinator: coordinator, theme: theme, isOverlay: true)
                     )
                     .transition(.opacity)
             }
@@ -867,7 +867,7 @@ public struct SleeveWidgetView: View {
     // MARK: - Subviews
 
     private var artworkView: some View {
-        SleeveArtworkView(
+        VinylArtworkView(
             coordinator: coordinator,
             theme: theme,
             isHovered: hoverState.isHovered,
@@ -880,7 +880,7 @@ public struct SleeveWidgetView: View {
     }
 
     private var typographyView: some View {
-        SleeveTypographyView(
+        VinylTypographyView(
             coordinator: coordinator,
             theme: theme,
             isLightBackground: isLightBackground

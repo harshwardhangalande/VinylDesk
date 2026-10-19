@@ -9,11 +9,11 @@ public enum TypographyTarget: String, CaseIterable, Identifiable {
 }
 
 public struct TypographyInspectorView: View {
-    @ObservedObject var themeManager: SleeveThemeManager
+    @ObservedObject var themeManager: VinylThemeManager
     @StateObject private var state = TypographyInspectorState()
 
     @MainActor
-    public init(themeManager: SleeveThemeManager) {
+    public init(themeManager: VinylThemeManager) {
         self.themeManager = themeManager
     }
 
@@ -58,7 +58,7 @@ public struct TypographyInspectorView: View {
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 1))
 
                 // Line Display Toggle
-                SleeveSectionCard {
+                VinylSectionCard {
                     Toggle("Display \(state.selectedTarget.rawValue.lowercased())", isOn: activeConfig.isVisible)
                         .toggleStyle(SwitchToggleStyle())
 
@@ -96,7 +96,7 @@ public struct TypographyInspectorView: View {
 
                 if activeConfig.wrappedValue.isVisible {
                     // Font Family / Design
-                    SleeveSectionCard {
+                    VinylSectionCard {
                         Text("Typography Style")
                             .font(.system(size: 13, weight: .semibold))
 
@@ -174,7 +174,7 @@ public struct TypographyInspectorView: View {
                     }
 
                     // Text Shadow & Color
-                    SleeveSectionCard {
+                    VinylSectionCard {
                         Text("Text Appearance")
                             .font(.system(size: 13, weight: .semibold))
 

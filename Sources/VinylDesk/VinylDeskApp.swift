@@ -8,8 +8,8 @@ struct VinylDeskApp: App {
 
     var body: some Scene {
         Settings {
-            SleevePreferencesView(
-                themeManager: SleeveThemeManager.shared,
+            VinylPreferencesView(
+                themeManager: VinylThemeManager.shared,
                 coordinator: MusicCoordinator.shared
             )
         }
@@ -58,7 +58,7 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
         menu.removeAllItems()
 
         let coordinator = MusicCoordinator.shared
-        let themeManager = SleeveThemeManager.shared
+        let themeManager = VinylThemeManager.shared
 
         // Header: Track title and artist
         let trackTitle = coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title
@@ -237,8 +237,8 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
     }
 
     @objc private func selectThemePreset(_ sender: NSMenuItem) {
-        if let preset = sender.representedObject as? SleeveThemeConfig {
-            SleeveThemeManager.shared.selectPreset(preset)
+        if let preset = sender.representedObject as? VinylThemeConfig {
+            VinylThemeManager.shared.selectPreset(preset)
         }
     }
 
@@ -266,44 +266,44 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
 
     @objc private func selectLiquidGlassLevel(_ sender: NSMenuItem) {
         if let level = sender.representedObject as? LiquidGlassLevel {
-            SleeveThemeManager.shared.currentTheme.backdropMaterial = .liquidGlass
-            SleeveThemeManager.shared.currentTheme.liquidGlassLevel = level
-            SleeveThemeManager.shared.currentTheme.liquidGlassCustomOpacity = 0
-            SleeveThemeManager.shared.currentTheme.liquidGlassCustomBlur = 0
-            SleeveThemeManager.shared.currentTheme.liquidGlassRimShine = 0
-            SleeveThemeManager.shared.saveCurrentTheme()
+            VinylThemeManager.shared.currentTheme.backdropMaterial = .liquidGlass
+            VinylThemeManager.shared.currentTheme.liquidGlassLevel = level
+            VinylThemeManager.shared.currentTheme.liquidGlassCustomOpacity = 0
+            VinylThemeManager.shared.currentTheme.liquidGlassCustomBlur = 0
+            VinylThemeManager.shared.currentTheme.liquidGlassRimShine = 0
+            VinylThemeManager.shared.saveCurrentTheme()
         }
     }
 
     @objc private func toggleLiquidGlassPulse() {
-        SleeveThemeManager.shared.currentTheme.liquidGlassFluidPulse.toggle()
-        SleeveThemeManager.shared.saveCurrentTheme()
+        VinylThemeManager.shared.currentTheme.liquidGlassFluidPulse.toggle()
+        VinylThemeManager.shared.saveCurrentTheme()
     }
 
     @objc private func selectLiquidGlassTint(_ sender: NSMenuItem) {
         if let tint = sender.representedObject as? LiquidGlassTint {
-            SleeveThemeManager.shared.currentTheme.liquidGlassTint = tint
-            SleeveThemeManager.shared.saveCurrentTheme()
+            VinylThemeManager.shared.currentTheme.liquidGlassTint = tint
+            VinylThemeManager.shared.saveCurrentTheme()
         }
     }
 
     @objc private func selectWidgetVisibility(_ sender: NSMenuItem) {
         if let vis = sender.representedObject as? WidgetVisibility {
-            SleeveThemeManager.shared.currentTheme.visibility = vis
-            SleeveThemeManager.shared.currentTheme.windowPlacement = (vis == .desktopOnly) ? .desktop : .floating
-            SleeveThemeManager.shared.saveCurrentTheme()
+            VinylThemeManager.shared.currentTheme.visibility = vis
+            VinylThemeManager.shared.currentTheme.windowPlacement = (vis == .desktopOnly) ? .desktop : .floating
+            VinylThemeManager.shared.saveCurrentTheme()
         }
     }
 
     @objc private func toggleFloatingOverlay() {
-        SleeveThemeManager.shared.currentTheme.isFloatingOverlayVisible.toggle()
-        SleeveThemeManager.shared.saveCurrentTheme()
+        VinylThemeManager.shared.currentTheme.isFloatingOverlayVisible.toggle()
+        VinylThemeManager.shared.saveCurrentTheme()
     }
 
     @objc private func selectExperienceMode(_ sender: NSMenuItem) {
         if let mode = sender.representedObject as? ExperienceMode {
-            SleeveThemeManager.shared.currentTheme.experienceMode = mode
-            SleeveThemeManager.shared.saveCurrentTheme()
+            VinylThemeManager.shared.currentTheme.experienceMode = mode
+            VinylThemeManager.shared.saveCurrentTheme()
         }
     }
 
@@ -331,8 +331,8 @@ final class PreferencesWindowController {
             return
         }
 
-        let preferencesView = SleevePreferencesView(
-            themeManager: SleeveThemeManager.shared,
+        let preferencesView = VinylPreferencesView(
+            themeManager: VinylThemeManager.shared,
             coordinator: MusicCoordinator.shared
         )
 

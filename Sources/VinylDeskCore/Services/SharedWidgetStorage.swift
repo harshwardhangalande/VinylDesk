@@ -107,7 +107,7 @@ public final class SharedWidgetStorage: @unchecked Sendable {
         }
     }
 
-    public func saveTheme(_ theme: SleeveThemeConfig) {
+    public func saveTheme(_ theme: VinylThemeConfig) {
         fileQueue.sync { [weak self] in
             guard let self = self else { return }
 
@@ -130,13 +130,13 @@ public final class SharedWidgetStorage: @unchecked Sendable {
         }
     }
 
-    public func loadTheme() -> SleeveThemeConfig {
+    public func loadTheme() -> VinylThemeConfig {
         return fileQueue.sync {
             if let data = try? Data(contentsOf: themeURL),
-               let theme = try? JSONDecoder().decode(SleeveThemeConfig.self, from: data) {
+               let theme = try? JSONDecoder().decode(VinylThemeConfig.self, from: data) {
                 return theme
             }
-            return SleeveThemeConfig.presetTimeDashboard
+            return VinylThemeConfig.presetTimeDashboard
         }
     }
 

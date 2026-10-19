@@ -1,10 +1,10 @@
 import SwiftUI
 
 public struct PositionInspectorView: View {
-    @ObservedObject var themeManager: SleeveThemeManager
+    @ObservedObject var themeManager: VinylThemeManager
 
     @MainActor
-    public init(themeManager: SleeveThemeManager) {
+    public init(themeManager: VinylThemeManager) {
         self.themeManager = themeManager
     }
 
@@ -12,12 +12,12 @@ public struct PositionInspectorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // Visibility
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Visibility")
                         .font(.system(size: 13, weight: .semibold))
 
                     HStack(spacing: 12) {
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Show only on desktop",
                             isSelected: themeManager.currentTheme.visibility == .desktopOnly,
                             action: {
@@ -32,7 +32,7 @@ public struct PositionInspectorView: View {
                             }
                         }
 
-                        SleeveOptionCard(
+                        VinylOptionCard(
                             title: "Show everywhere",
                             isSelected: themeManager.currentTheme.visibility == .showEverywhere,
                             action: {
@@ -58,7 +58,7 @@ public struct PositionInspectorView: View {
                 }
 
                 // Desktop Pinning Presets
-                SleeveSectionCard {
+                VinylSectionCard {
                     Text("Quick Desktop Pinning")
                         .font(.system(size: 13, weight: .semibold))
 

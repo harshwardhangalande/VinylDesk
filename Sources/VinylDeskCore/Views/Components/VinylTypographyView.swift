@@ -1,14 +1,14 @@
 import SwiftUI
 
-public struct SleeveTypographyView: View {
+public struct VinylTypographyView: View {
     @ObservedObject var coordinator: MusicCoordinator
-    let theme: SleeveThemeConfig
+    let theme: VinylThemeConfig
     var isLightBackground: Bool = false
 
     @MainActor
     public init(
         coordinator: MusicCoordinator,
-        theme: SleeveThemeConfig,
+        theme: VinylThemeConfig,
         isLightBackground: Bool = false
     ) {
         self.coordinator = coordinator
@@ -98,7 +98,7 @@ public struct SleeveTypographyView: View {
 
             // Inline Controls
             if theme.showPlaybackControls && theme.controlsPlacement == .inlineWithText {
-                SleeveControlsView(coordinator: coordinator, theme: theme, isOverlay: false)
+                VinylControlsView(coordinator: coordinator, theme: theme, isOverlay: false)
                     .padding(.top, 4)
             }
         }
