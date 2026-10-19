@@ -21,6 +21,18 @@ public final class MusicCoordinator: ObservableObject {
         self.playbackPosition = currentTrack.position
         setupNotificationObservers()
         startPolling()
+
+        SleeveThemeManager.shared.$currentTheme
+            .map { $0.showAlbumArtworkInDock }
+            .removeDuplicates()
+            .sink { [weak self] isEnabled in
+                guard let self = self else { return }
+                DockIconManager.shared.updateDockIcon(
+                    artworkData: self.currentTrack.artworkData,
+                    isEnabled: isEnabled
+                )
+            }
+            .store(in: &cancellables)
     }
 
     deinit {
@@ -103,6 +115,10 @@ public final class MusicCoordinator: ObservableObject {
             self.currentTrack = newTrack
             self.playbackPosition = newTrack.position
             SharedWidgetStorage.shared.saveTrack(newTrack)
+            DockIconManager.shared.updateDockIcon(
+                artworkData: newTrack.artworkData,
+                isEnabled: SleeveThemeManager.shared.currentTheme.showAlbumArtworkInDock
+            )
         } else {
             // Only update position if drifted significantly (> 3 seconds)
             if abs(self.playbackPosition - newTrack.position) > 3.0 {
@@ -116,6 +132,10 @@ public final class MusicCoordinator: ObservableObject {
         if currentTrack.id == trackId {
             self.currentTrack.artworkData = data
             SharedWidgetStorage.shared.saveTrack(currentTrack)
+            DockIconManager.shared.updateDockIcon(
+                artworkData: data,
+                isEnabled: SleeveThemeManager.shared.currentTheme.showAlbumArtworkInDock
+            )
         }
     }
 

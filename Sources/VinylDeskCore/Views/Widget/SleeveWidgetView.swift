@@ -417,31 +417,48 @@ public struct SleeveWidgetView: View {
         .frame(maxWidth: .infinity, alignment: alignmentForTheme)
     }
 
+    // MARK: - Adaptive Poster Scrim Helper
+    @ViewBuilder
+    private func adaptivePosterScrim(cornerRadius: CGFloat) -> some View {
+        if isLightBackground {
+            // White light shadow with blur for light mode
+            LinearGradient(
+                colors: [Color.clear, Color.white.opacity(0.42), Color.white.opacity(0.88)],
+                startPoint: .center,
+                endPoint: .bottom
+            )
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        } else {
+            // Existing rich dark shadow for dark mode
+            LinearGradient(
+                colors: [Color.clear, Color.black.opacity(0.40), Color.black.opacity(0.85)],
+                startPoint: .center,
+                endPoint: .bottom
+            )
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        }
+    }
+
     @ViewBuilder
     private var compactSquareLayout: some View {
-        let squareDim = max(150, min(240, theme.artworkSize > 0 ? theme.artworkSize : 160))
+        let squareDim = max(100, min(320, theme.artworkSize > 0 ? theme.artworkSize : 160))
         ZStack(alignment: .bottomLeading) {
             // Full background poster filling all available space - no margin or padding
             posterThumbnail(size: squareDim, cornerRadius: theme.cornerRadius)
 
-            // Dark gradient overlay for text readability at bottom
-            LinearGradient(
-                colors: [Color.clear, Color.black.opacity(0.35), Color.black.opacity(0.85)],
-                startPoint: .center,
-                endPoint: .bottom
-            )
-            .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
+            // Adaptive gradient overlay for text readability at bottom (white light shadow in light mode, dark in dark mode)
+            adaptivePosterScrim(cornerRadius: theme.cornerRadius)
 
-            // Overlaid track info & controls
+            // Overlaid track info & controls with alignment support
             VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 3) {
                 if theme.trackNameStyle.isVisible {
                     Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                        .font(fontFor(theme.trackNameStyle, defaultSize: 13))
+                        .font(fontFor(theme.trackNameStyle, defaultSize: max(11, squareDim * 0.08)))
                         .foregroundColor(colorFor(theme.trackNameStyle))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(1)
                         .shadow(
-                            color: Color.black.opacity(max(0.4, theme.trackNameStyle.shadow.opacity)),
+                            color: isLightBackground ? Color.white.opacity(0.9) : Color.black.opacity(max(0.4, theme.trackNameStyle.shadow.opacity)),
                             radius: max(3, theme.trackNameStyle.shadow.radius),
                             x: 0,
                             y: max(1, theme.trackNameStyle.shadow.yOffset)
@@ -453,12 +470,12 @@ public struct SleeveWidgetView: View {
                 if showArtist || showAlbum {
                     let sub = (showArtist ? coordinator.currentTrack.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? coordinator.currentTrack.album : "")
                     Text(sub)
-                        .font(fontFor(theme.artistStyle, defaultSize: 10))
+                        .font(fontFor(theme.artistStyle, defaultSize: max(9, squareDim * 0.06)))
                         .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(1)
                         .shadow(
-                            color: Color.black.opacity(max(0.3, theme.artistStyle.shadow.opacity)),
+                            color: isLightBackground ? Color.white.opacity(0.9) : Color.black.opacity(max(0.3, theme.artistStyle.shadow.opacity)),
                             radius: max(3, theme.artistStyle.shadow.radius),
                             x: 0,
                             y: max(1, theme.artistStyle.shadow.yOffset)
@@ -474,21 +491,21 @@ public struct SleeveWidgetView: View {
                             Button(action: { coordinator.previousTrack() }) {
                                 Image(systemName: "backward.fill")
                                     .font(.system(size: iconSize))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(buttonColor)
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.togglePlayPause() }) {
                                 Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
                                     .font(.system(size: iconSize * 1.15, weight: .bold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(buttonColor)
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.nextTrack() }) {
                                 Image(systemName: "forward.fill")
                                     .font(.system(size: iconSize))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(buttonColor)
                             }
                             .buttonStyle(PlainButtonStyle())
 
@@ -496,7 +513,7 @@ public struct SleeveWidgetView: View {
                                 Button(action: { controlsState.isLiked.toggle() }) {
                                     Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
                                         .font(.system(size: iconSize))
-                                        .foregroundColor(controlsState.isLiked ? Color.red : .white)
+                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -506,6 +523,7 @@ public struct SleeveWidgetView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: alignmentForTheme)
             .padding(10)
         }
         .frame(width: squareDim, height: squareDim)
@@ -513,32 +531,27 @@ public struct SleeveWidgetView: View {
 
     @ViewBuilder
     private var artworkPosterLayout: some View {
-        let posterDim = max(240, theme.artworkSize > 0 ? theme.artworkSize : 300)
+        let posterDim = max(80, theme.artworkSize > 0 ? theme.artworkSize : 240)
         ZStack(alignment: .bottom) {
             // Full background poster image
             posterThumbnail(size: posterDim, cornerRadius: theme.cornerRadius)
 
-            // Gradient shadow on bottom half for high text readability
-            LinearGradient(
-                colors: [Color.clear, Color.black.opacity(0.4), Color.black.opacity(0.85)],
-                startPoint: .center,
-                endPoint: .bottom
-            )
-            .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
+            // Adaptive gradient overlay for text readability at bottom
+            adaptivePosterScrim(cornerRadius: theme.cornerRadius)
 
-            // Overlaid typography & floating controls
-            VStack(spacing: 8) {
+            // Overlaid typography & floating controls with alignment support
+            VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: max(4, posterDim * 0.025)) {
                 if theme.trackNameStyle.isVisible {
                     Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                        .font(fontFor(theme.trackNameStyle, defaultSize: 18))
+                        .font(fontFor(theme.trackNameStyle, defaultSize: max(13, posterDim * 0.075)))
                         .foregroundColor(colorFor(theme.trackNameStyle))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(2)
                         .shadow(
-                            color: Color.black.opacity(max(0.4, theme.trackNameStyle.shadow.opacity)),
-                            radius: max(4, theme.trackNameStyle.shadow.radius),
+                            color: isLightBackground ? Color.white.opacity(0.9) : Color.black.opacity(max(0.4, theme.trackNameStyle.shadow.opacity)),
+                            radius: max(3, theme.trackNameStyle.shadow.radius),
                             x: 0,
-                            y: max(2, theme.trackNameStyle.shadow.yOffset)
+                            y: max(1, theme.trackNameStyle.shadow.yOffset)
                         )
                 }
 
@@ -547,51 +560,51 @@ public struct SleeveWidgetView: View {
                 if showArtist || showAlbum {
                     let sub = (showArtist ? coordinator.currentTrack.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? coordinator.currentTrack.album : "")
                     Text(sub)
-                        .font(fontFor(theme.artistStyle, defaultSize: 12))
+                        .font(fontFor(theme.artistStyle, defaultSize: max(10, posterDim * 0.05)))
                         .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(1)
                         .shadow(
-                            color: Color.black.opacity(max(0.3, theme.artistStyle.shadow.opacity)),
-                            radius: max(3, theme.artistStyle.shadow.radius),
+                            color: isLightBackground ? Color.white.opacity(0.9) : Color.black.opacity(max(0.3, theme.artistStyle.shadow.opacity)),
+                            radius: max(2, theme.artistStyle.shadow.radius),
                             x: 0,
                             y: max(1, theme.artistStyle.shadow.yOffset)
                         )
                 }
 
-                // Translucent floating controls
+                // Floating controls
                 if theme.showPlaybackControls {
                     let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
                     if isVisible {
-                        let iconSize = theme.controlsSize.iconSize
-                        let circleSize = iconSize * 2.4
-                        let playCircleSize = iconSize * 2.8
+                        let iconSize = max(11, theme.controlsSize.iconSize * (posterDim < 180 ? 0.75 : 1.0))
+                        let circleSize = iconSize * 2.2
+                        let playCircleSize = iconSize * 2.6
 
                         HStack(spacing: theme.controlsSize.buttonPadding * 1.5) {
                             Button(action: { coordinator.previousTrack() }) {
                                 Image(systemName: "backward.fill")
                                     .font(.system(size: iconSize))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(buttonColor)
                                     .frame(width: circleSize, height: circleSize)
-                                    .background(Circle().fill(Color.black.opacity(0.35)))
+                                    .background(Circle().fill(isLightBackground ? Color.white.opacity(0.70) : Color.black.opacity(0.35)))
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.togglePlayPause() }) {
                                 Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
                                     .font(.system(size: iconSize * 1.2, weight: .bold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(buttonColor)
                                     .frame(width: playCircleSize, height: playCircleSize)
-                                    .background(Circle().fill(Color.black.opacity(0.45)))
+                                    .background(Circle().fill(isLightBackground ? Color.white.opacity(0.80) : Color.black.opacity(0.45)))
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.nextTrack() }) {
                                 Image(systemName: "forward.fill")
                                     .font(.system(size: iconSize))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(buttonColor)
                                     .frame(width: circleSize, height: circleSize)
-                                    .background(Circle().fill(Color.black.opacity(0.35)))
+                                    .background(Circle().fill(isLightBackground ? Color.white.opacity(0.70) : Color.black.opacity(0.35)))
                             }
                             .buttonStyle(PlainButtonStyle())
 
@@ -599,45 +612,45 @@ public struct SleeveWidgetView: View {
                                 Button(action: { controlsState.isLiked.toggle() }) {
                                     Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
                                         .font(.system(size: iconSize, weight: .medium))
-                                        .foregroundColor(controlsState.isLiked ? Color.red : .white)
+                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
                                         .frame(width: circleSize, height: circleSize)
-                                        .background(Circle().fill(Color.black.opacity(0.35)))
+                                        .background(Circle().fill(isLightBackground ? Color.white.opacity(0.70) : Color.black.opacity(0.35)))
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
                         }
-                        .padding(.top, 4)
+                        .padding(.top, 2)
                         .transition(.opacity)
                     }
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
+            .frame(maxWidth: .infinity, alignment: alignmentForTheme)
+            .padding(.horizontal, max(10, posterDim * 0.06))
+            .padding(.bottom, max(10, posterDim * 0.06))
         }
         .frame(width: posterDim, height: posterDim)
     }
 
     @ViewBuilder
     private var artworkCardLayout: some View {
-        let cardDim = max(130, min(220, theme.artworkSize > 0 ? theme.artworkSize : 150))
+        let cardDim = max(100, min(360, theme.artworkSize > 0 ? theme.artworkSize : 150))
         ZStack {
             // Full background poster image
             posterThumbnail(size: cardDim, cornerRadius: theme.cornerRadius)
 
-            // Subtle dark overlay for contrast
-            RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous)
-                .fill(Color.black.opacity(0.35))
+            // Adaptive overlay for contrast
+            adaptivePosterScrim(cornerRadius: theme.cornerRadius)
 
-            // Overlaid centered info and controls
-            VStack(spacing: 6) {
+            // Overlaid centered or aligned info and controls
+            VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 6) {
                 if theme.trackNameStyle.isVisible {
                     Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                        .font(fontFor(theme.trackNameStyle, defaultSize: 14))
+                        .font(fontFor(theme.trackNameStyle, defaultSize: max(12, cardDim * 0.08)))
                         .foregroundColor(colorFor(theme.trackNameStyle))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(1)
                         .shadow(
-                            color: Color.black.opacity(max(0.4, theme.trackNameStyle.shadow.opacity)),
+                            color: isLightBackground ? Color.white.opacity(0.9) : Color.black.opacity(max(0.4, theme.trackNameStyle.shadow.opacity)),
                             radius: max(4, theme.trackNameStyle.shadow.radius),
                             x: 0,
                             y: max(1, theme.trackNameStyle.shadow.yOffset)
@@ -646,12 +659,12 @@ public struct SleeveWidgetView: View {
 
                 if theme.artistStyle.isVisible {
                     Text(coordinator.currentTrack.artist.isEmpty ? "Unknown" : coordinator.currentTrack.artist)
-                        .font(fontFor(theme.artistStyle, defaultSize: 11))
+                        .font(fontFor(theme.artistStyle, defaultSize: max(10, cardDim * 0.065)))
                         .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(1)
                         .shadow(
-                            color: Color.black.opacity(max(0.3, theme.artistStyle.shadow.opacity)),
+                            color: isLightBackground ? Color.white.opacity(0.9) : Color.black.opacity(max(0.3, theme.artistStyle.shadow.opacity)),
                             radius: max(3, theme.artistStyle.shadow.radius),
                             x: 0,
                             y: max(1, theme.artistStyle.shadow.yOffset)
@@ -660,12 +673,12 @@ public struct SleeveWidgetView: View {
 
                 if theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty {
                     Text(coordinator.currentTrack.album)
-                        .font(fontFor(theme.albumStyle, defaultSize: 10))
+                        .font(fontFor(theme.albumStyle, defaultSize: max(9, cardDim * 0.055)))
                         .foregroundColor(colorFor(theme.albumStyle, opacity: 0.70))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(1)
                         .shadow(
-                            color: Color.black.opacity(max(0.3, theme.albumStyle.shadow.opacity)),
+                            color: isLightBackground ? Color.white.opacity(0.9) : Color.black.opacity(max(0.3, theme.albumStyle.shadow.opacity)),
                             radius: max(3, theme.albumStyle.shadow.radius),
                             x: 0,
                             y: max(1, theme.albumStyle.shadow.yOffset)
@@ -675,26 +688,26 @@ public struct SleeveWidgetView: View {
                 if theme.showPlaybackControls {
                     let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
                     if isVisible {
-                        let iconSize = theme.controlsSize.iconSize * 0.8
+                        let iconSize = max(10, theme.controlsSize.iconSize * 0.8)
                         HStack(spacing: theme.controlsSize.buttonPadding) {
                             Button(action: { coordinator.previousTrack() }) {
                                 Image(systemName: "backward.fill")
                                     .font(.system(size: iconSize))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(buttonColor)
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.togglePlayPause() }) {
                                 Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
                                     .font(.system(size: iconSize * 1.15, weight: .bold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(buttonColor)
                             }
                             .buttonStyle(PlainButtonStyle())
 
                             Button(action: { coordinator.nextTrack() }) {
                                 Image(systemName: "forward.fill")
                                     .font(.system(size: iconSize))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(buttonColor)
                             }
                             .buttonStyle(PlainButtonStyle())
 
@@ -702,7 +715,7 @@ public struct SleeveWidgetView: View {
                                 Button(action: { controlsState.isLiked.toggle() }) {
                                     Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
                                         .font(.system(size: iconSize, weight: .medium))
-                                        .foregroundColor(controlsState.isLiked ? Color.red : .white)
+                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -712,6 +725,7 @@ public struct SleeveWidgetView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: alignmentForTheme)
             .padding(12)
         }
         .frame(width: cardDim, height: cardDim)

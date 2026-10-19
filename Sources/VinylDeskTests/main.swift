@@ -6,7 +6,7 @@ import VinylDeskCore
 struct TestRunner {
     @MainActor
     static func main() {
-        print("▶ Running Sleeve / VinylDesk Test Suite...")
+        print("▶ Running VinylDesk Test Suite...")
         var passed = 0
         var failed = 0
 
@@ -264,6 +264,18 @@ struct TestRunner {
             assert(created.name == "Test Custom Theme", "Custom theme name should match")
             mgr.deleteCustomTheme(id: created.id)
             assert(mgr.userThemes.count == countBefore, "User themes count should return to countBefore")
+        }
+
+        // Test 16: Dock Icon Album Artwork toggle configuration & roundtrip
+        test("Dock Icon Album Artwork toggle configuration & roundtrip") {
+            var theme = SleeveThemeConfig.presetRetroVinyl
+            assert(theme.showAlbumArtworkInDock == false, "Default showAlbumArtworkInDock should be false")
+            theme.showAlbumArtworkInDock = true
+
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(theme)
+            let decoded = try JSONDecoder().decode(SleeveThemeConfig.self, from: data)
+            assert(decoded.showAlbumArtworkInDock == true, "showAlbumArtworkInDock should preserve true state after encoding/decoding")
         }
 
         print("\n===============================")

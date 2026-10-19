@@ -50,7 +50,7 @@ public struct ArtworkInspectorView: View {
                                 get: { themeManager.currentTheme.artworkSize },
                                 set: { themeManager.currentTheme.artworkSize = $0; themeManager.saveCurrentTheme() }
                             ),
-                            in: 80...260,
+                            in: 80...360,
                             step: 4
                         )
                     }
@@ -172,9 +172,9 @@ public struct ArtworkInspectorView: View {
                     }
                 }
 
-                // Sleeve 3.3 Vintage Enhancements
+                // Vintage Additions
                 SleeveSectionCard {
-                    Text("Vintage Additions (Sleeve 3.3)")
+                    Text("Vintage Vinyl Additions")
                         .font(.system(size: 13, weight: .semibold))
 
                     Toggle("Show Spinning Vinyl Record", isOn: Binding(

@@ -1,7 +1,12 @@
 import SwiftUI
 
 public struct HotkeysInspectorView: View {
-    public init() {}
+    @ObservedObject var themeManager: SleeveThemeManager
+
+    @MainActor
+    public init(themeManager: SleeveThemeManager) {
+        self.themeManager = themeManager
+    }
 
     public var body: some View {
         ScrollView {
@@ -31,8 +36,18 @@ public struct HotkeysInspectorView: View {
                     Toggle("Show Icon in Dock", isOn: .constant(true))
                         .toggleStyle(SwitchToggleStyle())
 
-                    Toggle("Show Album Artwork in Dock", isOn: .constant(false))
-                        .toggleStyle(SwitchToggleStyle())
+                    Toggle("Show Album Artwork in Dock", isOn: Binding(
+                        get: { themeManager.currentTheme.showAlbumArtworkInDock },
+                        set: { newValue in
+                            themeManager.currentTheme.showAlbumArtworkInDock = newValue
+                            themeManager.saveCurrentTheme()
+                            DockIconManager.shared.updateDockIcon(
+                                artworkData: MusicCoordinator.shared.currentTrack.artworkData,
+                                isEnabled: newValue
+                            )
+                        }
+                    ))
+                    .toggleStyle(SwitchToggleStyle())
 
                     Text("Custom App Icon")
                         .font(.system(size: 12))

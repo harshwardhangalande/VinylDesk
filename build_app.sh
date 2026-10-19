@@ -29,6 +29,13 @@ cp "$BUILD_DIR/VinylDesk" "$MACOS/VinylDesk"
 # Copy WidgetKit extension binary
 cp "$BUILD_DIR/VinylDeskWidgets" "$WIDGET_MACOS/VinylDeskWidgets"
 
+# Copy AppIcon if available (or generate)
+if [ ! -f "Resources/AppIcon.icns" ]; then
+    echo "🎨 Generating AppIcon.icns..."
+    python3 generate_app_icon.py
+fi
+cp "Resources/AppIcon.icns" "$RESOURCES/AppIcon.icns"
+
 # Main App Info.plist
 cat <<EOF > "$CONTENTS/Info.plist"
 <?xml version="1.0" encoding="UTF-8"?>
@@ -43,6 +50,8 @@ cat <<EOF > "$CONTENTS/Info.plist"
     <string>VinylDesk</string>
     <key>CFBundleDisplayName</key>
     <string>VinylDesk</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

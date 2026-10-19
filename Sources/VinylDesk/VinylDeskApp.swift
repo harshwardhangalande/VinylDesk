@@ -43,7 +43,7 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "record.circle.fill", accessibilityDescription: "Sleeve")
+            button.image = NSImage(systemSymbolName: "record.circle.fill", accessibilityDescription: "VinylDesk")
         }
         menu.delegate = self
         statusItem?.menu = menu
@@ -227,7 +227,7 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
         menu.addItem(NSMenuItem.separator())
 
         // Quit
-        let quitItem = NSMenuItem(title: "Quit Sleeve", action: #selector(quitApp), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit VinylDesk", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
     }
@@ -345,7 +345,7 @@ final class PreferencesWindowController {
         )
 
         newWindow.center()
-        newWindow.title = "Sleeve Preferences"
+        newWindow.title = "VinylDesk Preferences"
         newWindow.minSize = NSSize(width: 980, height: 620)
         newWindow.contentViewController = hostingController
         newWindow.isReleasedWhenClosed = false

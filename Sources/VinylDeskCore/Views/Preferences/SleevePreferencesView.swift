@@ -94,7 +94,7 @@ public struct SleevePreferencesView: View {
                     case .position:
                         PositionInspectorView(themeManager: themeManager)
                     case .hotkeys, .system:
-                        HotkeysInspectorView()
+                        HotkeysInspectorView(themeManager: themeManager)
                     }
                 }
             }

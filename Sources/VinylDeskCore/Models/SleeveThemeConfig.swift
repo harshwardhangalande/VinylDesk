@@ -305,6 +305,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
     public var floatOnTrackChange: Bool
     public var experienceMode: ExperienceMode
     public var isFloatingOverlayVisible: Bool
+    public var showAlbumArtworkInDock: Bool
 
     // Liquid Glass Configuration
     public var liquidGlassLevel: LiquidGlassLevel
@@ -342,6 +343,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         floatOnTrackChange: Bool = false,
         experienceMode: ExperienceMode = .dual,
         isFloatingOverlayVisible: Bool = true,
+        showAlbumArtworkInDock: Bool = false,
         liquidGlassLevel: LiquidGlassLevel = .low,
         liquidGlassTint: LiquidGlassTint = .neutral,
         liquidGlassFluidPulse: Bool = true,
@@ -376,6 +378,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.floatOnTrackChange = floatOnTrackChange
         self.experienceMode = experienceMode
         self.isFloatingOverlayVisible = isFloatingOverlayVisible
+        self.showAlbumArtworkInDock = showAlbumArtworkInDock
         self.liquidGlassLevel = liquidGlassLevel
         self.liquidGlassTint = liquidGlassTint
         self.liquidGlassFluidPulse = liquidGlassFluidPulse
@@ -389,7 +392,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         case artworkSize, cornerRadius, artworkShadow, lightingEffect, showSpinningRecord, shelfFinish
         case backdropMaterial, backdropCornerRadius, showPlaybackControls, controlsPlacement, controlsSize, showLikeControl, showProgressBar
         case trackNameStyle, artistStyle, albumStyle, windowPlacement, floatOnTrackChange
-        case experienceMode, isFloatingOverlayVisible
+        case experienceMode, isFloatingOverlayVisible, showAlbumArtworkInDock
         case liquidGlassLevel, liquidGlassTint, liquidGlassFluidPulse, liquidGlassCustomOpacity, liquidGlassCustomBlur, liquidGlassRimShine
     }
 
@@ -422,6 +425,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.floatOnTrackChange = try container.decodeIfPresent(Bool.self, forKey: .floatOnTrackChange) ?? false
         self.experienceMode = try container.decodeIfPresent(ExperienceMode.self, forKey: .experienceMode) ?? .dual
         self.isFloatingOverlayVisible = try container.decodeIfPresent(Bool.self, forKey: .isFloatingOverlayVisible) ?? true
+        self.showAlbumArtworkInDock = try container.decodeIfPresent(Bool.self, forKey: .showAlbumArtworkInDock) ?? false
 
         self.liquidGlassLevel = try container.decodeIfPresent(LiquidGlassLevel.self, forKey: .liquidGlassLevel) ?? .low
         self.liquidGlassTint = try container.decodeIfPresent(LiquidGlassTint.self, forKey: .liquidGlassTint) ?? .neutral
@@ -460,6 +464,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         try container.encode(floatOnTrackChange, forKey: .floatOnTrackChange)
         try container.encode(experienceMode, forKey: .experienceMode)
         try container.encode(isFloatingOverlayVisible, forKey: .isFloatingOverlayVisible)
+        try container.encode(showAlbumArtworkInDock, forKey: .showAlbumArtworkInDock)
         try container.encode(liquidGlassLevel, forKey: .liquidGlassLevel)
         try container.encode(liquidGlassTint, forKey: .liquidGlassTint)
         try container.encode(liquidGlassFluidPulse, forKey: .liquidGlassFluidPulse)
