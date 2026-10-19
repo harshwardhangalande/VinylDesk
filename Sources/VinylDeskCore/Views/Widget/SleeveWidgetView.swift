@@ -49,7 +49,7 @@ public struct SleeveWidgetView: View {
                 artworkCardLayout
             }
         }
-        .padding(isEdgeToEdge ? 0 : (theme.backdropMaterial == .clear ? 8 : (theme.layout == .compactSquare ? 12 : 14)))
+        .padding(isEdgeToEdge ? (theme.artworkShadow == .none ? 0 : 12) : (theme.backdropMaterial == .clear ? 8 : (theme.layout == .compactSquare ? 12 : 14)))
         .background(isEdgeToEdge ? nil : backdropLayer)
         .overlay(
             WindowDragGripView()
@@ -174,9 +174,9 @@ public struct SleeveWidgetView: View {
                     }
                     timeDashboardTextStack
                     Spacer()
-                    posterThumbnail(size: 42, cornerRadius: 8)
+                    posterThumbnail(size: 42, cornerRadius: max(4, min(12, theme.cornerRadius)))
                 } else {
-                    posterThumbnail(size: 42, cornerRadius: 8)
+                    posterThumbnail(size: 42, cornerRadius: max(4, min(12, theme.cornerRadius)))
                     timeDashboardTextStack
                     Spacer()
                     if theme.showPlaybackControls && (theme.controlsPlacement == .inlineWithText || hoverState.isHovered) {
@@ -421,7 +421,7 @@ public struct SleeveWidgetView: View {
     private var compactSquareLayout: some View {
         VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 8) {
             // Square poster thumbnail aligned symmetrically from top and leading (12pt from each edge)
-            posterThumbnail(size: 44, cornerRadius: 8)
+            posterThumbnail(size: 44, cornerRadius: max(4, min(14, theme.cornerRadius)))
 
             VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 2) {
                 if theme.trackNameStyle.isVisible {
@@ -733,7 +733,35 @@ public struct SleeveWidgetView: View {
         return Color.white
     }
 
-    // MARK: - Poster Thumbnail Helper
+    // MARK: - Lighting & Poster Thumbnail Helpers
+
+    @ViewBuilder
+    private func lightingOverlay(size: CGFloat, cornerRadius: CGFloat) -> some View {
+        switch theme.lightingEffect {
+        case .none:
+            EmptyView()
+        case .spotlight:
+            RadialGradient(
+                colors: [Color.white.opacity(0.35), Color.clear],
+                center: .topLeading,
+                startRadius: 0,
+                endRadius: size * 1.15
+            )
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        case .glare:
+            LinearGradient(
+                stops: [
+                    .init(color: Color.white.opacity(0.28), location: 0.0),
+                    .init(color: Color.white.opacity(0.10), location: 0.42),
+                    .init(color: Color.clear, location: 0.44),
+                    .init(color: Color.clear, location: 1.0)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        }
+    }
 
     @ViewBuilder
     private func posterThumbnail(size: CGFloat, cornerRadius: CGFloat) -> some View {
@@ -764,7 +792,13 @@ public struct SleeveWidgetView: View {
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        .shadow(color: Color.black.opacity(0.25), radius: 4, x: 0, y: 2)
+        .overlay(lightingOverlay(size: size, cornerRadius: cornerRadius))
+        .shadow(
+            color: Color.black.opacity(theme.artworkShadow.opacity),
+            radius: theme.artworkShadow.radius,
+            x: 0,
+            y: theme.artworkShadow.yOffset
+        )
     }
 
     private func formatTime(_ seconds: TimeInterval) -> String {

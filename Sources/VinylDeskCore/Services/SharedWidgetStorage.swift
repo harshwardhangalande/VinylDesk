@@ -69,6 +69,10 @@ public final class SharedWidgetStorage: @unchecked Sendable {
         appSupportURL.appendingPathComponent("widget_artwork.png")
     }
 
+    private var themeURL: URL {
+        appSupportURL.appendingPathComponent("widget_theme.json")
+    }
+
     public func saveTrack(_ track: TrackInfo) {
         fileQueue.async { [weak self] in
             guard let self = self else { return }
@@ -103,12 +107,37 @@ public final class SharedWidgetStorage: @unchecked Sendable {
         }
     }
 
-    public func loadTrack() -> SharedWidgetTrack {
-        if let data = try? Data(contentsOf: jsonURL),
-           let track = try? JSONDecoder().decode(SharedWidgetTrack.self, from: data) {
-            return track
+    public func saveTheme(_ theme: SleeveThemeConfig) {
+        fileQueue.sync { [weak self] in
+            guard let self = self else { return }
+
+            if let data = try? JSONEncoder().encode(theme) {
+                try? data.write(to: self.themeURL, options: .atomic)
+            }
+
+            // Trigger WidgetKit timeline refresh to adopt new theme immediately
+            WidgetCenter.shared.reloadAllTimelines()
         }
-        return .fallback
+    }
+
+    public func loadTrack() -> SharedWidgetTrack {
+        return fileQueue.sync {
+            if let data = try? Data(contentsOf: jsonURL),
+               let track = try? JSONDecoder().decode(SharedWidgetTrack.self, from: data) {
+                return track
+            }
+            return .fallback
+        }
+    }
+
+    public func loadTheme() -> SleeveThemeConfig {
+        return fileQueue.sync {
+            if let data = try? Data(contentsOf: themeURL),
+               let theme = try? JSONDecoder().decode(SleeveThemeConfig.self, from: data) {
+                return theme
+            }
+            return SleeveThemeConfig.presetTimeDashboard
+        }
     }
 
     public func loadArtwork() -> NSImage? {

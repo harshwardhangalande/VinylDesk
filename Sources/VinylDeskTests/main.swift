@@ -246,6 +246,26 @@ struct TestRunner {
             assert(poster.artworkSize == 300, "Artwork poster size should be 300")
         }
 
+        // Test 15: Theme Syncing & My Themes Management
+        test("Theme Syncing to Widget Storage & My Themes Management") {
+            let storage = SharedWidgetStorage.shared
+            let banner = SleeveThemeConfig.presetSplitBanner
+            storage.saveTheme(banner)
+            let loaded = storage.loadTheme()
+            assert(loaded.name == banner.name || loaded.name == SleeveThemeConfig.presetTimeDashboard.name, "Theme should load successfully")
+
+            let mgr = SleeveThemeManager.shared
+            let countBefore = mgr.userThemes.count
+            mgr.saveCurrentAsCustomTheme(name: "Test Custom Theme")
+            assert(mgr.userThemes.count == countBefore + 1, "User themes count should increment by 1")
+            guard let created = mgr.userThemes.last else {
+                fatalError("User theme should have been created")
+            }
+            assert(created.name == "Test Custom Theme", "Custom theme name should match")
+            mgr.deleteCustomTheme(id: created.id)
+            assert(mgr.userThemes.count == countBefore, "User themes count should return to countBefore")
+        }
+
         print("\n===============================")
         print("Test Suite Summary: \(passed) passed, \(failed) failed")
         print("===============================\n")

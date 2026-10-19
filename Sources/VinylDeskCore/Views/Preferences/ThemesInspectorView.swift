@@ -12,8 +12,120 @@ public struct ThemesInspectorView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                // MARK: - My Themes (Custom User Themes)
                 SleeveSectionCard {
-                    Text("Included Themes")
+                    HStack {
+                        Text("My Themes")
+                            .font(.system(size: 13, weight: .semibold))
+                        Spacer()
+                        Button(action: {
+                            state.newThemeName = "\(themeManager.currentTheme.name) Custom"
+                            state.showSaveCustomModal = true
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "plus.circle.fill")
+                                Text("Save Current as New")
+                            }
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.cyan)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+
+                    if themeManager.userThemes.isEmpty {
+                        HStack {
+                            Image(systemName: "wand.and.stars")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                            Text("No custom themes saved yet. Customize any preset and click 'Save Current as New' to save it to My Themes!")
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color(white: 0.16)))
+                    } else {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                            ForEach(themeManager.userThemes) { userTheme in
+                                ZStack(alignment: .topTrailing) {
+                                    Button(action: {
+                                        themeManager.currentTheme = userTheme
+                                        themeManager.persistThemeDirectly()
+                                    }) {
+                                        VStack(spacing: 6) {
+                                            presetIcon(for: userTheme)
+                                            Text(userTheme.name)
+                                                .font(.system(size: 11, weight: .bold))
+                                                .foregroundColor(.white)
+                                                .lineLimit(1)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 64)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(themeManager.currentTheme.id == userTheme.id ? Color(red: 0.15, green: 0.40, blue: 0.65) : Color(white: 0.18))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 10)
+                                                        .stroke(themeManager.currentTheme.id == userTheme.id ? Color.cyan : Color.white.opacity(0.1), lineWidth: 1.5)
+                                                )
+                                        )
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+
+                                    // Delete custom theme button
+                                    Button(action: {
+                                        themeManager.deleteCustomTheme(id: userTheme.id)
+                                    }) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .font(.system(size: 13))
+                                            .foregroundColor(.red.opacity(0.85))
+                                            .background(Circle().fill(Color.black))
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                    .padding(4)
+                                }
+                            }
+                        }
+                    }
+
+                    if state.showSaveCustomModal {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Name your custom theme:")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white)
+
+                            HStack {
+                                TextField("Theme Name", text: $state.newThemeName)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                                Button("Save") {
+                                    themeManager.saveCurrentAsCustomTheme(name: state.newThemeName)
+                                    state.showSaveCustomModal = false
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(RoundedRectangle(cornerRadius: 5).fill(Color.blue))
+                                .foregroundColor(.white)
+
+                                Button("Cancel") {
+                                    state.showSaveCustomModal = false
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 5)
+                                .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(10)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color(white: 0.15)))
+                        .transition(.opacity)
+                    }
+                }
+
+                // MARK: - Included Presets
+                SleeveSectionCard {
+                    Text("Included Presets")
                         .font(.system(size: 13, weight: .semibold))
 
                     Text("Switch between curated themes designed to match different desktop aesthetics:")
@@ -28,10 +140,10 @@ public struct ThemesInspectorView: View {
                                 VStack(spacing: 8) {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 10)
-                                            .fill(themeManager.currentTheme.name == preset.name ? Color(red: 0.15, green: 0.40, blue: 0.65) : Color(white: 0.18))
+                                            .fill(themeManager.currentTheme.id == preset.id ? Color(red: 0.15, green: 0.40, blue: 0.65) : Color(white: 0.18))
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 10)
-                                                    .stroke(themeManager.currentTheme.name == preset.name ? Color.cyan : Color.white.opacity(0.1), lineWidth: 1.5)
+                                                    .stroke(themeManager.currentTheme.id == preset.id ? Color.cyan : Color.white.opacity(0.1), lineWidth: 1.5)
                                             )
 
                                         VStack(spacing: 4) {

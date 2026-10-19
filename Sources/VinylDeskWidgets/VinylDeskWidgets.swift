@@ -76,19 +76,21 @@ public struct PreviousTrackIntent: AppIntent {
 
 struct VinylDeskTimelineProvider: TimelineProvider {
     func placeholder(in context: Context) -> TrackEntry {
-        TrackEntry(date: Date(), track: .fallback, artwork: nil)
+        TrackEntry(date: Date(), track: .fallback, artwork: nil, theme: .presetTimeDashboard)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (TrackEntry) -> Void) {
         let track = SharedWidgetStorage.shared.loadTrack()
         let artwork = SharedWidgetStorage.shared.loadArtwork()
-        completion(TrackEntry(date: Date(), track: track, artwork: artwork))
+        let theme = SharedWidgetStorage.shared.loadTheme()
+        completion(TrackEntry(date: Date(), track: track, artwork: artwork, theme: theme))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TrackEntry>) -> Void) {
         let track = SharedWidgetStorage.shared.loadTrack()
         let artwork = SharedWidgetStorage.shared.loadArtwork()
-        let entry = TrackEntry(date: Date(), track: track, artwork: artwork)
+        let theme = SharedWidgetStorage.shared.loadTheme()
+        let entry = TrackEntry(date: Date(), track: track, artwork: artwork, theme: theme)
         let nextUpdate = Calendar.current.date(byAdding: .second, value: 15, to: Date())!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
@@ -99,6 +101,7 @@ struct TrackEntry: TimelineEntry {
     let date: Date
     let track: SharedWidgetTrack
     let artwork: NSImage?
+    let theme: SleeveThemeConfig
 }
 
 // MARK: - Widget Views
@@ -108,139 +111,247 @@ struct VinylDeskWidgetEntryView: View {
     var entry: VinylDeskTimelineProvider.Entry
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            smallWidgetView
-        default:
-            mediumWidgetView
+        Group {
+            switch family {
+            case .systemSmall:
+                smallWidgetView
+            case .systemLarge:
+                largeWidgetView
+            default:
+                mediumWidgetView
+            }
+        }
+        .containerBackground(for: .widget) {
+            widgetBackground
         }
     }
 
-    // MARK: - System Small (Compact Square / Squircle)
-    private var smallWidgetView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Square poster thumbnail aligned equally from top and leading (10pt each)
-            Group {
-                if let artwork = entry.artwork {
-                    Image(nsImage: artwork)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } else {
-                    ZStack {
-                        LinearGradient(
-                            colors: [Color.orange.opacity(0.85), Color.red.opacity(0.75)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        Image(systemName: "music.note")
-                            .font(.system(size: 16))
-                            .foregroundColor(.white.opacity(0.85))
-                    }
+    // MARK: - Dynamic Widget Backdrop
+    @ViewBuilder
+    private var widgetBackground: some View {
+        switch entry.theme.backdropMaterial {
+        case .liquidGlass, .glass:
+            ZStack {
+                Color(red: 0.08, green: 0.10, blue: 0.16)
+                LinearGradient(
+                    colors: [Color.cyan.opacity(0.18), Color.purple.opacity(0.12), Color.black.opacity(0.4)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+        case .blur:
+            Color(white: 0.15)
+        case .solid:
+            Color(white: 0.10)
+        case .clear:
+            Color(white: 0.08)
+        }
+    }
+
+    // MARK: - Typography Helpers
+    private func fontFor(_ config: TypographyLineConfig, defaultSize: CGFloat) -> Font {
+        let size = config.fontSize > 0 ? config.fontSize : defaultSize
+        return Font.system(
+            size: size,
+            weight: config.fontWeight.fontWeight,
+            design: config.fontDesign.fontDesign
+        )
+    }
+
+    private func colorFor(_ config: TypographyLineConfig, opacity: Double = 1.0) -> Color {
+        (config.isWhiteText ? Color.white : Color(white: 0.9)).opacity(opacity)
+    }
+
+    // MARK: - Lighting Effect Helper
+    @ViewBuilder
+    private func lightingOverlay(size: CGFloat, cornerRadius: CGFloat) -> some View {
+        switch entry.theme.lightingEffect {
+        case .none:
+            EmptyView()
+        case .spotlight:
+            RadialGradient(
+                colors: [Color.white.opacity(0.35), Color.clear],
+                center: .topLeading,
+                startRadius: 0,
+                endRadius: size * 1.15
+            )
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        case .glare:
+            LinearGradient(
+                stops: [
+                    .init(color: Color.white.opacity(0.28), location: 0.0),
+                    .init(color: Color.white.opacity(0.10), location: 0.42),
+                    .init(color: Color.clear, location: 0.44),
+                    .init(color: Color.clear, location: 1.0)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        }
+    }
+
+    // MARK: - Artwork View with Shadow Depth & Lighting Effects
+    @ViewBuilder
+    private func widgetArtwork(size: CGFloat, cornerRadius: CGFloat) -> some View {
+        Group {
+            if let artwork = entry.artwork {
+                Image(nsImage: artwork)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                ZStack {
+                    LinearGradient(
+                        colors: [Color.orange.opacity(0.85), Color.red.opacity(0.75)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    Image(systemName: "music.note")
+                        .font(.system(size: size * 0.35))
+                        .foregroundColor(.white.opacity(0.85))
                 }
             }
-            .frame(width: 44, height: 44)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 1)
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .overlay(lightingOverlay(size: size, cornerRadius: cornerRadius))
+        .shadow(
+            color: Color.black.opacity(entry.theme.artworkShadow.opacity),
+            radius: entry.theme.artworkShadow.radius,
+            x: 0,
+            y: entry.theme.artworkShadow.yOffset
+        )
+    }
+
+    // MARK: - System Small (Compact Square)
+    private var smallWidgetView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            let cornerR = max(4, min(14, entry.theme.cornerRadius))
+            widgetArtwork(size: 44, cornerRadius: cornerR)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(entry.track.title)
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
+                if entry.theme.trackNameStyle.isVisible {
+                    Text(entry.track.title)
+                        .font(fontFor(entry.theme.trackNameStyle, defaultSize: 13))
+                        .foregroundColor(colorFor(entry.theme.trackNameStyle))
+                        .lineLimit(1)
+                        .shadow(
+                            color: Color.black.opacity(entry.theme.trackNameStyle.shadow.opacity),
+                            radius: entry.theme.trackNameStyle.shadow.radius * 0.5,
+                            x: 0,
+                            y: entry.theme.trackNameStyle.shadow.yOffset * 0.5
+                        )
+                }
 
-                let sub = entry.track.artist + (entry.track.album.isEmpty ? "" : " — " + entry.track.album)
-                Text(sub)
-                    .font(.system(size: 10, weight: .regular))
-                    .foregroundColor(Color.white.opacity(0.65))
-                    .lineLimit(1)
+                let showArtist = entry.theme.artistStyle.isVisible && !entry.track.artist.isEmpty
+                let showAlbum = entry.theme.albumStyle.isVisible && !entry.track.album.isEmpty
+                if showArtist || showAlbum {
+                    let sub = (showArtist ? entry.track.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? entry.track.album : "")
+                    Text(sub)
+                        .font(fontFor(entry.theme.artistStyle, defaultSize: 10))
+                        .foregroundColor(colorFor(entry.theme.artistStyle, opacity: 0.70))
+                        .lineLimit(1)
+                }
             }
 
             Spacer(minLength: 0)
 
-            // Interactive Play/Pause button via AppIntent
-            HStack {
-                Button(intent: PreviousTrackIntent()) {
-                    Image(systemName: "backward.fill")
-                        .font(.system(size: 11))
-                        .foregroundColor(.white)
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                Button(intent: TogglePlayIntent()) {
-                    Image(systemName: entry.track.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                Button(intent: NextTrackIntent()) {
-                    Image(systemName: "forward.fill")
-                        .font(.system(size: 11))
-                        .foregroundColor(.white)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, 4)
-        }
-        .padding(12)
-        .containerBackground(Color(white: 0.12), for: .widget)
-    }
-
-    // MARK: - System Medium (Split Banner)
-    private var mediumWidgetView: some View {
-        HStack(spacing: 14) {
-            // Square poster thumbnail with strictly equal top and leading margins
-            Group {
-                if let artwork = entry.artwork {
-                    Image(nsImage: artwork)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } else {
-                    ZStack {
-                        LinearGradient(
-                            colors: [Color.orange.opacity(0.85), Color.red.opacity(0.75)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        Image(systemName: "music.note")
-                            .font(.system(size: 28))
-                            .foregroundColor(.white.opacity(0.85))
-                    }
-                }
-            }
-            .frame(width: 100, height: 100)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .shadow(color: Color.black.opacity(0.25), radius: 4, x: 0, y: 2)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(entry.track.title)
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-
-                Text(entry.track.artist)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Color.white.opacity(0.85))
-                    .lineLimit(1)
-
-                if !entry.track.album.isEmpty {
-                    Text("— " + entry.track.album)
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundColor(Color.white.opacity(0.60))
-                        .lineLimit(1)
-                }
-
-                Spacer(minLength: 4)
-
-                // Interactive AppIntent Controls
-                HStack(spacing: 12) {
+            if entry.theme.showPlaybackControls {
+                let iconSize = entry.theme.controlsSize.iconSize * 0.8
+                HStack {
                     Button(intent: PreviousTrackIntent()) {
                         Image(systemName: "backward.fill")
-                            .font(.system(size: 12))
+                            .font(.system(size: iconSize))
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    Button(intent: TogglePlayIntent()) {
+                        Image(systemName: entry.track.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: iconSize * 1.25, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    Button(intent: NextTrackIntent()) {
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: iconSize))
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 4)
+            }
+        }
+        .padding(12)
+    }
+
+    // MARK: - System Medium (Split Banner or Time Dashboard)
+    private var mediumWidgetView: some View {
+        Group {
+            if entry.theme.layout == .timeDashboard {
+                mediumTimeDashboardView
+            } else {
+                mediumSplitBannerView
+            }
+        }
+    }
+
+    private var mediumSplitBannerView: some View {
+        let cornerR = max(6, min(18, entry.theme.cornerRadius))
+        return HStack(spacing: 14) {
+            if entry.theme.flipHorizontal {
+                mediumTextAndControls
+                widgetArtwork(size: 100, cornerRadius: cornerR)
+            } else {
+                widgetArtwork(size: 100, cornerRadius: cornerR)
+                mediumTextAndControls
+            }
+        }
+        .padding(14)
+    }
+
+    private var mediumTextAndControls: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if entry.theme.trackNameStyle.isVisible {
+                Text(entry.track.title)
+                    .font(fontFor(entry.theme.trackNameStyle, defaultSize: 15))
+                    .foregroundColor(colorFor(entry.theme.trackNameStyle))
+                    .lineLimit(1)
+                    .shadow(
+                        color: Color.black.opacity(entry.theme.trackNameStyle.shadow.opacity),
+                        radius: entry.theme.trackNameStyle.shadow.radius * 0.5,
+                        x: 0,
+                        y: entry.theme.trackNameStyle.shadow.yOffset * 0.5
+                    )
+            }
+
+            if entry.theme.artistStyle.isVisible {
+                Text(entry.track.artist)
+                    .font(fontFor(entry.theme.artistStyle, defaultSize: 12))
+                    .foregroundColor(colorFor(entry.theme.artistStyle, opacity: 0.85))
+                    .lineLimit(1)
+            }
+
+            if entry.theme.albumStyle.isVisible && !entry.track.album.isEmpty {
+                Text("— " + entry.track.album)
+                    .font(fontFor(entry.theme.albumStyle, defaultSize: 11))
+                    .foregroundColor(colorFor(entry.theme.albumStyle, opacity: 0.60))
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 4)
+
+            if entry.theme.showPlaybackControls {
+                let iconSize = entry.theme.controlsSize.iconSize * 0.85
+                HStack(spacing: entry.theme.controlsSize.buttonPadding) {
+                    Button(intent: PreviousTrackIntent()) {
+                        Image(systemName: "backward.fill")
+                            .font(.system(size: iconSize))
                             .foregroundColor(.white)
                             .frame(width: 30, height: 26)
                             .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
@@ -249,7 +360,7 @@ struct VinylDeskWidgetEntryView: View {
 
                     Button(intent: TogglePlayIntent()) {
                         Image(systemName: entry.track.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.system(size: iconSize * 1.15, weight: .bold))
                             .foregroundColor(.white)
                             .frame(width: 32, height: 26)
                             .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.15)))
@@ -258,7 +369,7 @@ struct VinylDeskWidgetEntryView: View {
 
                     Button(intent: NextTrackIntent()) {
                         Image(systemName: "forward.fill")
-                            .font(.system(size: 12))
+                            .font(.system(size: iconSize))
                             .foregroundColor(.white)
                             .frame(width: 30, height: 26)
                             .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
@@ -266,10 +377,173 @@ struct VinylDeskWidgetEntryView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(14)
-        .containerBackground(Color(white: 0.12), for: .widget)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var mediumTimeDashboardView: some View {
+        VStack(spacing: 10) {
+            // Three Time Metric Columns
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(formatTime(entry.track.position))
+                        .font(.system(size: 20, weight: .bold, design: entry.theme.trackNameStyle.fontDesign.fontDesign))
+                        .monospacedDigit()
+                        .foregroundColor(colorFor(entry.theme.trackNameStyle))
+                    Text("ELAPSED")
+                        .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                        .foregroundColor(colorFor(entry.theme.trackNameStyle, opacity: 0.55))
+                }
+
+                Spacer()
+
+                let remaining = max(0, entry.track.duration - entry.track.position)
+                VStack(alignment: .center, spacing: 2) {
+                    Text("-" + formatTime(remaining))
+                        .font(.system(size: 20, weight: .bold, design: entry.theme.trackNameStyle.fontDesign.fontDesign))
+                        .monospacedDigit()
+                        .foregroundColor(colorFor(entry.theme.trackNameStyle))
+                    Text("REMAINING")
+                        .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                        .foregroundColor(colorFor(entry.theme.trackNameStyle, opacity: 0.55))
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(formatTime(entry.track.duration))
+                        .font(.system(size: 20, weight: .bold, design: entry.theme.trackNameStyle.fontDesign.fontDesign))
+                        .monospacedDigit()
+                        .foregroundColor(colorFor(entry.theme.trackNameStyle))
+                    Text("DURATION")
+                        .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                        .foregroundColor(colorFor(entry.theme.trackNameStyle, opacity: 0.55))
+                }
+            }
+
+            // Bottom Track Bar Container
+            HStack(spacing: 8) {
+                let cornerR = max(4, min(10, entry.theme.cornerRadius))
+                widgetArtwork(size: 38, cornerRadius: cornerR)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(entry.track.title)
+                        .font(fontFor(entry.theme.trackNameStyle, defaultSize: 12))
+                        .foregroundColor(colorFor(entry.theme.trackNameStyle))
+                        .lineLimit(1)
+
+                    Text(entry.track.artist)
+                        .font(fontFor(entry.theme.artistStyle, defaultSize: 9))
+                        .foregroundColor(colorFor(entry.theme.artistStyle, opacity: 0.65))
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                if entry.theme.showPlaybackControls {
+                    Button(intent: TogglePlayIntent()) {
+                        Image(systemName: entry.track.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 26, height: 26)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.14)))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(intent: NextTrackIntent()) {
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 26, height: 26)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.14)))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(6)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.08)))
+        }
+        .padding(12)
+    }
+
+    // MARK: - System Large (Poster / Deep View)
+    private var largeWidgetView: some View {
+        VStack(spacing: 12) {
+            let posterSize: CGFloat = 160
+            let cornerR = max(8, min(24, entry.theme.cornerRadius))
+            widgetArtwork(size: posterSize, cornerRadius: cornerR)
+
+            VStack(spacing: 4) {
+                if entry.theme.trackNameStyle.isVisible {
+                    Text(entry.track.title)
+                        .font(fontFor(entry.theme.trackNameStyle, defaultSize: 17))
+                        .foregroundColor(colorFor(entry.theme.trackNameStyle))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .shadow(
+                            color: Color.black.opacity(entry.theme.trackNameStyle.shadow.opacity),
+                            radius: entry.theme.trackNameStyle.shadow.radius * 0.5,
+                            x: 0,
+                            y: entry.theme.trackNameStyle.shadow.yOffset * 0.5
+                        )
+                }
+
+                if entry.theme.artistStyle.isVisible {
+                    Text(entry.track.artist)
+                        .font(fontFor(entry.theme.artistStyle, defaultSize: 13))
+                        .foregroundColor(colorFor(entry.theme.artistStyle, opacity: 0.85))
+                        .lineLimit(1)
+                }
+
+                if entry.theme.albumStyle.isVisible && !entry.track.album.isEmpty {
+                    Text(entry.track.album)
+                        .font(fontFor(entry.theme.albumStyle, defaultSize: 11))
+                        .foregroundColor(colorFor(entry.theme.albumStyle, opacity: 0.60))
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            if entry.theme.showPlaybackControls {
+                HStack(spacing: 16) {
+                    Button(intent: PreviousTrackIntent()) {
+                        Image(systemName: "backward.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.white)
+                            .frame(width: 36, height: 36)
+                            .background(Circle().fill(Color.white.opacity(0.14)))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(intent: TogglePlayIntent()) {
+                        Image(systemName: entry.track.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 44, height: 44)
+                            .background(Circle().fill(Color.white.opacity(0.20)))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(intent: NextTrackIntent()) {
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.white)
+                            .frame(width: 36, height: 36)
+                            .background(Circle().fill(Color.white.opacity(0.14)))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(16)
+    }
+
+    private func formatTime(_ seconds: Double) -> String {
+        let totalSeconds = max(0, Int(seconds))
+        let minutes = totalSeconds / 60
+        let secs = totalSeconds % 60
+        return String(format: "%d:%02d", minutes, secs)
     }
 }
 
@@ -286,7 +560,7 @@ public struct VinylDeskWidget: Widget {
         }
         .configurationDisplayName("VinylDesk Music")
         .description("Track metadata, cover art, and interactive playback controls right on your desktop.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
 

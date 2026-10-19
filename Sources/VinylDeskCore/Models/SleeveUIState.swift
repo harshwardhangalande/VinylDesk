@@ -28,6 +28,8 @@ public final class TypographyInspectorState: ObservableObject {
 public final class ThemesInspectorState: ObservableObject {
     @Published public var showExportAlert: Bool = false
     @Published public var exportedJSON: String = ""
+    @Published public var showSaveCustomModal: Bool = false
+    @Published public var newThemeName: String = ""
     public init() {}
 }
 

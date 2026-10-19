@@ -89,11 +89,35 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
 
         // Themes Submenu
         let themesMenu = NSMenu(title: "Themes")
+
+        // User Themes (My Themes)
+        if !themeManager.userThemes.isEmpty {
+            let myThemesHeader = NSMenuItem(title: "My Themes", action: nil, keyEquivalent: "")
+            myThemesHeader.isEnabled = false
+            themesMenu.addItem(myThemesHeader)
+
+            for userTheme in themeManager.userThemes {
+                let item = NSMenuItem(title: "  " + userTheme.name, action: #selector(selectThemePreset(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = userTheme
+                if themeManager.currentTheme.id == userTheme.id {
+                    item.state = .on
+                }
+                themesMenu.addItem(item)
+            }
+            themesMenu.addItem(NSMenuItem.separator())
+
+            let presetsHeader = NSMenuItem(title: "Presets", action: nil, keyEquivalent: "")
+            presetsHeader.isEnabled = false
+            themesMenu.addItem(presetsHeader)
+        }
+
         for preset in themeManager.presets {
-            let item = NSMenuItem(title: preset.name, action: #selector(selectThemePreset(_:)), keyEquivalent: "")
+            let titlePrefix = themeManager.userThemes.isEmpty ? "" : "  "
+            let item = NSMenuItem(title: titlePrefix + preset.name, action: #selector(selectThemePreset(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = preset
-            if themeManager.currentTheme.name == preset.name {
+            if themeManager.currentTheme.id == preset.id {
                 item.state = .on
             }
             themesMenu.addItem(item)
