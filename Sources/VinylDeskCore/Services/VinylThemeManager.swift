@@ -48,9 +48,24 @@ public final class VinylThemeManager: ObservableObject {
             .store(in: &cancellables)
     }
 
-    public func selectPreset(_ preset: VinylThemeConfig) {
-        self.currentTheme = preset
+    public func applyTheme(_ theme: VinylThemeConfig, preserveUserPreferences: Bool = true) {
+        if preserveUserPreferences {
+            var updated = theme
+            updated.visibility = self.currentTheme.visibility
+            updated.windowPlacement = self.currentTheme.windowPlacement
+            updated.showAlbumArtworkInDock = self.currentTheme.showAlbumArtworkInDock
+            updated.floatOnTrackChange = self.currentTheme.floatOnTrackChange
+            updated.experienceMode = self.currentTheme.experienceMode
+            updated.isFloatingOverlayVisible = self.currentTheme.isFloatingOverlayVisible
+            self.currentTheme = updated
+        } else {
+            self.currentTheme = theme
+        }
         persistThemeDirectly()
+    }
+
+    public func selectPreset(_ preset: VinylThemeConfig) {
+        applyTheme(preset, preserveUserPreferences: true)
     }
 
     public func saveCurrentTheme() {
@@ -87,8 +102,7 @@ public final class VinylThemeManager: ObservableObject {
         persistUserThemes()
 
         if currentTheme.id == id {
-            self.currentTheme = presets.first ?? VinylThemeConfig.presetStack
-            persistThemeDirectly()
+            applyTheme(presets.first ?? VinylThemeConfig.presetStack, preserveUserPreferences: true)
         }
     }
 
@@ -99,8 +113,7 @@ public final class VinylThemeManager: ObservableObject {
     }
 
     public func resetToDefault() {
-        self.currentTheme = VinylThemeConfig.presetStack
-        persistThemeDirectly()
+        applyTheme(VinylThemeConfig.presetStack, preserveUserPreferences: true)
     }
 
     public func exportThemeJSON() -> String? {

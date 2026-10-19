@@ -19,7 +19,11 @@ public struct VinylWidgetView: View {
     }
 
     private var isEdgeToEdge: Bool {
-        theme.layout == .artworkPoster || theme.layout == .artworkCard || theme.layout == .compactSquare
+        theme.layout == .artworkPoster ||
+        theme.layout == .artworkCard ||
+        theme.layout == .compactSquare ||
+        theme.layout == .splitCard ||
+        theme.layout == .timeDashboard
     }
 
     public var body: some View {
@@ -39,6 +43,8 @@ public struct VinylWidgetView: View {
                 woodenShelfLayout
             case .timeDashboard:
                 timeDashboardLayout
+            case .splitCard:
+                splitCardLayout
             case .artworkPoster:
                 artworkPosterLayout
             case .compactSquare:
@@ -49,13 +55,8 @@ public struct VinylWidgetView: View {
                 artworkCardLayout
             }
         }
-        .padding(theme.layout == .compactSquare ? 0 : (isEdgeToEdge ? (theme.artworkShadow == .none ? 0 : 12) : (theme.backdropMaterial == .clear ? 8 : 14)))
-        .background(isEdgeToEdge ? nil : backdropLayer)
-        .overlay(
-            WindowDragGripView(isWidgetHovered: hoverState.isHovered)
-                .padding(isEdgeToEdge ? 8 : 6),
-            alignment: .topTrailing
-        )
+        .padding(isEdgeToEdge ? 0 : (theme.backdropMaterial == .clear ? 8 : 14))
+        .background(isEdgeToEdge ? AnyView(Color.clear) : AnyView(backdropLayer))
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.2)) {
                 hoverState.isHovered = hovering
@@ -120,13 +121,15 @@ public struct VinylWidgetView: View {
 
     @ViewBuilder
     private var timeDashboardLayout: some View {
-        VStack(spacing: 12) {
-            // Three Time Metric Columns: Elapsed, Remaining, Duration
+        let cardRadius: CGFloat = max(16, theme.cornerRadius)
+        let cardWidth = max(330, theme.containerWidth)
+        VStack(spacing: 0) {
+            // Upper Section: Dark Time Dashboard
             HStack(alignment: .top) {
                 // Elapsed
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(formatTime(coordinator.playbackPosition))
-                        .font(.system(size: 24, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
+                        .font(.system(size: 26, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
                         .monospacedDigit()
                         .foregroundColor(colorFor(theme.trackNameStyle))
                     Text("ELAPSED TIME")
@@ -139,9 +142,9 @@ public struct VinylWidgetView: View {
 
                 // Remaining (- time)
                 let remaining = max(0, coordinator.currentTrack.duration - coordinator.playbackPosition)
-                VStack(alignment: .center, spacing: 2) {
+                VStack(alignment: .center, spacing: 3) {
                     Text("-" + formatTime(remaining))
-                        .font(.system(size: 24, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
+                        .font(.system(size: 26, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
                         .monospacedDigit()
                         .foregroundColor(colorFor(theme.trackNameStyle))
                     Text("REMAINING TIME")
@@ -153,9 +156,9 @@ public struct VinylWidgetView: View {
                 Spacer()
 
                 // Duration
-                VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: .trailing, spacing: 3) {
                     Text(formatTime(coordinator.currentTrack.duration))
-                        .font(.system(size: 24, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
+                        .font(.system(size: 26, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
                         .monospacedDigit()
                         .foregroundColor(colorFor(theme.trackNameStyle))
                     Text("DURATION")
@@ -164,19 +167,21 @@ public struct VinylWidgetView: View {
                         .foregroundColor(colorFor(theme.trackNameStyle, opacity: 0.55))
                 }
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 16)
+            .background(isLightBackground ? Color(white: 0.88) : Color.black.opacity(0.85))
 
-            // Bottom Track Bar Container
-            HStack(spacing: 10) {
+            // Lower Section: Frosted Track & Controls Bar
+            HStack(spacing: 12) {
                 if theme.flipHorizontal {
                     if theme.showPlaybackControls && (theme.controlsPlacement == .inlineWithText || hoverState.isHovered) {
                         timeDashboardControls
                     }
-                    timeDashboardTextStack
                     Spacer()
-                    posterThumbnail(size: 42, cornerRadius: max(4, min(12, theme.cornerRadius)))
+                    timeDashboardTextStack
+                    posterThumbnail(size: 42, cornerRadius: max(6, min(12, theme.cornerRadius)))
                 } else {
-                    posterThumbnail(size: 42, cornerRadius: max(4, min(12, theme.cornerRadius)))
+                    posterThumbnail(size: 42, cornerRadius: max(6, min(12, theme.cornerRadius)))
                     timeDashboardTextStack
                     Spacer()
                     if theme.showPlaybackControls && (theme.controlsPlacement == .inlineWithText || hoverState.isHovered) {
@@ -184,13 +189,12 @@ public struct VinylWidgetView: View {
                     }
                 }
             }
-            .padding(8)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white.opacity(0.08))
-            )
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(isLightBackground ? Color.black.opacity(0.08) : Color.white.opacity(0.18))
         }
-        .frame(width: max(320, theme.containerWidth))
+        .frame(width: cardWidth)
+        .clipShape(RoundedRectangle(cornerRadius: cardRadius, style: .continuous))
     }
 
     @ViewBuilder
@@ -198,16 +202,10 @@ public struct VinylWidgetView: View {
         VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 2) {
             if theme.trackNameStyle.isVisible {
                 Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                    .font(fontFor(theme.trackNameStyle, defaultSize: 13))
+                    .font(fontFor(theme.trackNameStyle, defaultSize: 15))
                     .foregroundColor(colorFor(theme.trackNameStyle))
                     .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                     .lineLimit(1)
-                    .shadow(
-                        color: Color.black.opacity(theme.trackNameStyle.shadow.opacity),
-                        radius: theme.trackNameStyle.shadow.radius,
-                        x: 0,
-                        y: theme.trackNameStyle.shadow.yOffset
-                    )
             }
 
             let showArtist = theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty
@@ -216,32 +214,20 @@ public struct VinylWidgetView: View {
                 HStack(spacing: 4) {
                     if showArtist {
                         Text(coordinator.currentTrack.artist.uppercased())
-                            .font(fontFor(theme.artistStyle, defaultSize: 9))
-                            .foregroundColor(colorFor(theme.artistStyle, opacity: 0.75))
+                            .font(fontFor(theme.artistStyle, defaultSize: 10))
+                            .foregroundColor(colorFor(theme.artistStyle, opacity: 0.70))
                             .lineLimit(1)
-                            .shadow(
-                                color: Color.black.opacity(theme.artistStyle.shadow.opacity),
-                                radius: theme.artistStyle.shadow.radius,
-                                x: 0,
-                                y: theme.artistStyle.shadow.yOffset
-                            )
                     }
                     if showArtist && showAlbum {
                         Text("—")
-                            .font(fontFor(theme.albumStyle, defaultSize: 9))
+                            .font(fontFor(theme.albumStyle, defaultSize: 10))
                             .foregroundColor(colorFor(theme.albumStyle, opacity: 0.45))
                     }
                     if showAlbum {
                         Text(coordinator.currentTrack.album.uppercased())
-                            .font(fontFor(theme.albumStyle, defaultSize: 9))
+                            .font(fontFor(theme.albumStyle, defaultSize: 10))
                             .foregroundColor(colorFor(theme.albumStyle, opacity: 0.65))
                             .lineLimit(1)
-                            .shadow(
-                                color: Color.black.opacity(theme.albumStyle.shadow.opacity),
-                                radius: theme.albumStyle.shadow.radius,
-                                x: 0,
-                                y: theme.albumStyle.shadow.yOffset
-                            )
                     }
                 }
             }
@@ -250,25 +236,27 @@ public struct VinylWidgetView: View {
 
     @ViewBuilder
     private var timeDashboardControls: some View {
-        HStack(spacing: theme.controlsSize.buttonPadding) {
-            let iconSize = theme.controlsSize.iconSize * 0.85
-            let btnSize = max(24, iconSize * 2.1)
+        HStack(spacing: max(8, theme.controlsSize.buttonPadding)) {
+            let iconSize = max(11, theme.controlsSize.iconSize * 0.85)
+            let btnSize = max(28, iconSize * 2.2)
+            let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
+            let buttonFg = isLightBackground ? Color.primary : Color.white
 
             Button(action: { coordinator.togglePlayPause() }) {
                 Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: iconSize, weight: .bold))
-                    .foregroundColor(buttonColor)
+                    .font(.system(size: iconSize * 1.15, weight: .bold))
+                    .foregroundColor(buttonFg)
                     .frame(width: btnSize, height: btnSize)
-                    .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.14)))
+                    .background(Circle().fill(buttonBg))
             }
             .buttonStyle(PlainButtonStyle())
 
             Button(action: { coordinator.nextTrack() }) {
                 Image(systemName: "forward.fill")
-                    .font(.system(size: iconSize, weight: .bold))
-                    .foregroundColor(buttonColor)
+                    .font(.system(size: iconSize, weight: .semibold))
+                    .foregroundColor(buttonFg)
                     .frame(width: btnSize, height: btnSize)
-                    .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.14)))
+                    .background(Circle().fill(buttonBg))
             }
             .buttonStyle(PlainButtonStyle())
 
@@ -276,14 +264,189 @@ public struct VinylWidgetView: View {
                 Button(action: { controlsState.isLiked.toggle() }) {
                     Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
                         .font(.system(size: iconSize, weight: .medium))
-                        .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
+                        .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
                         .frame(width: btnSize, height: btnSize)
-                        .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.14)))
+                        .background(Circle().fill(buttonBg))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
         }
         .transition(.opacity)
+    }
+
+    // MARK: - Split Card Layout (Screenshot 2 Bottom Widget)
+
+    @ViewBuilder
+    private var splitCardLayout: some View {
+        let cardRadius: CGFloat = theme.cornerRadius
+        let cardWidth = max(360, theme.containerWidth)
+        let leftWidth = cardWidth * 0.4
+        let rightWidth = cardWidth * 0.6
+        let cardHeight: CGFloat = (theme.artworkSize > 0 && theme.artworkSize <= 220) ? theme.artworkSize : leftWidth
+
+        HStack(spacing: 0) {
+            if theme.flipHorizontal {
+                splitCardDetails(width: rightWidth, height: cardHeight)
+                splitCardArtwork(width: leftWidth, height: cardHeight)
+            } else {
+                splitCardArtwork(width: leftWidth, height: cardHeight)
+                splitCardDetails(width: rightWidth, height: cardHeight)
+            }
+        }
+        .frame(width: cardWidth, height: cardHeight)
+        .clipShape(RoundedRectangle(cornerRadius: cardRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: cardRadius, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.20),
+                            Color.white.opacity(0.08),
+                            Color.white.opacity(0.04),
+                            Color.white.opacity(0.12)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: Color.black.opacity(0.38), radius: 14, x: 0, y: 7)
+    }
+
+    private var splitCardBackground: some View {
+        let artworkColor: Color? = {
+            if let dominant = ArtworkCache.shared.dominantColor(for: coordinator.currentTrack.id, data: coordinator.currentTrack.artworkData) {
+                return Color(dominant)
+            }
+            return nil
+        }()
+
+        return ZStack {
+            if isLightBackground {
+                Color(white: 0.94).opacity(0.95)
+            } else {
+                // Base dark slate blue/charcoal (#262B3B)
+                Color(red: 0.15, green: 0.17, blue: 0.23)
+
+                // Subtle tint from the album artwork dominant color
+                if let artColor = artworkColor {
+                    artColor.opacity(0.28)
+                } else {
+                    Color(red: 0.20, green: 0.24, blue: 0.35).opacity(0.32)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func splitCardArtwork(width: CGFloat, height: CGFloat) -> some View {
+        let artworkData = coordinator.currentTrack.artworkData
+        let maxDim = max(width, height)
+        let nsImage = ArtworkCache.shared.image(
+            for: coordinator.currentTrack.id,
+            data: artworkData,
+            maxDimension: maxDim * 2.0
+        )
+
+        Group {
+            if let image = nsImage {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                ZStack {
+                    LinearGradient(
+                        colors: [Color.orange.opacity(0.85), Color.red.opacity(0.75)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    Image(systemName: "music.note")
+                        .font(.system(size: min(width, height) * 0.35, weight: .medium))
+                        .foregroundColor(.white.opacity(0.85))
+                }
+            }
+        }
+        .frame(width: width, height: height)
+        .clipped()
+    }
+
+    @ViewBuilder
+    private func splitCardDetails(width: CGFloat, height: CGFloat) -> some View {
+        let circleSize: CGFloat = 36
+        let iconSize: CGFloat = 13
+        let playIconSize: CGFloat = 14
+        let buttonBg = isLightBackground ? Color.black.opacity(0.09) : Color.white.opacity(0.18)
+        let buttonFg = isLightBackground ? Color.primary : Color.white
+
+        VStack(alignment: .leading, spacing: 5) {
+            if theme.trackNameStyle.isVisible {
+                Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(colorFor(theme.trackNameStyle))
+                    .lineLimit(1)
+            }
+
+            let showArtist = theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty
+            let showAlbum = theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty
+            if showArtist || showAlbum {
+                let sub = (showArtist ? coordinator.currentTrack.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? coordinator.currentTrack.album : "")
+                Text(sub)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(isLightBackground ? Color.black.opacity(0.65) : Color.white.opacity(0.72))
+                    .lineLimit(2)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 8)
+
+            if theme.showPlaybackControls {
+                HStack(spacing: 12) {
+                    Button(action: { coordinator.previousTrack() }) {
+                        Image(systemName: "backward.fill")
+                            .font(.system(size: iconSize, weight: .semibold))
+                            .foregroundColor(buttonFg)
+                            .frame(width: circleSize, height: circleSize)
+                            .background(Circle().fill(buttonBg))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    Button(action: { coordinator.togglePlayPause() }) {
+                        Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: playIconSize, weight: .bold))
+                            .foregroundColor(buttonFg)
+                            .frame(width: circleSize, height: circleSize)
+                            .background(Circle().fill(buttonBg))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    Button(action: { coordinator.nextTrack() }) {
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: iconSize, weight: .semibold))
+                            .foregroundColor(buttonFg)
+                            .frame(width: circleSize, height: circleSize)
+                            .background(Circle().fill(buttonBg))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    if theme.showLikeControl {
+                        Button(action: { controlsState.isLiked.toggle() }) {
+                            Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
+                                .font(.system(size: iconSize, weight: .medium))
+                                .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
+                                .frame(width: circleSize, height: circleSize)
+                                .background(Circle().fill(buttonBg))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 22)
+        .padding(.vertical, 20)
+        .frame(width: width, height: height, alignment: .leading)
+        .background(splitCardBackground)
     }
 
     @ViewBuilder
@@ -850,10 +1013,10 @@ public struct VinylWidgetView: View {
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .overlay(lightingOverlay(size: size, cornerRadius: cornerRadius))
         .shadow(
-            color: Color.black.opacity(theme.artworkShadow.opacity),
-            radius: theme.artworkShadow.radius,
+            color: isEdgeToEdge ? Color.clear : Color.black.opacity(theme.artworkShadow.opacity),
+            radius: isEdgeToEdge ? 0 : theme.artworkShadow.radius,
             x: 0,
-            y: theme.artworkShadow.yOffset
+            y: isEdgeToEdge ? 0 : theme.artworkShadow.yOffset
         )
     }
 

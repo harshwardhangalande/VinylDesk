@@ -113,6 +113,21 @@ public struct LayoutInspectorView: View {
                         }
 
                         VinylOptionCard(
+                            title: "Split Card",
+                            isSelected: themeManager.currentTheme.layout == .splitCard,
+                            action: {
+                                themeManager.currentTheme.layout = .splitCard
+                                themeManager.saveCurrentTheme()
+                            }
+                        ) {
+                            HStack(spacing: 0) {
+                                RoundedRectangle(cornerRadius: 3).fill(Color.red.opacity(0.85)).frame(width: 16, height: 22)
+                                RoundedRectangle(cornerRadius: 3).fill(Color.brown.opacity(0.70)).frame(width: 20, height: 22)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 3))
+                        }
+
+                        VinylOptionCard(
                             title: "Split Banner",
                             isSelected: themeManager.currentTheme.layout == .splitBanner,
                             action: {

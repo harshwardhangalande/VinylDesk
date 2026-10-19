@@ -320,13 +320,39 @@ struct VinylDeskWidgetEntryView: View {
         }
     }
 
-    // MARK: - System Medium (Split Banner or Time Dashboard)
+    // MARK: - System Medium (Split Banner or Time Dashboard or Split Card)
     private var mediumWidgetView: some View {
         Group {
             if entry.theme.layout == .timeDashboard {
                 mediumTimeDashboardView
+            } else if entry.theme.layout == .splitCard {
+                mediumSplitCardView
             } else {
                 mediumSplitBannerView
+            }
+        }
+    }
+
+    private var mediumSplitCardView: some View {
+        GeometryReader { geo in
+            let leftW = geo.size.width * 0.4
+            let rightW = geo.size.width * 0.6
+            HStack(spacing: 0) {
+                if entry.theme.flipHorizontal {
+                    mediumTextAndControls
+                        .padding(14)
+                        .frame(width: rightW, height: geo.size.height)
+                    widgetArtwork(size: max(leftW, geo.size.height), cornerRadius: 0)
+                        .frame(width: leftW, height: geo.size.height)
+                        .clipped()
+                } else {
+                    widgetArtwork(size: max(leftW, geo.size.height), cornerRadius: 0)
+                        .frame(width: leftW, height: geo.size.height)
+                        .clipped()
+                    mediumTextAndControls
+                        .padding(14)
+                        .frame(width: rightW, height: geo.size.height)
+                }
             }
         }
     }

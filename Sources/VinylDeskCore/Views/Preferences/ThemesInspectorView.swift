@@ -49,8 +49,7 @@ public struct ThemesInspectorView: View {
                             ForEach(themeManager.userThemes) { userTheme in
                                 ZStack(alignment: .topTrailing) {
                                     Button(action: {
-                                        themeManager.currentTheme = userTheme
-                                        themeManager.persistThemeDirectly()
+                                        themeManager.applyTheme(userTheme, preserveUserPreferences: true)
                                     }) {
                                         VStack(spacing: 6) {
                                             presetIcon(for: userTheme)
@@ -219,6 +218,8 @@ public struct ThemesInspectorView: View {
             Image(systemName: "archivebox.fill").font(.system(size: 18)).foregroundColor(.brown)
         case .timeDashboard:
             Image(systemName: "timer").font(.system(size: 18)).foregroundColor(.green)
+        case .splitCard:
+            Image(systemName: "rectangle.righthalf.filled").font(.system(size: 18)).foregroundColor(.indigo)
         case .splitBanner:
             Image(systemName: "rectangle.split.2x1.fill").font(.system(size: 18)).foregroundColor(.orange)
         case .artworkPoster:

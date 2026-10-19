@@ -27,6 +27,16 @@ public struct DesktopWidgetWrapperView: View {
 
     public var body: some View {
         VinylWidgetView(coordinator: coordinator, theme: themeManager.currentTheme)
+            .contentShape(Rectangle())
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 2, coordinateSpace: .global)
+                    .onChanged { _ in
+                        DesktopWidgetController.shared.handleDragChanged()
+                    }
+                    .onEnded { _ in
+                        DesktopWidgetController.shared.handleDragEnded()
+                    }
+            )
             .fixedSize()
             .background(
                 GeometryReader { geo in
@@ -49,6 +59,31 @@ public final class DesktopWidgetController {
 
     public private(set) var window: NSPanel?
     private var cancellables = Set<AnyCancellable>()
+    private var dragStartMouseLocation: CGPoint? = nil
+    private var dragStartWindowOrigin: CGPoint? = nil
+
+    public func handleDragChanged() {
+        guard let panel = self.window else { return }
+        let currentMouse = NSEvent.mouseLocation
+        if dragStartMouseLocation == nil {
+            dragStartMouseLocation = currentMouse
+            dragStartWindowOrigin = panel.frame.origin
+        }
+        guard let startMouse = dragStartMouseLocation,
+              let startOrigin = dragStartWindowOrigin else { return }
+        let dx = currentMouse.x - startMouse.x
+        let dy = currentMouse.y - startMouse.y
+        panel.setFrameOrigin(CGPoint(x: startOrigin.x + dx, y: startOrigin.y + dy))
+    }
+
+    public func handleDragEnded() {
+        if let panel = self.window {
+            UserDefaults.standard.set(panel.frame.origin.x, forKey: "VinylDesk.WidgetOrigin.X")
+            UserDefaults.standard.set(panel.frame.origin.y, forKey: "VinylDesk.WidgetOrigin.Y")
+        }
+        dragStartMouseLocation = nil
+        dragStartWindowOrigin = nil
+    }
 
     public enum SnapLocation: String, CaseIterable, Sendable {
         case bottomLeft = "Bottom-Left ↙"
@@ -119,10 +154,26 @@ public final class DesktopWidgetController {
         }
 
         let hostingView = NSHostingView(rootView: wrapper)
+        hostingView.wantsLayer = true
+        hostingView.layer?.backgroundColor = NSColor.clear.cgColor
         panel.contentView = hostingView
 
-        // Position on desktop (bottom-left area with padding)
-        if let screen = NSScreen.main {
+        // Position on desktop (saved origin if visible on screen, or bottom-left default)
+        var initialOrigin: CGPoint? = nil
+        if let savedX = UserDefaults.standard.object(forKey: "VinylDesk.WidgetOrigin.X") as? CGFloat,
+           let savedY = UserDefaults.standard.object(forKey: "VinylDesk.WidgetOrigin.Y") as? CGFloat {
+            let candidate = CGPoint(x: savedX, y: savedY)
+            let isVisible = NSScreen.screens.contains { screen in
+                screen.frame.contains(candidate)
+            }
+            if isVisible {
+                initialOrigin = candidate
+            }
+        }
+
+        if let origin = initialOrigin {
+            panel.setFrameOrigin(origin)
+        } else if let screen = NSScreen.main {
             let visible = screen.visibleFrame
             let origin = CGPoint(x: visible.minX + 60, y: visible.minY + 60)
             panel.setFrameOrigin(origin)
@@ -146,10 +197,32 @@ public final class DesktopWidgetController {
         let targetH = ceil(newSize.height)
 
         if abs(currentFrame.width - targetW) > 1 || abs(currentFrame.height - targetH) > 1 {
-            // Anchor to current bottom-left position so it expands smoothly without covering folders
+            var newX = currentFrame.minX
+            var newY = currentFrame.minY
+
+            if let screen = panel.screen ?? NSScreen.main {
+                let visible = screen.visibleFrame
+                // Ensure right edge doesn't go off screen
+                if newX + targetW > visible.maxX {
+                    newX = max(visible.minX, visible.maxX - targetW)
+                }
+                // Ensure left edge doesn't go off screen
+                if newX < visible.minX {
+                    newX = visible.minX
+                }
+                // Ensure top edge doesn't go off screen
+                if newY + targetH > visible.maxY {
+                    newY = max(visible.minY, visible.maxY - targetH)
+                }
+                // Ensure bottom edge doesn't go off screen
+                if newY < visible.minY {
+                    newY = visible.minY
+                }
+            }
+
             let newFrame = NSRect(
-                x: currentFrame.minX,
-                y: currentFrame.minY,
+                x: newX,
+                y: newY,
                 width: targetW,
                 height: targetH
             )

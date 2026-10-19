@@ -1,6 +1,29 @@
 import SwiftUI
 import AppKit
 
+// MARK: - Native Draggable Window Background
+
+public final class WindowDragBackgroundNSView: NSView {
+    public override var mouseDownCanMoveWindow: Bool {
+        return true
+    }
+
+    public override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
+    }
+}
+
+public struct WindowDragBackgroundRepresentable: NSViewRepresentable {
+    public init() {}
+
+    public func makeNSView(context: Context) -> WindowDragBackgroundNSView {
+        let view = WindowDragBackgroundNSView()
+        return view
+    }
+
+    public func updateNSView(_ nsView: WindowDragBackgroundNSView, context: Context) {}
+}
+
 // MARK: - Native Drag Handle NSView
 
 public final class DragHandleNSView: NSView {

@@ -187,12 +187,14 @@ struct TestRunner {
             let presets = VinylThemeConfig.allPresets
             let names = presets.map { $0.name }
             assert(names.contains("Time Dashboard"), "Must contain Time Dashboard preset")
+            assert(names.contains("Split Card"), "Must contain Split Card preset")
             assert(names.contains("Split Banner"), "Must contain Split Banner preset")
             assert(names.contains("Artwork Poster"), "Must contain Artwork Poster preset")
             assert(names.contains("Compact Square"), "Must contain Compact Square preset")
             assert(names.contains("Squircle Card"), "Must contain Squircle Card preset")
 
             assert(VinylLayout.allCases.contains(.timeDashboard), "VinylLayout must contain timeDashboard")
+            assert(VinylLayout.allCases.contains(.splitCard), "VinylLayout must contain splitCard")
             assert(VinylLayout.allCases.contains(.splitBanner), "VinylLayout must contain splitBanner")
             assert(VinylLayout.allCases.contains(.artworkPoster), "VinylLayout must contain artworkPoster")
             assert(VinylLayout.allCases.contains(.compactSquare), "VinylLayout must contain compactSquare")
@@ -303,6 +305,45 @@ struct TestRunner {
             controller.applyVisibility(.showEverywhere)
             assert(controller.window?.level == .floating, "showEverywhere window level should be .floating")
             assert(controller.window?.isVisible == true, "showEverywhere window must stay visible")
+        }
+
+        // Test 18: Corner Radius 32 Default for All Presets
+        test("All presets default corner radius 32") {
+            for preset in VinylThemeConfig.allPresets {
+                assert(preset.cornerRadius == 32, "Preset '\(preset.name)' cornerRadius should default to 32, but found \(preset.cornerRadius)")
+                assert(preset.backdropCornerRadius == 32, "Preset '\(preset.name)' backdropCornerRadius should default to 32, but found \(preset.backdropCornerRadius)")
+            }
+        }
+
+        // Test 19: Theme Switching Preserves Visibility & Window Placement
+        test("Theme switching preserves user visibility and window placement") {
+            let manager = VinylThemeManager.shared
+            manager.currentTheme.visibility = .showEverywhere
+            manager.currentTheme.windowPlacement = .floating
+            manager.currentTheme.showAlbumArtworkInDock = true
+
+            // Switch to a preset that has default visibility .desktopOnly
+            manager.selectPreset(VinylThemeConfig.presetSplitCard)
+
+            assert(manager.currentTheme.visibility == .showEverywhere, "Preset switch must preserve user's .showEverywhere visibility")
+            assert(manager.currentTheme.windowPlacement == .floating, "Preset switch must preserve user's .floating placement")
+            assert(manager.currentTheme.showAlbumArtworkInDock == true, "Preset switch must preserve user's showAlbumArtworkInDock preference")
+            assert(manager.currentTheme.name == "Split Card", "Active theme name should be Split Card")
+
+            // Switch to another preset
+            manager.selectPreset(VinylThemeConfig.presetTimeDashboard)
+            assert(manager.currentTheme.visibility == .showEverywhere, "Subsequent preset switch must continue preserving .showEverywhere visibility")
+        }
+
+        // Test 20: Split Card 6/10 Right Side Fraction Verification
+        test("Split Card 6 out of 10 fractions right side") {
+            let splitCard = VinylThemeConfig.presetSplitCard
+            let totalW = splitCard.containerWidth
+            let leftW = totalW * 0.4
+            let rightW = totalW * 0.6
+            assert(totalW >= 360, "Split card total width should be at least 360")
+            assert(abs((rightW / totalW) - 0.6) < 0.001, "Right side must be exactly 6 out of 10 fractions (0.6)")
+            assert(abs((leftW / totalW) - 0.4) < 0.001, "Left side must be exactly 4 out of 10 fractions (0.4)")
         }
 
         print("\n===============================")
