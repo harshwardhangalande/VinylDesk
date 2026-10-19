@@ -59,7 +59,7 @@ public final class MusicCoordinator: ObservableObject {
         // Priority 1: Spotify if playing or running
         if SpotifyService.shared.isRunning, let spotifyTrack = SpotifyService.shared.fetchCurrentTrack() {
             if spotifyTrack.isPlaying || currentTrack.source == .spotify {
-                self.currentTrack = spotifyTrack
+                self.updateTrackIfChanged(spotifyTrack)
                 return
             }
         }
@@ -67,7 +67,7 @@ public final class MusicCoordinator: ObservableObject {
         // Priority 2: Apple Music
         if AppleMusicService.shared.isRunning, let musicTrack = AppleMusicService.shared.fetchCurrentTrack() {
             if musicTrack.isPlaying || currentTrack.source == .appleMusic {
-                self.currentTrack = musicTrack
+                self.updateTrackIfChanged(musicTrack)
                 return
             }
         }
@@ -80,19 +80,27 @@ public final class MusicCoordinator: ObservableObject {
         }
     }
 
+    public func updateTrackIfChanged(_ newTrack: TrackInfo) {
+        if currentTrack.id != newTrack.id ||
+           currentTrack.title != newTrack.title ||
+           currentTrack.artist != newTrack.artist ||
+           currentTrack.isPlaying != newTrack.isPlaying ||
+           currentTrack.source != newTrack.source {
+            self.currentTrack = newTrack
+        } else {
+            self.currentTrack.position = newTrack.position
+        }
+    }
+
     private func onTimerTick() {
         guard !isScratching else { return }
 
-        if isDemoModeForced || currentTrack.source == .demo {
-            if currentTrack.isPlaying {
-                var newPos = currentTrack.position + 1.0
-                if newPos >= currentTrack.duration {
-                    newPos = 0
-                }
-                currentTrack.position = newPos
+        if currentTrack.isPlaying {
+            var newPos = currentTrack.position + 1.0
+            if newPos >= currentTrack.duration {
+                newPos = 0
             }
-        } else {
-            refreshTrack()
+            currentTrack.position = newPos
         }
     }
 
