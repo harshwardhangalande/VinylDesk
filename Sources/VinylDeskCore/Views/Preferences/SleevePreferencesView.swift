@@ -45,7 +45,9 @@ public struct SleevePreferencesView: View {
             // MARK: - Left Sidebar
             sidebarView
                 .frame(width: 190)
+                .fixedSize(horizontal: true, vertical: false)
                 .background(Color(white: 0.11))
+                .layoutPriority(2)
 
             Divider().background(Color.white.opacity(0.1))
 
@@ -97,17 +99,20 @@ public struct SleevePreferencesView: View {
                 }
             }
             .frame(width: 320)
+            .fixedSize(horizontal: true, vertical: false)
             .background(Color(white: 0.12))
+            .layoutPriority(1)
 
             Divider().background(Color.white.opacity(0.1))
 
             // MARK: - Right Live Preview Canvas
             if windowState.showLivePreview {
                 livePreviewCanvas
-                    .frame(minWidth: 420)
+                    .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
+                    .layoutPriority(0)
             }
         }
-        .frame(minWidth: 920, minHeight: 620)
+        .frame(minWidth: 980, minHeight: 620)
     }
 
     // MARK: - Sidebar View
@@ -274,15 +279,77 @@ public struct SleevePreferencesView: View {
 
                 Spacer()
             }
+            .zIndex(2)
 
-            // The Live Widget Centerpiece
+            // The Live Widget Centerpiece (auto-fitted and centered)
+            GeometryReader { geo in
+                let availableWidth = max(60, geo.size.width - 48)
+                let availableHeight = max(60, geo.size.height - 84)
+
+                FittedWidgetPreview(
+                    coordinator: coordinator,
+                    theme: themeManager.currentTheme,
+                    isLightBackground: windowState.previewIsLightMode,
+                    maxWidth: availableWidth,
+                    maxHeight: availableHeight
+                )
+                .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
+            }
+            .padding(12)
+        }
+        .clipped()
+    }
+}
+
+// MARK: - Auto-Fitted Widget Preview
+
+struct FittedWidgetPreview: View {
+    @ObservedObject var coordinator: MusicCoordinator
+    let theme: SleeveThemeConfig
+    let isLightBackground: Bool
+    let maxWidth: CGFloat
+    let maxHeight: CGFloat
+
+    @StateObject private var widgetState = FittedWidgetState()
+
+    private var scaleFactor: CGFloat {
+        guard widgetState.measuredWidth > 0, widgetState.measuredHeight > 0 else { return 1.0 }
+        let scaleX = maxWidth / widgetState.measuredWidth
+        let scaleY = maxHeight / widgetState.measuredHeight
+        return min(1.0, min(scaleX, scaleY))
+    }
+
+    var body: some View {
+        ZStack {
             SleeveWidgetView(
                 coordinator: coordinator,
-                theme: themeManager.currentTheme,
-                isLightBackground: windowState.previewIsLightMode
+                theme: theme,
+                isLightBackground: isLightBackground
+            )
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.preference(key: PreviewWidgetSizePreferenceKey.self, value: proxy.size)
+                }
             )
             .shadow(color: Color.black.opacity(0.4), radius: 24, x: 0, y: 12)
-            .padding(20)
+            .scaleEffect(scaleFactor)
+            .animation(.easeInOut(duration: 0.15), value: scaleFactor)
+        }
+        .onPreferenceChange(PreviewWidgetSizePreferenceKey.self) { newSize in
+            if newSize != .zero && (abs(newSize.width - widgetState.measuredWidth) > 1 || abs(newSize.height - widgetState.measuredHeight) > 1) {
+                widgetState.measuredWidth = newSize.width
+                widgetState.measuredHeight = newSize.height
+            }
+        }
+    }
+}
+
+private struct PreviewWidgetSizePreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        let next = nextValue()
+        if next != .zero {
+            value = next
         }
     }
 }

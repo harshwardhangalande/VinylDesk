@@ -338,7 +338,7 @@ final class PreferencesWindowController {
 
         let hostingController = NSHostingController(rootView: preferencesView)
         let newWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 940, height: 620),
+            contentRect: NSRect(x: 0, y: 0, width: 1040, height: 660),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
@@ -346,6 +346,7 @@ final class PreferencesWindowController {
 
         newWindow.center()
         newWindow.title = "Sleeve Preferences"
+        newWindow.minSize = NSSize(width: 980, height: 620)
         newWindow.contentViewController = hostingController
         newWindow.isReleasedWhenClosed = false
         newWindow.makeKeyAndOrderFront(nil)

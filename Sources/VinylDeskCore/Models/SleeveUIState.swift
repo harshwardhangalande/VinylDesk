@@ -48,3 +48,10 @@ public final class LiquidShimmerState: ObservableObject {
     public init() {}
 }
 
+@MainActor
+public final class FittedWidgetState: ObservableObject {
+    @Published public var measuredWidth: CGFloat = 0.0
+    @Published public var measuredHeight: CGFloat = 0.0
+    public init() {}
+}
+
