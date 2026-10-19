@@ -115,6 +115,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 window.hasShadow = false
                 window.level = .floating
 
+                // Hide traffic light buttons completely
+                window.standardWindowButton(.closeButton)?.isHidden = true
+                window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+                window.standardWindowButton(.zoomButton)?.isHidden = true
+
                 // Position in bottom-left or center
                 if let screen = NSScreen.main {
                     let frame = screen.visibleFrame
