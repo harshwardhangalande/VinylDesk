@@ -5,6 +5,7 @@ public struct SleeveWidgetView: View {
     let theme: SleeveThemeConfig
     var isLightBackground: Bool = false
     @StateObject private var hoverState = WidgetHoverState()
+    @StateObject private var controlsState = SleeveControlsState()
 
     @MainActor
     public init(
@@ -125,13 +126,13 @@ public struct SleeveWidgetView: View {
                 // Elapsed
                 VStack(alignment: .leading, spacing: 2) {
                     Text(formatTime(coordinator.playbackPosition))
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(.system(size: 24, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
                         .monospacedDigit()
-                        .foregroundColor(.white)
+                        .foregroundColor(colorFor(theme.trackNameStyle))
                     Text("ELAPSED TIME")
                         .font(.system(size: 9, weight: .semibold, design: .monospaced))
                         .tracking(0.8)
-                        .foregroundColor(Color.white.opacity(0.55))
+                        .foregroundColor(colorFor(theme.trackNameStyle, opacity: 0.55))
                 }
 
                 Spacer()
@@ -140,13 +141,13 @@ public struct SleeveWidgetView: View {
                 let remaining = max(0, coordinator.currentTrack.duration - coordinator.playbackPosition)
                 VStack(alignment: .center, spacing: 2) {
                     Text("-" + formatTime(remaining))
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(.system(size: 24, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
                         .monospacedDigit()
-                        .foregroundColor(.white)
+                        .foregroundColor(colorFor(theme.trackNameStyle))
                     Text("REMAINING TIME")
                         .font(.system(size: 9, weight: .semibold, design: .monospaced))
                         .tracking(0.8)
-                        .foregroundColor(Color.white.opacity(0.55))
+                        .foregroundColor(colorFor(theme.trackNameStyle, opacity: 0.55))
                 }
 
                 Spacer()
@@ -154,56 +155,33 @@ public struct SleeveWidgetView: View {
                 // Duration
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(formatTime(coordinator.currentTrack.duration))
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(.system(size: 24, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
                         .monospacedDigit()
-                        .foregroundColor(.white)
+                        .foregroundColor(colorFor(theme.trackNameStyle))
                     Text("DURATION")
                         .font(.system(size: 9, weight: .semibold, design: .monospaced))
                         .tracking(0.8)
-                        .foregroundColor(Color.white.opacity(0.55))
+                        .foregroundColor(colorFor(theme.trackNameStyle, opacity: 0.55))
                 }
             }
             .padding(.horizontal, 4)
 
             // Bottom Track Bar Container
             HStack(spacing: 10) {
-                // Poster thumbnail with equal left and top padding inside this card
-                posterThumbnail(size: 42, cornerRadius: 8)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-
-                    let sub = (coordinator.currentTrack.artist + (coordinator.currentTrack.album.isEmpty ? "" : " — " + coordinator.currentTrack.album)).uppercased()
-                    Text(sub)
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundColor(Color.white.opacity(0.65))
-                        .lineLimit(1)
-                }
-
-                Spacer()
-
-                // Compact playback controls
-                HStack(spacing: 8) {
-                    Button(action: { coordinator.togglePlayPause() }) {
-                        Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 28, height: 28)
-                            .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.14)))
+                if theme.flipHorizontal {
+                    if theme.showPlaybackControls && (theme.controlsPlacement == .inlineWithText || hoverState.isHovered) {
+                        timeDashboardControls
                     }
-                    .buttonStyle(PlainButtonStyle())
-
-                    Button(action: { coordinator.nextTrack() }) {
-                        Image(systemName: "forward.fill")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 28, height: 28)
-                            .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.14)))
+                    timeDashboardTextStack
+                    Spacer()
+                    posterThumbnail(size: 42, cornerRadius: 8)
+                } else {
+                    posterThumbnail(size: 42, cornerRadius: 8)
+                    timeDashboardTextStack
+                    Spacer()
+                    if theme.showPlaybackControls && (theme.controlsPlacement == .inlineWithText || hoverState.isHovered) {
+                        timeDashboardControls
                     }
-                    .buttonStyle(PlainButtonStyle())
                 }
             }
             .padding(8)
@@ -212,121 +190,321 @@ public struct SleeveWidgetView: View {
                     .fill(Color.white.opacity(0.08))
             )
         }
-        .frame(width: 320)
+        .frame(width: max(320, theme.containerWidth))
+    }
+
+    @ViewBuilder
+    private var timeDashboardTextStack: some View {
+        VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 2) {
+            if theme.trackNameStyle.isVisible {
+                Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
+                    .font(fontFor(theme.trackNameStyle, defaultSize: 13))
+                    .foregroundColor(colorFor(theme.trackNameStyle))
+                    .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                    .lineLimit(1)
+                    .shadow(
+                        color: Color.black.opacity(theme.trackNameStyle.shadow.opacity),
+                        radius: theme.trackNameStyle.shadow.radius,
+                        x: 0,
+                        y: theme.trackNameStyle.shadow.yOffset
+                    )
+            }
+
+            let showArtist = theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty
+            let showAlbum = theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty
+            if showArtist || showAlbum {
+                HStack(spacing: 4) {
+                    if showArtist {
+                        Text(coordinator.currentTrack.artist.uppercased())
+                            .font(fontFor(theme.artistStyle, defaultSize: 9))
+                            .foregroundColor(colorFor(theme.artistStyle, opacity: 0.75))
+                            .lineLimit(1)
+                            .shadow(
+                                color: Color.black.opacity(theme.artistStyle.shadow.opacity),
+                                radius: theme.artistStyle.shadow.radius,
+                                x: 0,
+                                y: theme.artistStyle.shadow.yOffset
+                            )
+                    }
+                    if showArtist && showAlbum {
+                        Text("—")
+                            .font(fontFor(theme.albumStyle, defaultSize: 9))
+                            .foregroundColor(colorFor(theme.albumStyle, opacity: 0.45))
+                    }
+                    if showAlbum {
+                        Text(coordinator.currentTrack.album.uppercased())
+                            .font(fontFor(theme.albumStyle, defaultSize: 9))
+                            .foregroundColor(colorFor(theme.albumStyle, opacity: 0.65))
+                            .lineLimit(1)
+                            .shadow(
+                                color: Color.black.opacity(theme.albumStyle.shadow.opacity),
+                                radius: theme.albumStyle.shadow.radius,
+                                x: 0,
+                                y: theme.albumStyle.shadow.yOffset
+                            )
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var timeDashboardControls: some View {
+        HStack(spacing: theme.controlsSize.buttonPadding) {
+            let iconSize = theme.controlsSize.iconSize * 0.85
+            let btnSize = max(24, iconSize * 2.1)
+
+            Button(action: { coordinator.togglePlayPause() }) {
+                Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
+                    .font(.system(size: iconSize, weight: .bold))
+                    .foregroundColor(buttonColor)
+                    .frame(width: btnSize, height: btnSize)
+                    .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.14)))
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button(action: { coordinator.nextTrack() }) {
+                Image(systemName: "forward.fill")
+                    .font(.system(size: iconSize, weight: .bold))
+                    .foregroundColor(buttonColor)
+                    .frame(width: btnSize, height: btnSize)
+                    .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.14)))
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            if theme.showLikeControl {
+                Button(action: { controlsState.isLiked.toggle() }) {
+                    Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
+                        .font(.system(size: iconSize, weight: .medium))
+                        .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
+                        .frame(width: btnSize, height: btnSize)
+                        .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.14)))
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+        .transition(.opacity)
     }
 
     @ViewBuilder
     private var splitBannerLayout: some View {
+        let thumbDim: CGFloat = max(70, min(120, theme.artworkSize > 0 ? theme.artworkSize : 100))
         HStack(spacing: 14) {
-            // Square poster thumbnail with strictly equal top and leading alignment (14pt from top and left)
-            posterThumbnail(size: 100, cornerRadius: 12)
+            if theme.flipHorizontal {
+                splitBannerTextAndControls
+                splitBannerThumbnail(size: thumbDim)
+            } else {
+                splitBannerThumbnail(size: thumbDim)
+                splitBannerTextAndControls
+            }
+        }
+        .frame(width: max(290, theme.containerWidth), height: thumbDim)
+    }
 
-            VStack(alignment: .leading, spacing: 4) {
+    @ViewBuilder
+    private func splitBannerThumbnail(size: CGFloat) -> some View {
+        ZStack {
+            // Strictly equal margins from top and leading (or trailing when flipped)
+            posterThumbnail(size: size, cornerRadius: theme.cornerRadius)
+
+            if theme.showPlaybackControls && theme.controlsPlacement == .onHover && hoverState.isHovered {
+                RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous)
+                    .fill(Color.black.opacity(0.45))
+                    .frame(width: size, height: size)
+                    .overlay(
+                        SleeveControlsView(coordinator: coordinator, theme: theme, isOverlay: true)
+                    )
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var splitBannerTextAndControls: some View {
+        VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 4) {
+            if theme.trackNameStyle.isVisible {
                 Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(fontFor(theme.trackNameStyle, defaultSize: 15))
+                    .foregroundColor(colorFor(theme.trackNameStyle))
+                    .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                     .lineLimit(1)
+                    .shadow(
+                        color: Color.black.opacity(theme.trackNameStyle.shadow.opacity),
+                        radius: theme.trackNameStyle.shadow.radius,
+                        x: 0,
+                        y: theme.trackNameStyle.shadow.yOffset
+                    )
+            }
 
+            if theme.artistStyle.isVisible {
                 Text(coordinator.currentTrack.artist.isEmpty ? "Unknown Artist" : coordinator.currentTrack.artist)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Color.white.opacity(0.85))
+                    .font(fontFor(theme.artistStyle, defaultSize: 12))
+                    .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
+                    .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                     .lineLimit(1)
+                    .shadow(
+                        color: Color.black.opacity(theme.artistStyle.shadow.opacity),
+                        radius: theme.artistStyle.shadow.radius,
+                        x: 0,
+                        y: theme.artistStyle.shadow.yOffset
+                    )
+            }
 
-                if !coordinator.currentTrack.album.isEmpty {
-                    Text("— " + coordinator.currentTrack.album)
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundColor(Color.white.opacity(0.60))
-                        .lineLimit(1)
-                }
+            if theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty {
+                Text("— " + coordinator.currentTrack.album)
+                    .font(fontFor(theme.albumStyle, defaultSize: 11))
+                    .foregroundColor(colorFor(theme.albumStyle, opacity: 0.60))
+                    .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                    .lineLimit(1)
+                    .shadow(
+                        color: Color.black.opacity(theme.albumStyle.shadow.opacity),
+                        radius: theme.albumStyle.shadow.radius,
+                        x: 0,
+                        y: theme.albumStyle.shadow.yOffset
+                    )
+            }
 
-                Spacer(minLength: 6)
+            if theme.showPlaybackControls && theme.controlsPlacement == .inlineWithText {
+                Spacer(minLength: 4)
 
-                // Inline playback controls
-                HStack(spacing: 8) {
+                HStack(spacing: theme.controlsSize.buttonPadding) {
+                    let iconSize = theme.controlsSize.iconSize * 0.85
+                    let btnWidth = max(26, iconSize * 2.3)
+                    let btnHeight = max(22, iconSize * 2.0)
+
                     Button(action: { coordinator.previousTrack() }) {
                         Image(systemName: "backward.fill")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 28, height: 26)
+                            .font(.system(size: iconSize, weight: .semibold))
+                            .foregroundColor(buttonColor)
+                            .frame(width: btnWidth, height: btnHeight)
                             .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
                     }
                     .buttonStyle(PlainButtonStyle())
 
                     Button(action: { coordinator.togglePlayPause() }) {
                         Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 28, height: 26)
+                            .font(.system(size: iconSize * 1.1, weight: .bold))
+                            .foregroundColor(buttonColor)
+                            .frame(width: btnWidth, height: btnHeight)
                             .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
                     }
                     .buttonStyle(PlainButtonStyle())
 
                     Button(action: { coordinator.nextTrack() }) {
                         Image(systemName: "forward.fill")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 28, height: 26)
+                            .font(.system(size: iconSize, weight: .semibold))
+                            .foregroundColor(buttonColor)
+                            .frame(width: btnWidth, height: btnHeight)
                             .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
                     }
                     .buttonStyle(PlainButtonStyle())
+
+                    if theme.showLikeControl {
+                        Button(action: { controlsState.isLiked.toggle() }) {
+                            Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
+                                .font(.system(size: iconSize, weight: .medium))
+                                .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
+                                .frame(width: btnWidth, height: btnHeight)
+                                .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.12)))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
                 }
+            } else {
+                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(width: 290, height: 100)
+        .frame(maxWidth: .infinity, alignment: alignmentForTheme)
     }
 
     @ViewBuilder
     private var compactSquareLayout: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 8) {
             // Square poster thumbnail aligned symmetrically from top and leading (12pt from each edge)
             posterThumbnail(size: 44, cornerRadius: 8)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
+            VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 2) {
+                if theme.trackNameStyle.isVisible {
+                    Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
+                        .font(fontFor(theme.trackNameStyle, defaultSize: 12))
+                        .foregroundColor(colorFor(theme.trackNameStyle))
+                        .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                        .lineLimit(1)
+                        .shadow(
+                            color: Color.black.opacity(theme.trackNameStyle.shadow.opacity),
+                            radius: theme.trackNameStyle.shadow.radius,
+                            x: 0,
+                            y: theme.trackNameStyle.shadow.yOffset
+                        )
+                }
 
-                let sub = coordinator.currentTrack.artist + (coordinator.currentTrack.album.isEmpty ? "" : " — " + coordinator.currentTrack.album)
-                Text(sub)
-                    .font(.system(size: 10, weight: .regular))
-                    .foregroundColor(Color.white.opacity(0.65))
-                    .lineLimit(1)
+                let showArtist = theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty
+                let showAlbum = theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty
+                if showArtist || showAlbum {
+                    let sub = (showArtist ? coordinator.currentTrack.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? coordinator.currentTrack.album : "")
+                    Text(sub)
+                        .font(fontFor(theme.artistStyle, defaultSize: 10))
+                        .foregroundColor(colorFor(theme.artistStyle, opacity: 0.65))
+                        .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                        .lineLimit(1)
+                        .shadow(
+                            color: Color.black.opacity(theme.artistStyle.shadow.opacity),
+                            radius: theme.artistStyle.shadow.radius,
+                            x: 0,
+                            y: theme.artistStyle.shadow.yOffset
+                        )
+                }
             }
 
-            // Micro controls row
-            HStack(spacing: 12) {
-                Button(action: { coordinator.previousTrack() }) {
-                    Image(systemName: "backward.fill")
-                        .font(.system(size: 10))
-                        .foregroundColor(.white)
-                }
-                .buttonStyle(PlainButtonStyle())
+            // Controls
+            if theme.showPlaybackControls {
+                let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
+                if isVisible {
+                    let iconSize = theme.controlsSize.iconSize * 0.75
+                    HStack(spacing: theme.controlsSize.buttonPadding) {
+                        Button(action: { coordinator.previousTrack() }) {
+                            Image(systemName: "backward.fill")
+                                .font(.system(size: iconSize))
+                                .foregroundColor(buttonColor)
+                        }
+                        .buttonStyle(PlainButtonStyle())
 
-                Button(action: { coordinator.togglePlayPause() }) {
-                    Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white)
-                }
-                .buttonStyle(PlainButtonStyle())
+                        Button(action: { coordinator.togglePlayPause() }) {
+                            Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
+                                .font(.system(size: iconSize * 1.15, weight: .bold))
+                                .foregroundColor(buttonColor)
+                        }
+                        .buttonStyle(PlainButtonStyle())
 
-                Button(action: { coordinator.nextTrack() }) {
-                    Image(systemName: "forward.fill")
-                        .font(.system(size: 10))
-                        .foregroundColor(.white)
+                        Button(action: { coordinator.nextTrack() }) {
+                            Image(systemName: "forward.fill")
+                                .font(.system(size: iconSize))
+                                .foregroundColor(buttonColor)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        if theme.showLikeControl {
+                            Button(action: { controlsState.isLiked.toggle() }) {
+                                Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
+                                    .font(.system(size: iconSize))
+                                    .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    .transition(.opacity)
                 }
-                .buttonStyle(PlainButtonStyle())
             }
         }
-        .frame(width: 128)
+        .frame(width: max(128, theme.containerWidth))
     }
 
     @ViewBuilder
     private var artworkPosterLayout: some View {
+        let posterDim = max(240, theme.artworkSize > 0 ? theme.artworkSize : 300)
         ZStack(alignment: .bottom) {
             // Full background poster image
-            posterThumbnail(size: 300, cornerRadius: 24)
+            posterThumbnail(size: posterDim, cornerRadius: theme.cornerRadius)
 
             // Gradient shadow on bottom half for high text readability
             LinearGradient(
@@ -334,115 +512,225 @@ public struct SleeveWidgetView: View {
                 startPoint: .center,
                 endPoint: .bottom
             )
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
 
             // Overlaid typography & floating controls
             VStack(spacing: 8) {
-                Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .shadow(color: Color.black.opacity(0.6), radius: 6, x: 0, y: 2)
+                if theme.trackNameStyle.isVisible {
+                    Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
+                        .font(fontFor(theme.trackNameStyle, defaultSize: 18))
+                        .foregroundColor(colorFor(theme.trackNameStyle))
+                        .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                        .lineLimit(2)
+                        .shadow(
+                            color: Color.black.opacity(max(0.4, theme.trackNameStyle.shadow.opacity)),
+                            radius: max(4, theme.trackNameStyle.shadow.radius),
+                            x: 0,
+                            y: max(2, theme.trackNameStyle.shadow.yOffset)
+                        )
+                }
 
-                let sub = coordinator.currentTrack.artist + (coordinator.currentTrack.album.isEmpty ? "" : " — " + coordinator.currentTrack.album)
-                Text(sub)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Color.white.opacity(0.85))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(1)
-                    .shadow(color: Color.black.opacity(0.5), radius: 4, x: 0, y: 1)
+                let showArtist = theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty
+                let showAlbum = theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty
+                if showArtist || showAlbum {
+                    let sub = (showArtist ? coordinator.currentTrack.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? coordinator.currentTrack.album : "")
+                    Text(sub)
+                        .font(fontFor(theme.artistStyle, defaultSize: 12))
+                        .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
+                        .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                        .lineLimit(1)
+                        .shadow(
+                            color: Color.black.opacity(max(0.3, theme.artistStyle.shadow.opacity)),
+                            radius: max(3, theme.artistStyle.shadow.radius),
+                            x: 0,
+                            y: max(1, theme.artistStyle.shadow.yOffset)
+                        )
+                }
 
                 // Translucent floating controls
-                HStack(spacing: 16) {
-                    Button(action: { coordinator.previousTrack() }) {
-                        Image(systemName: "backward.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.white)
-                            .frame(width: 34, height: 34)
-                            .background(Circle().fill(Color.black.opacity(0.35)))
-                    }
-                    .buttonStyle(PlainButtonStyle())
+                if theme.showPlaybackControls {
+                    let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
+                    if isVisible {
+                        let iconSize = theme.controlsSize.iconSize
+                        let circleSize = iconSize * 2.4
+                        let playCircleSize = iconSize * 2.8
 
-                    Button(action: { coordinator.togglePlayPause() }) {
-                        Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
-                            .background(Circle().fill(Color.black.opacity(0.45)))
-                    }
-                    .buttonStyle(PlainButtonStyle())
+                        HStack(spacing: theme.controlsSize.buttonPadding * 1.5) {
+                            Button(action: { coordinator.previousTrack() }) {
+                                Image(systemName: "backward.fill")
+                                    .font(.system(size: iconSize))
+                                    .foregroundColor(.white)
+                                    .frame(width: circleSize, height: circleSize)
+                                    .background(Circle().fill(Color.black.opacity(0.35)))
+                            }
+                            .buttonStyle(PlainButtonStyle())
 
-                    Button(action: { coordinator.nextTrack() }) {
-                        Image(systemName: "forward.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.white)
-                            .frame(width: 34, height: 34)
-                            .background(Circle().fill(Color.black.opacity(0.35)))
+                            Button(action: { coordinator.togglePlayPause() }) {
+                                Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
+                                    .font(.system(size: iconSize * 1.2, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: playCircleSize, height: playCircleSize)
+                                    .background(Circle().fill(Color.black.opacity(0.45)))
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            Button(action: { coordinator.nextTrack() }) {
+                                Image(systemName: "forward.fill")
+                                    .font(.system(size: iconSize))
+                                    .foregroundColor(.white)
+                                    .frame(width: circleSize, height: circleSize)
+                                    .background(Circle().fill(Color.black.opacity(0.35)))
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            if theme.showLikeControl {
+                                Button(action: { controlsState.isLiked.toggle() }) {
+                                    Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
+                                        .font(.system(size: iconSize, weight: .medium))
+                                        .foregroundColor(controlsState.isLiked ? Color.red : .white)
+                                        .frame(width: circleSize, height: circleSize)
+                                        .background(Circle().fill(Color.black.opacity(0.35)))
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .padding(.top, 4)
+                        .transition(.opacity)
                     }
-                    .buttonStyle(PlainButtonStyle())
                 }
-                .padding(.top, 4)
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
-        .frame(width: 300, height: 300)
+        .frame(width: posterDim, height: posterDim)
     }
 
     @ViewBuilder
     private var artworkCardLayout: some View {
+        let cardDim = max(130, min(220, theme.artworkSize > 0 ? theme.artworkSize : 150))
         ZStack {
             // Full background poster image
-            posterThumbnail(size: 150, cornerRadius: 22)
+            posterThumbnail(size: cardDim, cornerRadius: theme.cornerRadius)
 
             // Subtle dark overlay for contrast
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.black.opacity(0.3))
+            RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous)
+                .fill(Color.black.opacity(0.35))
 
             // Overlaid centered info and controls
             VStack(spacing: 6) {
-                Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(1)
-                    .shadow(color: Color.black.opacity(0.6), radius: 4, x: 0, y: 1)
-
-                Text(coordinator.currentTrack.artist.isEmpty ? "Unknown" : coordinator.currentTrack.artist)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(Color.white.opacity(0.85))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(1)
-                    .shadow(color: Color.black.opacity(0.5), radius: 3, x: 0, y: 1)
-
-                HStack(spacing: 12) {
-                    Button(action: { coordinator.previousTrack() }) {
-                        Image(systemName: "backward.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(.white)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    Button(action: { coordinator.togglePlayPause() }) {
-                        Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    Button(action: { coordinator.nextTrack() }) {
-                        Image(systemName: "forward.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(.white)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+                if theme.trackNameStyle.isVisible {
+                    Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
+                        .font(fontFor(theme.trackNameStyle, defaultSize: 14))
+                        .foregroundColor(colorFor(theme.trackNameStyle))
+                        .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                        .lineLimit(1)
+                        .shadow(
+                            color: Color.black.opacity(max(0.4, theme.trackNameStyle.shadow.opacity)),
+                            radius: max(4, theme.trackNameStyle.shadow.radius),
+                            x: 0,
+                            y: max(1, theme.trackNameStyle.shadow.yOffset)
+                        )
                 }
-                .padding(.top, 2)
+
+                if theme.artistStyle.isVisible {
+                    Text(coordinator.currentTrack.artist.isEmpty ? "Unknown" : coordinator.currentTrack.artist)
+                        .font(fontFor(theme.artistStyle, defaultSize: 11))
+                        .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
+                        .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                        .lineLimit(1)
+                        .shadow(
+                            color: Color.black.opacity(max(0.3, theme.artistStyle.shadow.opacity)),
+                            radius: max(3, theme.artistStyle.shadow.radius),
+                            x: 0,
+                            y: max(1, theme.artistStyle.shadow.yOffset)
+                        )
+                }
+
+                if theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty {
+                    Text(coordinator.currentTrack.album)
+                        .font(fontFor(theme.albumStyle, defaultSize: 10))
+                        .foregroundColor(colorFor(theme.albumStyle, opacity: 0.70))
+                        .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                        .lineLimit(1)
+                        .shadow(
+                            color: Color.black.opacity(max(0.3, theme.albumStyle.shadow.opacity)),
+                            radius: max(3, theme.albumStyle.shadow.radius),
+                            x: 0,
+                            y: max(1, theme.albumStyle.shadow.yOffset)
+                        )
+                }
+
+                if theme.showPlaybackControls {
+                    let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
+                    if isVisible {
+                        let iconSize = theme.controlsSize.iconSize * 0.8
+                        HStack(spacing: theme.controlsSize.buttonPadding) {
+                            Button(action: { coordinator.previousTrack() }) {
+                                Image(systemName: "backward.fill")
+                                    .font(.system(size: iconSize))
+                                    .foregroundColor(.white)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            Button(action: { coordinator.togglePlayPause() }) {
+                                Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
+                                    .font(.system(size: iconSize * 1.15, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            Button(action: { coordinator.nextTrack() }) {
+                                Image(systemName: "forward.fill")
+                                    .font(.system(size: iconSize))
+                                    .foregroundColor(.white)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            if theme.showLikeControl {
+                                Button(action: { controlsState.isLiked.toggle() }) {
+                                    Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
+                                        .font(.system(size: iconSize, weight: .medium))
+                                        .foregroundColor(controlsState.isLiked ? Color.red : .white)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .padding(.top, 2)
+                        .transition(.opacity)
+                    }
+                }
             }
             .padding(12)
         }
-        .frame(width: 150, height: 150)
+        .frame(width: cardDim, height: cardDim)
+    }
+
+    // MARK: - Typography & Color Helpers
+
+    private func fontFor(_ config: TypographyLineConfig, defaultSize: CGFloat? = nil) -> Font {
+        let size = config.fontSize > 0 ? config.fontSize : (defaultSize ?? 13)
+        return Font.system(
+            size: size,
+            weight: config.fontWeight.fontWeight,
+            design: config.fontDesign.fontDesign
+        )
+    }
+
+    private func colorFor(_ config: TypographyLineConfig, opacity: Double = 1.0) -> Color {
+        let baseColor: Color
+        if isLightBackground {
+            baseColor = config.isWhiteText ? Color.black : Color(white: 0.2)
+        } else {
+            baseColor = config.isWhiteText ? Color.white : Color(white: 0.9)
+        }
+        return baseColor.opacity(opacity)
+    }
+
+    private var buttonColor: Color {
+        if isLightBackground {
+            return Color.black
+        }
+        return Color.white
     }
 
     // MARK: - Poster Thumbnail Helper

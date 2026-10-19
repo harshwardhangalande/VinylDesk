@@ -141,7 +141,7 @@ struct TestRunner {
             let data = legacyJson.data(using: .utf8)!
             let decoded = try JSONDecoder().decode(SleeveThemeConfig.self, from: data)
             assert(decoded.name == "Legacy Theme", "Name should decode properly")
-            assert(decoded.liquidGlassLevel == .system, "Missing liquidGlassLevel should default to .system")
+            assert(decoded.liquidGlassLevel == .low, "Missing liquidGlassLevel should default to .low")
             assert(decoded.liquidGlassTint == .neutral, "Missing liquidGlassTint should default to .neutral")
             assert(decoded.liquidGlassFluidPulse == true, "Missing liquidGlassFluidPulse should default to true")
         }
@@ -222,6 +222,28 @@ struct TestRunner {
             let theme = SleeveThemeConfig.presetTimeDashboard
             assert(theme.experienceMode == .dual, "Default experienceMode should be dual")
             assert(theme.isFloatingOverlayVisible == true, "Default isFloatingOverlayVisible should be true")
+        }
+
+        // Test 14: Dynamic Typography and Controls Configurations for New Themes
+        test("Dynamic Typography & Controls Configurations for New Themes") {
+            let dashboard = SleeveThemeConfig.presetTimeDashboard
+            assert(dashboard.liquidGlassLevel == .low, "presetTimeDashboard liquidGlassLevel should default to .low")
+            assert(dashboard.trackNameStyle.fontDesign == .sans, "presetTimeDashboard font design should be sans")
+            assert(dashboard.trackNameStyle.fontWeight == .bold, "presetTimeDashboard font weight should be bold")
+
+            let banner = SleeveThemeConfig.presetSplitBanner
+            assert(banner.showPlaybackControls == true, "Split Banner showPlaybackControls should be true")
+            assert(banner.controlsPlacement == .inlineWithText, "Split Banner controlsPlacement should be inlineWithText")
+            assert(banner.controlsSize == .medium, "Split Banner controlsSize should be medium")
+            assert(banner.trackNameStyle.isVisible == true, "Split Banner track name must be visible")
+
+            let compact = SleeveThemeConfig.presetCompactSquare
+            assert(compact.controlsSize == .small, "Compact Square controlsSize should be small")
+            assert(compact.albumStyle.isVisible == false, "Compact Square album should be hidden by default")
+
+            let poster = SleeveThemeConfig.presetArtworkPoster
+            assert(poster.trackNameStyle.fontSize == 18, "Artwork poster track font size should be 18")
+            assert(poster.artworkSize == 300, "Artwork poster size should be 300")
         }
 
         print("\n===============================")

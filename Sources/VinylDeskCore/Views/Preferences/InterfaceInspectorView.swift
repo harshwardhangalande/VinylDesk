@@ -147,7 +147,7 @@ public struct InterfaceInspectorView: View {
                 if themeManager.currentTheme.backdropMaterial == .liquidGlass || themeManager.currentTheme.backdropMaterial == .glass {
                     SleeveSectionCard {
                         HStack {
-                            Text("💧 Liquid Glass Intensity")
+                            Text("Liquid Glass Intensity")
                                 .font(.system(size: 13, weight: .semibold))
                             Spacer()
                             Text(themeManager.currentTheme.liquidGlassLevel.displayName)

@@ -164,7 +164,7 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
             glassMenu.addItem(item)
         }
 
-        let glassParentItem = NSMenuItem(title: "💧 Liquid Glass", action: nil, keyEquivalent: "")
+        let glassParentItem = NSMenuItem(title: "Liquid Glass", action: nil, keyEquivalent: "")
         glassParentItem.submenu = glassMenu
         menu.addItem(glassParentItem)
 

@@ -342,7 +342,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         floatOnTrackChange: Bool = false,
         experienceMode: ExperienceMode = .dual,
         isFloatingOverlayVisible: Bool = true,
-        liquidGlassLevel: LiquidGlassLevel = .system,
+        liquidGlassLevel: LiquidGlassLevel = .low,
         liquidGlassTint: LiquidGlassTint = .neutral,
         liquidGlassFluidPulse: Bool = true,
         liquidGlassCustomOpacity: CGFloat = 0.0,
@@ -423,7 +423,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.experienceMode = try container.decodeIfPresent(ExperienceMode.self, forKey: .experienceMode) ?? .dual
         self.isFloatingOverlayVisible = try container.decodeIfPresent(Bool.self, forKey: .isFloatingOverlayVisible) ?? true
 
-        self.liquidGlassLevel = try container.decodeIfPresent(LiquidGlassLevel.self, forKey: .liquidGlassLevel) ?? .system
+        self.liquidGlassLevel = try container.decodeIfPresent(LiquidGlassLevel.self, forKey: .liquidGlassLevel) ?? .low
         self.liquidGlassTint = try container.decodeIfPresent(LiquidGlassTint.self, forKey: .liquidGlassTint) ?? .neutral
         self.liquidGlassFluidPulse = try container.decodeIfPresent(Bool.self, forKey: .liquidGlassFluidPulse) ?? true
         self.liquidGlassCustomOpacity = try container.decodeIfPresent(CGFloat.self, forKey: .liquidGlassCustomOpacity) ?? 0.0
@@ -495,7 +495,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle),
         albumStyle: TypographyLineConfig(isVisible: false, fontDesign: .sans, fontWeight: .regular, fontSize: 11, isWhiteText: false, shadow: .none),
         windowPlacement: .desktop,
-        liquidGlassLevel: .system,
+        liquidGlassLevel: .low,
         liquidGlassTint: .albumArt,
         liquidGlassFluidPulse: true
     )
