@@ -5,7 +5,7 @@ import VinylDeskCore
 struct TestRunner {
     @MainActor
     static func main() {
-        print("▶ Running VinylDeskCore Test Suite...")
+        print("▶ Running Sleeve / VinylDesk Test Suite...")
         var passed = 0
         var failed = 0
 
@@ -60,32 +60,59 @@ struct TestRunner {
             assert(TrackInfo.formatTime(3599) == "59:59", "3599 should format as 59:59")
         }
 
-        // Test 4: Theme licensing
-        test("Theme licensing validation") {
-            let themeManager = ThemeManager.shared
-            assert(!themeManager.isProUnlocked, "Default should be free tier")
-
-            let invalidResult = themeManager.unlockPro(licenseKey: "INVALID-KEY-123")
-            assert(!invalidResult, "Invalid key should fail")
-            assert(!themeManager.isProUnlocked, "Pro should remain locked")
-
-            let validResult = themeManager.unlockPro(licenseKey: "VINYL-PRO-DEMO-99")
-            assert(validResult, "VINYL-PRO prefix should unlock")
-            assert(themeManager.isProUnlocked, "Pro should be unlocked")
-        }
-
-        // Test 5: SoundFX engine initialization
-        test("SoundFXEngine initialization") {
-            let engine = SoundFXEngine.shared
-            assert(engine.isCrackleEnabled, "Crackle should be enabled by default")
-        }
-
-        // Test 6: Demo track fallback
+        // Test 4: Demo track fallback
         test("Demo track fallback") {
             let demo = TrackInfo.demoTrack
             assert(demo.source == .demo, "Demo track should have demo source")
             assert(demo.duration > 0, "Demo track must have positive duration")
             assert(!demo.title.isEmpty, "Demo track must have title")
+        }
+
+        // Test 5: Sleeve Theme Presets Verification
+        test("Sleeve 3 theme presets verification") {
+            let presets = SleeveThemeConfig.allPresets
+            assert(presets.count >= 6, "Must provide at least 6 presets (Stack, Ider, Cole, Minimal, Retro Vinyl, Wooden Shelf)")
+
+            let names = presets.map { $0.name }
+            assert(names.contains("Stack"), "Must contain Stack theme")
+            assert(names.contains("Ider"), "Must contain Ider theme")
+            assert(names.contains("Cole"), "Must contain Cole theme")
+            assert(names.contains("Minimal"), "Must contain Minimal theme")
+            assert(names.contains("Retro Vinyl"), "Must contain Retro Vinyl theme")
+            assert(names.contains("Wooden Shelf"), "Must contain Wooden Shelf theme")
+        }
+
+        // Test 6: Sleeve Theme JSON Serialization & Deserialization
+        test("Sleeve Theme JSON roundtrip export & import") {
+            let originalTheme = SleeveThemeConfig.presetRetroVinyl
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(originalTheme)
+            let jsonString = String(data: data, encoding: .utf8)!
+            assert(!jsonString.isEmpty, "Encoded JSON must not be empty")
+
+            let decoder = JSONDecoder()
+            let decodedTheme = try decoder.decode(SleeveThemeConfig.self, from: data)
+            assert(decodedTheme.id == originalTheme.id, "Theme IDs must match")
+            assert(decodedTheme.layout == .vintageVinyl, "Layout must be vintageVinyl")
+            assert(decodedTheme.showSpinningRecord == true, "Spinning record must be enabled")
+        }
+
+        // Test 7: Sleeve Shadow and Corner Radius Attributes
+        test("Shadow styles and corner radii") {
+            assert(ShadowStyle.none.radius == 0, "None shadow must have 0 radius")
+            assert(ShadowStyle.deep.radius > ShadowStyle.regular.radius, "Deep shadow radius must exceed regular")
+            assert(ShadowStyle.deep.opacity > ShadowStyle.subtle.opacity, "Deep shadow opacity must exceed subtle")
+        }
+
+        // Test 8: Sleeve Theme Manager switching
+        test("SleeveThemeManager preset switching") {
+            let manager = SleeveThemeManager.shared
+            manager.selectPreset(SleeveThemeConfig.presetWoodenShelf)
+            assert(manager.currentTheme.name == "Wooden Shelf", "Active theme should be Wooden Shelf")
+            assert(manager.currentTheme.layout == .woodenShelf, "Layout should be woodenShelf")
+
+            manager.selectPreset(SleeveThemeConfig.presetStack)
+            assert(manager.currentTheme.name == "Stack", "Active theme should be Stack")
         }
 
         print("\n===============================")

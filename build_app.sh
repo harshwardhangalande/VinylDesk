@@ -41,7 +41,7 @@ cat <<EOF > "$CONTENTS/Info.plist"
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSAppleEventsUsageDescription</key>
-    <string>VinylDesk connects to Spotify and Apple Music to display current track metadata and artwork on the vintage turntable.</string>
+    <string>Sleeve connects to Spotify and Apple Music to display current track metadata and artwork on your desktop.</string>
 </dict>
 </plist>
 EOF
