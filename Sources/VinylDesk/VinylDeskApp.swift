@@ -170,6 +170,31 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
+        // Floating Overlay Toggle
+        let overlayItem = NSMenuItem(title: "Show Floating Screen Overlay", action: #selector(toggleFloatingOverlay), keyEquivalent: "")
+        overlayItem.target = self
+        if themeManager.currentTheme.isFloatingOverlayVisible && themeManager.currentTheme.experienceMode != .widgetOnly {
+            overlayItem.state = .on
+        }
+        menu.addItem(overlayItem)
+
+        // Experience Mode Submenu
+        let expMenu = NSMenu(title: "Experience Mode")
+        for mode in ExperienceMode.allCases {
+            let item = NSMenuItem(title: mode.rawValue, action: #selector(selectExperienceMode(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = mode
+            if themeManager.currentTheme.experienceMode == mode {
+                item.state = .on
+            }
+            expMenu.addItem(item)
+        }
+        let expParentItem = NSMenuItem(title: "Experience Mode", action: nil, keyEquivalent: "")
+        expParentItem.submenu = expMenu
+        menu.addItem(expParentItem)
+
+        menu.addItem(NSMenuItem.separator())
+
         // Preferences...
         let prefsItem = NSMenuItem(title: "Preferences...", action: #selector(openPreferences), keyEquivalent: ",")
         prefsItem.target = self
@@ -242,6 +267,18 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
     @objc private func selectLiquidGlassTint(_ sender: NSMenuItem) {
         if let tint = sender.representedObject as? LiquidGlassTint {
             SleeveThemeManager.shared.currentTheme.liquidGlassTint = tint
+            SleeveThemeManager.shared.saveCurrentTheme()
+        }
+    }
+
+    @objc private func toggleFloatingOverlay() {
+        SleeveThemeManager.shared.currentTheme.isFloatingOverlayVisible.toggle()
+        SleeveThemeManager.shared.saveCurrentTheme()
+    }
+
+    @objc private func selectExperienceMode(_ sender: NSMenuItem) {
+        if let mode = sender.representedObject as? ExperienceMode {
+            SleeveThemeManager.shared.currentTheme.experienceMode = mode
             SleeveThemeManager.shared.saveCurrentTheme()
         }
     }

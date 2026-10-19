@@ -232,6 +232,12 @@ public enum WindowLevelPlacement: String, CaseIterable, Codable, Sendable {
     case floating = "Above all windows"
 }
 
+public enum ExperienceMode: String, CaseIterable, Codable, Sendable {
+    case dual = "Dual Mode (Overlay + Widget)"
+    case overlayOnly = "Interactive Overlay Only"
+    case widgetOnly = "Native Desktop Widget Only"
+}
+
 // MARK: - Typography Line Config
 
 public struct TypographyLineConfig: Codable, Equatable, Sendable {
@@ -297,6 +303,8 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
     // Window & Behavior
     public var windowPlacement: WindowLevelPlacement
     public var floatOnTrackChange: Bool
+    public var experienceMode: ExperienceMode
+    public var isFloatingOverlayVisible: Bool
 
     // Liquid Glass Configuration
     public var liquidGlassLevel: LiquidGlassLevel
@@ -332,6 +340,8 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         albumStyle: TypographyLineConfig = TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .regular, fontSize: 12, isWhiteText: true, shadow: .none),
         windowPlacement: WindowLevelPlacement = .desktop,
         floatOnTrackChange: Bool = false,
+        experienceMode: ExperienceMode = .dual,
+        isFloatingOverlayVisible: Bool = true,
         liquidGlassLevel: LiquidGlassLevel = .system,
         liquidGlassTint: LiquidGlassTint = .neutral,
         liquidGlassFluidPulse: Bool = true,
@@ -364,6 +374,8 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.albumStyle = albumStyle
         self.windowPlacement = windowPlacement
         self.floatOnTrackChange = floatOnTrackChange
+        self.experienceMode = experienceMode
+        self.isFloatingOverlayVisible = isFloatingOverlayVisible
         self.liquidGlassLevel = liquidGlassLevel
         self.liquidGlassTint = liquidGlassTint
         self.liquidGlassFluidPulse = liquidGlassFluidPulse
@@ -377,6 +389,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         case artworkSize, cornerRadius, artworkShadow, lightingEffect, showSpinningRecord, shelfFinish
         case backdropMaterial, backdropCornerRadius, showPlaybackControls, controlsPlacement, controlsSize, showLikeControl, showProgressBar
         case trackNameStyle, artistStyle, albumStyle, windowPlacement, floatOnTrackChange
+        case experienceMode, isFloatingOverlayVisible
         case liquidGlassLevel, liquidGlassTint, liquidGlassFluidPulse, liquidGlassCustomOpacity, liquidGlassCustomBlur, liquidGlassRimShine
     }
 
@@ -407,6 +420,8 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.albumStyle = try container.decodeIfPresent(TypographyLineConfig.self, forKey: .albumStyle) ?? TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .regular, fontSize: 12, isWhiteText: true, shadow: .none)
         self.windowPlacement = try container.decodeIfPresent(WindowLevelPlacement.self, forKey: .windowPlacement) ?? .desktop
         self.floatOnTrackChange = try container.decodeIfPresent(Bool.self, forKey: .floatOnTrackChange) ?? false
+        self.experienceMode = try container.decodeIfPresent(ExperienceMode.self, forKey: .experienceMode) ?? .dual
+        self.isFloatingOverlayVisible = try container.decodeIfPresent(Bool.self, forKey: .isFloatingOverlayVisible) ?? true
 
         self.liquidGlassLevel = try container.decodeIfPresent(LiquidGlassLevel.self, forKey: .liquidGlassLevel) ?? .system
         self.liquidGlassTint = try container.decodeIfPresent(LiquidGlassTint.self, forKey: .liquidGlassTint) ?? .neutral
@@ -443,6 +458,8 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         try container.encode(albumStyle, forKey: .albumStyle)
         try container.encode(windowPlacement, forKey: .windowPlacement)
         try container.encode(floatOnTrackChange, forKey: .floatOnTrackChange)
+        try container.encode(experienceMode, forKey: .experienceMode)
+        try container.encode(isFloatingOverlayVisible, forKey: .isFloatingOverlayVisible)
         try container.encode(liquidGlassLevel, forKey: .liquidGlassLevel)
         try container.encode(liquidGlassTint, forKey: .liquidGlassTint)
         try container.encode(liquidGlassFluidPulse, forKey: .liquidGlassFluidPulse)

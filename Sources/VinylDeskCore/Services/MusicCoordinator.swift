@@ -102,6 +102,7 @@ public final class MusicCoordinator: ObservableObject {
         if metadataChanged {
             self.currentTrack = newTrack
             self.playbackPosition = newTrack.position
+            SharedWidgetStorage.shared.saveTrack(newTrack)
         } else {
             // Only update position if drifted significantly (> 3 seconds)
             if abs(self.playbackPosition - newTrack.position) > 3.0 {
@@ -114,6 +115,7 @@ public final class MusicCoordinator: ObservableObject {
     public func updateArtwork(_ data: Data, forTrackId trackId: String) {
         if currentTrack.id == trackId {
             self.currentTrack.artworkData = data
+            SharedWidgetStorage.shared.saveTrack(currentTrack)
         }
     }
 
@@ -142,6 +144,7 @@ public final class MusicCoordinator: ObservableObject {
             AppleMusicService.shared.togglePlayPause()
             currentTrack.isPlaying.toggle()
         }
+        SharedWidgetStorage.shared.saveTrack(currentTrack)
     }
 
     public func nextTrack() {

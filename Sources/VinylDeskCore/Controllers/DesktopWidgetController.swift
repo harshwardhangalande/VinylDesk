@@ -60,17 +60,31 @@ public final class DesktopWidgetController {
 
     private init() {
         SleeveThemeManager.shared.$currentTheme
-            .map(\.windowPlacement)
-            .removeDuplicates()
-            .sink { [weak self] placement in
+            .map { ($0.windowPlacement, $0.experienceMode, $0.isFloatingOverlayVisible) }
+            .removeDuplicates { $0 == $1 }
+            .sink { [weak self] placement, mode, isVisible in
                 self?.updateWindowLevel(for: placement)
+                self?.updateVisibility(mode: mode, isVisible: isVisible)
             }
             .store(in: &cancellables)
     }
 
+    public func updateVisibility(mode: ExperienceMode, isVisible: Bool) {
+        guard let panel = self.window else { return }
+        let shouldShow = isVisible && (mode != .widgetOnly)
+        if shouldShow {
+            panel.orderFront(nil)
+        } else {
+            panel.orderOut(nil)
+        }
+    }
+
     public func show() {
-        if let existing = window {
-            existing.orderFront(nil)
+        if window != nil {
+            updateVisibility(
+                mode: SleeveThemeManager.shared.currentTheme.experienceMode,
+                isVisible: SleeveThemeManager.shared.currentTheme.isFloatingOverlayVisible
+            )
             return
         }
 
@@ -105,8 +119,12 @@ public final class DesktopWidgetController {
             panel.setFrameOrigin(origin)
         }
 
-        panel.orderFront(nil)
         self.window = panel
+
+        let theme = SleeveThemeManager.shared.currentTheme
+        if theme.isFloatingOverlayVisible && theme.experienceMode != .widgetOnly {
+            panel.orderFront(nil)
+        }
     }
 
     public func updateWindowLevel(for placement: WindowLevelPlacement) {

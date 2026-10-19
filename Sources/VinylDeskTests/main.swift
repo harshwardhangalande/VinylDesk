@@ -199,6 +199,31 @@ struct TestRunner {
             assert(SleeveLayout.allCases.contains(.artworkCard), "SleeveLayout must contain artworkCard")
         }
 
+        // Test 13: SharedWidgetStorage & Dual Mode Verification
+        test("SharedWidgetStorage and Dual Mode configuration") {
+            let storage = SharedWidgetStorage.shared
+            let testTrack = TrackInfo(
+                title: "Dual Mode Test",
+                artist: "Widget Artist",
+                album: "Widget Album",
+                duration: 180,
+                position: 45,
+                isPlaying: true,
+                source: .spotify
+            )
+            storage.saveTrack(testTrack)
+
+            // Verify loadTrack fallback / roundtrip
+            let loaded = storage.loadTrack()
+            assert(!loaded.title.isEmpty, "Loaded track must not have empty title")
+
+            // Verify ExperienceMode cases
+            assert(ExperienceMode.allCases.count == 3, "ExperienceMode must have 3 modes")
+            let theme = SleeveThemeConfig.presetTimeDashboard
+            assert(theme.experienceMode == .dual, "Default experienceMode should be dual")
+            assert(theme.isFloatingOverlayVisible == true, "Default isFloatingOverlayVisible should be true")
+        }
+
         print("\n===============================")
         print("Test Suite Summary: \(passed) passed, \(failed) failed")
         print("===============================\n")

@@ -8,6 +8,7 @@ let package = Package(
     ],
     products: [
         .executable(name: "VinylDesk", targets: ["VinylDesk"]),
+        .executable(name: "VinylDeskWidgets", targets: ["VinylDeskWidgets"]),
         .library(name: "VinylDeskCore", targets: ["VinylDeskCore"]),
         .executable(name: "VinylDeskTests", targets: ["VinylDeskTests"])
     ],
@@ -25,6 +26,11 @@ let package = Package(
             name: "VinylDesk",
             dependencies: ["VinylDeskCore"],
             path: "Sources/VinylDesk"
+        ),
+        .executableTarget(
+            name: "VinylDeskWidgets",
+            dependencies: ["VinylDeskCore"],
+            path: "Sources/VinylDeskWidgets"
         ),
         .executableTarget(
             name: "VinylDeskTests",

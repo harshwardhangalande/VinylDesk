@@ -1,0 +1,64 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:Billable_App}",
+      "name": "Debug VinylDesk",
+      "target": "VinylDesk",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug VinylDesk"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:Billable_App}",
+      "name": "Release VinylDesk",
+      "target": "VinylDesk",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release VinylDesk"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:Billable_App}",
+      "name": "Debug VinylDeskWidgets",
+      "target": "VinylDeskWidgets",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug VinylDeskWidgets"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:Billable_App}",
+      "name": "Release VinylDeskWidgets",
+      "target": "VinylDeskWidgets",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release VinylDeskWidgets"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:Billable_App}",
+      "name": "Debug VinylDeskTests",
+      "target": "VinylDeskTests",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug VinylDeskTests"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:Billable_App}",
+      "name": "Release VinylDeskTests",
+      "target": "VinylDeskTests",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release VinylDeskTests"
+    }
+  ]
+}

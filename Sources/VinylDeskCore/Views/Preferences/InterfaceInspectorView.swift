@@ -11,6 +11,85 @@ public struct InterfaceInspectorView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                // Experience Mode (Dual Mode)
+                SleeveSectionCard {
+                    HStack {
+                        Text("✨ Desktop Experience Mode")
+                            .font(.system(size: 13, weight: .semibold))
+                        Spacer()
+                        Text("Dual Mode Ready")
+                            .font(.system(size: 10, weight: .bold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(Color.purple.opacity(0.3)))
+                            .foregroundColor(.purple)
+                    }
+
+                    Text("Choose how you want VinylDesk to appear on your Mac:")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+
+                    VStack(spacing: 8) {
+                        ForEach(ExperienceMode.allCases, id: \.self) { mode in
+                            Button(action: {
+                                themeManager.currentTheme.experienceMode = mode
+                                themeManager.saveCurrentTheme()
+                            }) {
+                                HStack(spacing: 10) {
+                                    Image(systemName: themeManager.currentTheme.experienceMode == mode ? "checkmark.circle.fill" : "circle")
+                                        .foregroundColor(themeManager.currentTheme.experienceMode == mode ? .cyan : .secondary)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(mode.rawValue)
+                                            .font(.system(size: 12, weight: themeManager.currentTheme.experienceMode == mode ? .bold : .medium))
+                                            .foregroundColor(.white)
+                                        Text(descriptionForMode(mode))
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.secondary)
+                                    }
+
+                                    Spacer()
+                                }
+                                .padding(10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(themeManager.currentTheme.experienceMode == mode ? Color(red: 0.15, green: 0.35, blue: 0.55).opacity(0.6) : Color(white: 0.18))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(themeManager.currentTheme.experienceMode == mode ? Color.cyan.opacity(0.7) : Color.white.opacity(0.06), lineWidth: 1)
+                                        )
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+
+                    Toggle("Show Floating Screen Overlay", isOn: Binding(
+                        get: { themeManager.currentTheme.isFloatingOverlayVisible },
+                        set: { themeManager.currentTheme.isFloatingOverlayVisible = $0; themeManager.saveCurrentTheme() }
+                    ))
+                    .toggleStyle(SwitchToggleStyle())
+                    .padding(.top, 4)
+
+                    // Helper banner for WidgetKit desktop widgets
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "info.circle.fill")
+                            .font(.system(size: 13))
+                            .foregroundColor(.cyan)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("How to add Native macOS Desktop Widget:")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(.white)
+                            Text("Right-click anywhere on your desktop wallpaper → select 'Edit Widgets...' → search for 'VinylDesk' → drag the widget onto your desktop.")
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(10)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue.opacity(0.12)))
+                    .padding(.top, 2)
+                }
+
                 // Backdrop Material
                 SleeveSectionCard {
                     Text("Backdrop Material")
@@ -349,6 +428,17 @@ public struct InterfaceInspectorView: View {
             return "Rich deep frosted glass with 52% opacity, 36pt blur, and luminous beveled rim."
         case .ultra:
             return "Hyper-stylized 72% liquid glass with 52pt caustic blur, chromatic edge refraction, and glowing rim."
+        }
+    }
+
+    private func descriptionForMode(_ mode: ExperienceMode) -> String {
+        switch mode {
+        case .dual:
+            return "Active interactive screen overlay AND native macOS Sonoma/Sequoia desktop widgets."
+        case .overlayOnly:
+            return "Interactive floating canvas with live shaders, turntable disc, and freeform dragging."
+        case .widgetOnly:
+            return "Hide floating overlay and use native macOS Desktop Widget gallery on wallpaper."
         }
     }
 }
