@@ -136,24 +136,12 @@ public struct SleeveWidgetView: View {
     @ViewBuilder
     private var backdropLayer: some View {
         switch theme.backdropMaterial {
-        case .glass:
-            RoundedRectangle(cornerRadius: theme.backdropCornerRadius, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: theme.backdropCornerRadius, style: .continuous)
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.35),
-                                    Color.white.opacity(0.08)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
-                )
-                .shadow(color: Color.black.opacity(0.25), radius: 14, x: 0, y: 8)
+        case .glass, .liquidGlass:
+            LiquidGlassBackdropView(
+                theme: theme,
+                coordinator: coordinator,
+                isLightBackground: isLightBackground
+            )
         case .blur:
             RoundedRectangle(cornerRadius: theme.backdropCornerRadius, style: .continuous)
                 .fill(.thinMaterial)

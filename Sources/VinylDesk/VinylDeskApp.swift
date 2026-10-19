@@ -263,6 +263,45 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
         posParentItem.submenu = posMenu
         menu.addItem(posParentItem)
 
+        // Liquid Glass Submenu
+        let glassMenu = NSMenu(title: "Liquid Glass")
+        for level in LiquidGlassLevel.allCases {
+            let item = NSMenuItem(title: level.displayName, action: #selector(selectLiquidGlassLevel(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = level
+            if themeManager.currentTheme.liquidGlassLevel == level && (themeManager.currentTheme.backdropMaterial == .liquidGlass || themeManager.currentTheme.backdropMaterial == .glass) {
+                item.state = .on
+            }
+            glassMenu.addItem(item)
+        }
+        glassMenu.addItem(NSMenuItem.separator())
+
+        let pulseItem = NSMenuItem(title: "Fluid Breathing Pulse", action: #selector(toggleLiquidGlassPulse), keyEquivalent: "")
+        pulseItem.target = self
+        if themeManager.currentTheme.liquidGlassFluidPulse {
+            pulseItem.state = .on
+        }
+        glassMenu.addItem(pulseItem)
+
+        glassMenu.addItem(NSMenuItem.separator())
+        let tintHeader = NSMenuItem(title: "Tint Mode:", action: nil, keyEquivalent: "")
+        tintHeader.isEnabled = false
+        glassMenu.addItem(tintHeader)
+
+        for tint in LiquidGlassTint.allCases {
+            let item = NSMenuItem(title: "  " + tint.rawValue, action: #selector(selectLiquidGlassTint(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = tint
+            if themeManager.currentTheme.liquidGlassTint == tint {
+                item.state = .on
+            }
+            glassMenu.addItem(item)
+        }
+
+        let glassParentItem = NSMenuItem(title: "💧 Liquid Glass", action: nil, keyEquivalent: "")
+        glassParentItem.submenu = glassMenu
+        menu.addItem(glassParentItem)
+
         menu.addItem(NSMenuItem.separator())
 
         // Preferences...
@@ -315,6 +354,29 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
     @objc private func snapToPosition(_ sender: NSMenuItem) {
         if let loc = sender.representedObject as? DesktopWidgetController.SnapLocation {
             DesktopWidgetController.shared.snap(to: loc)
+        }
+    }
+
+    @objc private func selectLiquidGlassLevel(_ sender: NSMenuItem) {
+        if let level = sender.representedObject as? LiquidGlassLevel {
+            SleeveThemeManager.shared.currentTheme.backdropMaterial = .liquidGlass
+            SleeveThemeManager.shared.currentTheme.liquidGlassLevel = level
+            SleeveThemeManager.shared.currentTheme.liquidGlassCustomOpacity = 0
+            SleeveThemeManager.shared.currentTheme.liquidGlassCustomBlur = 0
+            SleeveThemeManager.shared.currentTheme.liquidGlassRimShine = 0
+            SleeveThemeManager.shared.saveCurrentTheme()
+        }
+    }
+
+    @objc private func toggleLiquidGlassPulse() {
+        SleeveThemeManager.shared.currentTheme.liquidGlassFluidPulse.toggle()
+        SleeveThemeManager.shared.saveCurrentTheme()
+    }
+
+    @objc private func selectLiquidGlassTint(_ sender: NSMenuItem) {
+        if let tint = sender.representedObject as? LiquidGlassTint {
+            SleeveThemeManager.shared.currentTheme.liquidGlassTint = tint
+            SleeveThemeManager.shared.saveCurrentTheme()
         }
     }
 

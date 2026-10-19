@@ -115,6 +115,36 @@ struct TestRunner {
             assert(manager.currentTheme.name == "Stack", "Active theme should be Stack")
         }
 
+        // Test 9: Liquid Glass Intensity Levels & Attributes
+        test("Liquid Glass levels and tint attributes") {
+            assert(LiquidGlassLevel.allCases.count == 5, "Must provide 5 intensity levels (System, Low, Medium, High, Ultra)")
+            assert(LiquidGlassLevel.ultra.blurRadius > LiquidGlassLevel.high.blurRadius, "Ultra blur must exceed High blur")
+            assert(LiquidGlassLevel.high.blurRadius > LiquidGlassLevel.medium.blurRadius, "High blur must exceed Medium blur")
+            assert(LiquidGlassLevel.medium.blurRadius > LiquidGlassLevel.low.blurRadius, "Medium blur must exceed Low blur")
+
+            assert(LiquidGlassLevel.ultra.baseOpacity > LiquidGlassLevel.low.baseOpacity, "Ultra opacity must exceed Low opacity")
+            assert(LiquidGlassLevel.ultra.rimShine > LiquidGlassLevel.low.rimShine, "Ultra rim shine must exceed Low rim shine")
+            assert(LiquidGlassTint.allCases.count == 4, "Must provide 4 tint modes (Neutral, Album Dynamic, System Accent, Prismatic)")
+        }
+
+        // Test 10: Backward-Compatible Decoding without Liquid Glass fields
+        test("Backward-compatible theme decoding without liquid glass fields") {
+            let legacyJson = """
+            {
+                "id": "legacy-test-theme",
+                "name": "Legacy Theme",
+                "layout": "Horizontal",
+                "backdropMaterial": "Glass"
+            }
+            """
+            let data = legacyJson.data(using: .utf8)!
+            let decoded = try JSONDecoder().decode(SleeveThemeConfig.self, from: data)
+            assert(decoded.name == "Legacy Theme", "Name should decode properly")
+            assert(decoded.liquidGlassLevel == .system, "Missing liquidGlassLevel should default to .system")
+            assert(decoded.liquidGlassTint == .neutral, "Missing liquidGlassTint should default to .neutral")
+            assert(decoded.liquidGlassFluidPulse == true, "Missing liquidGlassFluidPulse should default to true")
+        }
+
         print("\n===============================")
         print("Test Suite Summary: \(passed) passed, \(failed) failed")
         print("===============================\n")

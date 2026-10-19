@@ -39,3 +39,10 @@ public final class PreferencesWindowState: ObservableObject {
     @Published public var showLivePreview: Bool = true
     public init() {}
 }
+
+@MainActor
+public final class LiquidShimmerState: ObservableObject {
+    @Published public var shimmerPhase: CGFloat = 0.0
+    public init() {}
+}
+

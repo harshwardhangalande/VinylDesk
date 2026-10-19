@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 // MARK: - Layout Enums
 
@@ -138,9 +139,78 @@ public enum ControlsSize: String, CaseIterable, Codable, Sendable {
     }
 }
 
+// MARK: - Liquid Glass Levels & Materials
+
+public enum LiquidGlassLevel: String, CaseIterable, Codable, Sendable {
+    case system = "System"
+    case low = "Low"
+    case medium = "Medium"
+    case high = "High"
+    case ultra = "Ultra"
+
+    public var displayName: String {
+        switch self {
+        case .system: return "System Level"
+        case .low: return "Low (15%)"
+        case .medium: return "Medium (30%)"
+        case .high: return "High (50%)"
+        case .ultra: return "Ultra / Liquid (70%)"
+        }
+    }
+
+    public var blurRadius: CGFloat {
+        switch self {
+        case .system: return 28
+        case .low: return 12
+        case .medium: return 22
+        case .high: return 36
+        case .ultra: return 52
+        }
+    }
+
+    public var baseOpacity: CGFloat {
+        switch self {
+        case .system:
+            return NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency ? 0.92 : 0.35
+        case .low: return 0.18
+        case .medium: return 0.32
+        case .high: return 0.52
+        case .ultra: return 0.72
+        }
+    }
+
+    public var rimShine: CGFloat {
+        switch self {
+        case .system: return 0.40
+        case .low: return 0.22
+        case .medium: return 0.45
+        case .high: return 0.65
+        case .ultra: return 0.88
+        }
+    }
+
+    public var visualEffectMaterial: NSVisualEffectView.Material {
+        switch self {
+        case .system: return .underWindowBackground
+        case .low: return .hudWindow
+        case .medium: return .popover
+        case .high: return .sheet
+        case .ultra: return .fullScreenUI
+        }
+    }
+}
+
+public enum LiquidGlassTint: String, CaseIterable, Codable, Sendable {
+    case neutral = "Neutral"
+    case albumArt = "Album Dynamic"
+    case systemAccent = "System Accent"
+    case prismatic = "Prismatic"
+}
+
 public enum BackdropMaterial: String, CaseIterable, Codable, Sendable {
     case blur = "Blur"
     case glass = "Glass"
+    case liquidGlass = "Liquid Glass"
     case solid = "Solid"
     case clear = "Clear"
 }
@@ -223,6 +293,14 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
     public var windowPlacement: WindowLevelPlacement
     public var floatOnTrackChange: Bool
 
+    // Liquid Glass Configuration
+    public var liquidGlassLevel: LiquidGlassLevel
+    public var liquidGlassTint: LiquidGlassTint
+    public var liquidGlassFluidPulse: Bool
+    public var liquidGlassCustomOpacity: CGFloat // 0 means use level default
+    public var liquidGlassCustomBlur: CGFloat // 0 means use level default
+    public var liquidGlassRimShine: CGFloat // 0 means use level default
+
     public init(
         id: String = UUID().uuidString,
         name: String = "Custom Theme",
@@ -248,7 +326,13 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         artistStyle: TypographyLineConfig = TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle),
         albumStyle: TypographyLineConfig = TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .regular, fontSize: 12, isWhiteText: true, shadow: .none),
         windowPlacement: WindowLevelPlacement = .desktop,
-        floatOnTrackChange: Bool = false
+        floatOnTrackChange: Bool = false,
+        liquidGlassLevel: LiquidGlassLevel = .system,
+        liquidGlassTint: LiquidGlassTint = .neutral,
+        liquidGlassFluidPulse: Bool = true,
+        liquidGlassCustomOpacity: CGFloat = 0.0,
+        liquidGlassCustomBlur: CGFloat = 0.0,
+        liquidGlassRimShine: CGFloat = 0.0
     ) {
         self.id = id
         self.name = name
@@ -275,6 +359,91 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.albumStyle = albumStyle
         self.windowPlacement = windowPlacement
         self.floatOnTrackChange = floatOnTrackChange
+        self.liquidGlassLevel = liquidGlassLevel
+        self.liquidGlassTint = liquidGlassTint
+        self.liquidGlassFluidPulse = liquidGlassFluidPulse
+        self.liquidGlassCustomOpacity = liquidGlassCustomOpacity
+        self.liquidGlassCustomBlur = liquidGlassCustomBlur
+        self.liquidGlassRimShine = liquidGlassRimShine
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, layout, flipHorizontal, horizontalAlign, verticalAlign, containerWidth
+        case artworkSize, cornerRadius, artworkShadow, lightingEffect, showSpinningRecord, shelfFinish
+        case backdropMaterial, backdropCornerRadius, showPlaybackControls, controlsPlacement, controlsSize, showLikeControl, showProgressBar
+        case trackNameStyle, artistStyle, albumStyle, windowPlacement, floatOnTrackChange
+        case liquidGlassLevel, liquidGlassTint, liquidGlassFluidPulse, liquidGlassCustomOpacity, liquidGlassCustomBlur, liquidGlassRimShine
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        self.name = try container.decodeIfPresent(String.self, forKey: .name) ?? "Custom Theme"
+        self.layout = try container.decodeIfPresent(SleeveLayout.self, forKey: .layout) ?? .horizontal
+        self.flipHorizontal = try container.decodeIfPresent(Bool.self, forKey: .flipHorizontal) ?? false
+        self.horizontalAlign = try container.decodeIfPresent(HorizontalAlign.self, forKey: .horizontalAlign) ?? .left
+        self.verticalAlign = try container.decodeIfPresent(VerticalAlign.self, forKey: .verticalAlign) ?? .middle
+        self.containerWidth = try container.decodeIfPresent(CGFloat.self, forKey: .containerWidth) ?? 200
+        self.artworkSize = try container.decodeIfPresent(CGFloat.self, forKey: .artworkSize) ?? 140
+        self.cornerRadius = try container.decodeIfPresent(CGFloat.self, forKey: .cornerRadius) ?? 12
+        self.artworkShadow = try container.decodeIfPresent(ShadowStyle.self, forKey: .artworkShadow) ?? .regular
+        self.lightingEffect = try container.decodeIfPresent(LightingEffect.self, forKey: .lightingEffect) ?? .spotlight
+        self.showSpinningRecord = try container.decodeIfPresent(Bool.self, forKey: .showSpinningRecord) ?? false
+        self.shelfFinish = try container.decodeIfPresent(ShelfFinish.self, forKey: .shelfFinish) ?? .darkWalnut
+        self.backdropMaterial = try container.decodeIfPresent(BackdropMaterial.self, forKey: .backdropMaterial) ?? .glass
+        self.backdropCornerRadius = try container.decodeIfPresent(CGFloat.self, forKey: .backdropCornerRadius) ?? 20
+        self.showPlaybackControls = try container.decodeIfPresent(Bool.self, forKey: .showPlaybackControls) ?? true
+        self.controlsPlacement = try container.decodeIfPresent(ControlsPlacement.self, forKey: .controlsPlacement) ?? .onHover
+        self.controlsSize = try container.decodeIfPresent(ControlsSize.self, forKey: .controlsSize) ?? .medium
+        self.showLikeControl = try container.decodeIfPresent(Bool.self, forKey: .showLikeControl) ?? true
+        self.showProgressBar = try container.decodeIfPresent(Bool.self, forKey: .showProgressBar) ?? true
+        self.trackNameStyle = try container.decodeIfPresent(TypographyLineConfig.self, forKey: .trackNameStyle) ?? TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 15, isWhiteText: true, shadow: .subtle)
+        self.artistStyle = try container.decodeIfPresent(TypographyLineConfig.self, forKey: .artistStyle) ?? TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle)
+        self.albumStyle = try container.decodeIfPresent(TypographyLineConfig.self, forKey: .albumStyle) ?? TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .regular, fontSize: 12, isWhiteText: true, shadow: .none)
+        self.windowPlacement = try container.decodeIfPresent(WindowLevelPlacement.self, forKey: .windowPlacement) ?? .desktop
+        self.floatOnTrackChange = try container.decodeIfPresent(Bool.self, forKey: .floatOnTrackChange) ?? false
+
+        self.liquidGlassLevel = try container.decodeIfPresent(LiquidGlassLevel.self, forKey: .liquidGlassLevel) ?? .system
+        self.liquidGlassTint = try container.decodeIfPresent(LiquidGlassTint.self, forKey: .liquidGlassTint) ?? .neutral
+        self.liquidGlassFluidPulse = try container.decodeIfPresent(Bool.self, forKey: .liquidGlassFluidPulse) ?? true
+        self.liquidGlassCustomOpacity = try container.decodeIfPresent(CGFloat.self, forKey: .liquidGlassCustomOpacity) ?? 0.0
+        self.liquidGlassCustomBlur = try container.decodeIfPresent(CGFloat.self, forKey: .liquidGlassCustomBlur) ?? 0.0
+        self.liquidGlassRimShine = try container.decodeIfPresent(CGFloat.self, forKey: .liquidGlassRimShine) ?? 0.0
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(layout, forKey: .layout)
+        try container.encode(flipHorizontal, forKey: .flipHorizontal)
+        try container.encode(horizontalAlign, forKey: .horizontalAlign)
+        try container.encode(verticalAlign, forKey: .verticalAlign)
+        try container.encode(containerWidth, forKey: .containerWidth)
+        try container.encode(artworkSize, forKey: .artworkSize)
+        try container.encode(cornerRadius, forKey: .cornerRadius)
+        try container.encode(artworkShadow, forKey: .artworkShadow)
+        try container.encode(lightingEffect, forKey: .lightingEffect)
+        try container.encode(showSpinningRecord, forKey: .showSpinningRecord)
+        try container.encode(shelfFinish, forKey: .shelfFinish)
+        try container.encode(backdropMaterial, forKey: .backdropMaterial)
+        try container.encode(backdropCornerRadius, forKey: .backdropCornerRadius)
+        try container.encode(showPlaybackControls, forKey: .showPlaybackControls)
+        try container.encode(controlsPlacement, forKey: .controlsPlacement)
+        try container.encode(controlsSize, forKey: .controlsSize)
+        try container.encode(showLikeControl, forKey: .showLikeControl)
+        try container.encode(showProgressBar, forKey: .showProgressBar)
+        try container.encode(trackNameStyle, forKey: .trackNameStyle)
+        try container.encode(artistStyle, forKey: .artistStyle)
+        try container.encode(albumStyle, forKey: .albumStyle)
+        try container.encode(windowPlacement, forKey: .windowPlacement)
+        try container.encode(floatOnTrackChange, forKey: .floatOnTrackChange)
+        try container.encode(liquidGlassLevel, forKey: .liquidGlassLevel)
+        try container.encode(liquidGlassTint, forKey: .liquidGlassTint)
+        try container.encode(liquidGlassFluidPulse, forKey: .liquidGlassFluidPulse)
+        try container.encode(liquidGlassCustomOpacity, forKey: .liquidGlassCustomOpacity)
+        try container.encode(liquidGlassCustomBlur, forKey: .liquidGlassCustomBlur)
+        try container.encode(liquidGlassRimShine, forKey: .liquidGlassRimShine)
     }
 
     // MARK: - Built-in Presets Matching Sleeve 3 & Sleeve 3.3
@@ -293,7 +462,7 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         lightingEffect: .glare,
         showSpinningRecord: false,
         shelfFinish: .darkWalnut,
-        backdropMaterial: .glass,
+        backdropMaterial: .liquidGlass,
         backdropCornerRadius: 24,
         showPlaybackControls: true,
         controlsPlacement: .onHover,
@@ -303,7 +472,10 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 15, isWhiteText: true, shadow: .subtle),
         artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle),
         albumStyle: TypographyLineConfig(isVisible: false, fontDesign: .sans, fontWeight: .regular, fontSize: 11, isWhiteText: false, shadow: .none),
-        windowPlacement: .desktop
+        windowPlacement: .desktop,
+        liquidGlassLevel: .system,
+        liquidGlassTint: .albumArt,
+        liquidGlassFluidPulse: true
     )
 
     public static let presetHorizontalCard = SleeveThemeConfig(
