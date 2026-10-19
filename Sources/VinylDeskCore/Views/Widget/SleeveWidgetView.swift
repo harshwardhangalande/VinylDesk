@@ -36,6 +36,11 @@ public struct SleeveWidgetView: View {
         }
         .padding(theme.backdropMaterial == .clear ? 8 : 16)
         .background(backdropLayer)
+        .overlay(
+            WindowDragGripView()
+                .padding(theme.backdropMaterial == .clear ? 2 : 6),
+            alignment: .topTrailing
+        )
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.2)) {
                 hoverState.isHovered = hovering

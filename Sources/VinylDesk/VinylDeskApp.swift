@@ -129,6 +129,38 @@ final class DesktopWidgetController {
             panel.setFrame(newFrame, display: true, animate: false)
         }
     }
+
+    public enum SnapLocation: String, CaseIterable, Sendable {
+        case bottomLeft = "Bottom-Left ↙"
+        case bottomRight = "Bottom-Right ↘"
+        case topLeft = "Top-Left ↖"
+        case topRight = "Top-Right ↗"
+        case center = "Center ⏺"
+    }
+
+    func snap(to location: SnapLocation) {
+        guard let panel = self.window, let screen = panel.screen ?? NSScreen.main else { return }
+        let visible = screen.visibleFrame
+        let w = panel.frame.width
+        let h = panel.frame.height
+        let margin: CGFloat = 40
+
+        var newOrigin: CGPoint
+        switch location {
+        case .bottomLeft:
+            newOrigin = CGPoint(x: visible.minX + margin, y: visible.minY + margin)
+        case .bottomRight:
+            newOrigin = CGPoint(x: visible.maxX - w - margin, y: visible.minY + margin)
+        case .topLeft:
+            newOrigin = CGPoint(x: visible.minX + margin, y: visible.maxY - h - margin)
+        case .topRight:
+            newOrigin = CGPoint(x: visible.maxX - w - margin, y: visible.maxY - h - margin)
+        case .center:
+            newOrigin = CGPoint(x: visible.midX - w / 2, y: visible.midY - h / 2)
+        }
+
+        panel.setFrameOrigin(newOrigin)
+    }
 }
 
 // MARK: - Native Status Bar Item Manager
@@ -219,6 +251,18 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
         sourceParentItem.submenu = sourceMenu
         menu.addItem(sourceParentItem)
 
+        // Position Submenu
+        let posMenu = NSMenu(title: "Position")
+        for loc in DesktopWidgetController.SnapLocation.allCases {
+            let item = NSMenuItem(title: loc.rawValue, action: #selector(snapToPosition(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = loc
+            posMenu.addItem(item)
+        }
+        let posParentItem = NSMenuItem(title: "Position", action: nil, keyEquivalent: "")
+        posParentItem.submenu = posMenu
+        menu.addItem(posParentItem)
+
         menu.addItem(NSMenuItem.separator())
 
         // Preferences...
@@ -265,6 +309,12 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
                 MusicCoordinator.shared.isDemoModeForced = true
                 MusicCoordinator.shared.currentTrack = TrackInfo.demoTrack
             }
+        }
+    }
+
+    @objc private func snapToPosition(_ sender: NSMenuItem) {
+        if let loc = sender.representedObject as? DesktopWidgetController.SnapLocation {
+            DesktopWidgetController.shared.snap(to: loc)
         }
     }
 
