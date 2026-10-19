@@ -82,13 +82,7 @@ public struct SleeveWidgetView: View {
 
     @ViewBuilder
     private var textOnlyLayout: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "music.note")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.accentColor)
-
-            typographyView
-        }
+        typographyView
     }
 
     @ViewBuilder
