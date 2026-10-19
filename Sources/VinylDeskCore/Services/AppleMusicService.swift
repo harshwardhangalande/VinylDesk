@@ -54,7 +54,7 @@ public final class AppleMusicService: @unchecked Sendable {
 
         guard !name.isEmpty else { return nil }
 
-        let artworkData = fetchArtworkData()
+        let artworkData = getOrFetchArtwork(for: trackId)
 
         return TrackInfo(
             id: trackId,
@@ -69,7 +69,32 @@ public final class AppleMusicService: @unchecked Sendable {
         )
     }
 
-    private func fetchArtworkData() -> Data? {
+    private var artworkDataCache = [String: Data]()
+    private let cacheQueue = DispatchQueue(label: "VinylDesk.AppleMusicCache")
+
+    private func getOrFetchArtwork(for trackId: String) -> Data? {
+        let cached = cacheQueue.sync { artworkDataCache[trackId] }
+        if let cached = cached {
+            return cached
+        }
+
+        Task.detached(priority: .userInitiated) { [weak self] in
+            let data = self?.fetchArtworkDataDirect()
+            if let data = data, !data.isEmpty {
+                self?.cacheQueue.sync {
+                    self?.artworkDataCache[trackId] = data
+                }
+
+                await MainActor.run {
+                    MusicCoordinator.shared.updateArtwork(data, forTrackId: trackId)
+                }
+            }
+        }
+
+        return nil
+    }
+
+    private func fetchArtworkDataDirect() -> Data? {
         let artworkScript = """
         tell application "Music"
             if running and (count of artworks of current track) > 0 then

@@ -25,8 +25,28 @@ public final class SoundFXEngine: @unchecked Sendable {
         }
     }
 
+    private let engineLock = NSLock()
+
     private init() {
-        setupAudioEngine()
+        // Audio engine is started lazily upon first sound effect or crackle demand
+    }
+
+    @discardableResult
+    private func ensureEngineStarted() -> Bool {
+        engineLock.lock()
+        defer { engineLock.unlock() }
+
+        if let engine = audioEngine, engine.isRunning {
+            return true
+        }
+
+        if audioEngine == nil {
+            setupAudioEngine()
+        } else if let engine = audioEngine, !engine.isRunning {
+            try? engine.start()
+        }
+
+        return audioEngine?.isRunning == true
     }
 
     private func setupAudioEngine() {
@@ -56,7 +76,7 @@ public final class SoundFXEngine: @unchecked Sendable {
     // MARK: - Procedural Needle Drop Sound
 
     public func playNeedleDrop() {
-        guard let engine = audioEngine, engine.isRunning else { return }
+        guard ensureEngineStarted(), let engine = audioEngine, engine.isRunning else { return }
 
         let sampleRate: Double = 44100
         let duration: Double = 0.25
@@ -94,7 +114,7 @@ public final class SoundFXEngine: @unchecked Sendable {
     // MARK: - Procedural Vinyl Crackle Loop
 
     public func startCrackle() {
-        guard isCrackleEnabled, !isPlayingCrackle, let node = noiseNode, let engine = audioEngine, engine.isRunning else { return }
+        guard isCrackleEnabled, !isPlayingCrackle, ensureEngineStarted(), let node = noiseNode, let engine = audioEngine, engine.isRunning else { return }
 
         let sampleRate: Double = 44100
         let duration: Double = 4.0 // 4 second seamless looping buffer
@@ -132,12 +152,15 @@ public final class SoundFXEngine: @unchecked Sendable {
     public func stopCrackle() {
         noiseNode?.stop()
         isPlayingCrackle = false
+        if let engine = audioEngine, engine.isRunning {
+            engine.pause()
+        }
     }
 
     // MARK: - Scratch Sound
 
     public func playScratchSound(velocity: Double) {
-        guard let engine = audioEngine, engine.isRunning else { return }
+        guard ensureEngineStarted(), let engine = audioEngine, engine.isRunning else { return }
 
         let sampleRate: Double = 44100
         let duration: Double = 0.08

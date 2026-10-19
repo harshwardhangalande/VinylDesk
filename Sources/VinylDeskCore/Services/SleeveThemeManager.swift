@@ -6,6 +6,8 @@ public final class SleeveThemeManager: ObservableObject {
     public static let shared = SleeveThemeManager()
 
     private let userDefaultsKey = "VinylDesk.SleeveTheme.Current"
+    private let saveSubject = PassthroughSubject<Void, Never>()
+    private var cancellables = Set<AnyCancellable>()
 
     @Published public var currentTheme: SleeveThemeConfig
     @Published public var presets: [SleeveThemeConfig]
@@ -21,14 +23,25 @@ public final class SleeveThemeManager: ObservableObject {
         } else {
             self.currentTheme = SleeveThemeConfig.presetStack
         }
+
+        saveSubject
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .sink { [weak self] in
+                self?.persistThemeDirectly()
+            }
+            .store(in: &cancellables)
     }
 
     public func selectPreset(_ preset: SleeveThemeConfig) {
         self.currentTheme = preset
-        saveCurrentTheme()
+        persistThemeDirectly()
     }
 
     public func saveCurrentTheme() {
+        saveSubject.send()
+    }
+
+    public func persistThemeDirectly() {
         if let encoded = try? JSONEncoder().encode(currentTheme) {
             UserDefaults.standard.set(encoded, forKey: userDefaultsKey)
         }
@@ -36,7 +49,7 @@ public final class SleeveThemeManager: ObservableObject {
 
     public func resetToDefault() {
         self.currentTheme = SleeveThemeConfig.presetStack
-        saveCurrentTheme()
+        persistThemeDirectly()
     }
 
     public func exportThemeJSON() -> String? {

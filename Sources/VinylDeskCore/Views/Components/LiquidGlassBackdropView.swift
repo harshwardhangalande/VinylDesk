@@ -239,7 +239,7 @@ public struct LiquidGlassBackdropView: View {
             EmptyView()
 
         case .albumArt:
-            if let artworkColor = ArtworkColorExtractor.dominantColor(from: coordinator.currentTrack.artworkData) {
+            if let artworkColor = ArtworkCache.shared.dominantColor(for: coordinator.currentTrack.id, data: coordinator.currentTrack.artworkData) {
                 LinearGradient(
                     colors: [
                         artworkColor.opacity(0.30),

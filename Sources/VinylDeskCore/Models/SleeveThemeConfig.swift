@@ -10,6 +10,11 @@ public enum SleeveLayout: String, CaseIterable, Codable, Sendable {
     case textOnly = "Text only"
     case vintageVinyl = "Retro Vinyl"
     case woodenShelf = "Wooden Shelf"
+    case timeDashboard = "Time Dashboard"
+    case artworkPoster = "Artwork Poster"
+    case compactSquare = "Compact Square"
+    case splitBanner = "Split Banner"
+    case artworkCard = "Artwork Card"
 }
 
 public enum HorizontalAlign: String, CaseIterable, Codable, Sendable {
@@ -613,12 +618,152 @@ public struct SleeveThemeConfig: Identifiable, Codable, Equatable, Sendable {
         windowPlacement: .desktop
     )
 
+    public static let presetTimeDashboard = SleeveThemeConfig(
+        id: "preset-time-dashboard",
+        name: "Time Dashboard",
+        layout: .timeDashboard,
+        flipHorizontal: false,
+        horizontalAlign: .left,
+        verticalAlign: .middle,
+        containerWidth: 320,
+        artworkSize: 44,
+        cornerRadius: 8,
+        artworkShadow: .none,
+        lightingEffect: .none,
+        showSpinningRecord: false,
+        shelfFinish: .matteBlack,
+        backdropMaterial: .liquidGlass,
+        backdropCornerRadius: 22,
+        showPlaybackControls: true,
+        controlsPlacement: .inlineWithText,
+        controlsSize: .medium,
+        showLikeControl: false,
+        showProgressBar: false,
+        trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 14, isWhiteText: true, shadow: .none),
+        artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .semibold, fontSize: 10, isWhiteText: true, shadow: .none),
+        albumStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 10, isWhiteText: true, shadow: .none),
+        windowPlacement: .desktop
+    )
+
+    public static let presetArtworkPoster = SleeveThemeConfig(
+        id: "preset-artwork-poster",
+        name: "Artwork Poster",
+        layout: .artworkPoster,
+        flipHorizontal: false,
+        horizontalAlign: .center,
+        verticalAlign: .bottom,
+        containerWidth: 300,
+        artworkSize: 300,
+        cornerRadius: 24,
+        artworkShadow: .deep,
+        lightingEffect: .none,
+        showSpinningRecord: false,
+        shelfFinish: .matteBlack,
+        backdropMaterial: .clear,
+        backdropCornerRadius: 24,
+        showPlaybackControls: true,
+        controlsPlacement: .inlineWithText,
+        controlsSize: .medium,
+        showLikeControl: false,
+        showProgressBar: false,
+        trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 18, isWhiteText: true, shadow: .subtle),
+        artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .semibold, fontSize: 13, isWhiteText: true, shadow: .subtle),
+        albumStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .regular, fontSize: 12, isWhiteText: true, shadow: .none),
+        windowPlacement: .desktop
+    )
+
+    public static let presetCompactSquare = SleeveThemeConfig(
+        id: "preset-compact-square",
+        name: "Compact Square",
+        layout: .compactSquare,
+        flipHorizontal: false,
+        horizontalAlign: .left,
+        verticalAlign: .middle,
+        containerWidth: 128,
+        artworkSize: 42,
+        cornerRadius: 8,
+        artworkShadow: .none,
+        lightingEffect: .none,
+        showSpinningRecord: false,
+        shelfFinish: .matteBlack,
+        backdropMaterial: .liquidGlass,
+        backdropCornerRadius: 20,
+        showPlaybackControls: true,
+        controlsPlacement: .inlineWithText,
+        controlsSize: .small,
+        showLikeControl: false,
+        showProgressBar: false,
+        trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 12, isWhiteText: true, shadow: .none),
+        artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .regular, fontSize: 10, isWhiteText: true, shadow: .none),
+        albumStyle: TypographyLineConfig(isVisible: false, fontDesign: .sans, fontWeight: .regular, fontSize: 9, isWhiteText: false, shadow: .none),
+        windowPlacement: .desktop
+    )
+
+    public static let presetSplitBanner = SleeveThemeConfig(
+        id: "preset-split-banner",
+        name: "Split Banner",
+        layout: .splitBanner,
+        flipHorizontal: false,
+        horizontalAlign: .left,
+        verticalAlign: .middle,
+        containerWidth: 290,
+        artworkSize: 100,
+        cornerRadius: 12,
+        artworkShadow: .subtle,
+        lightingEffect: .none,
+        showSpinningRecord: false,
+        shelfFinish: .matteBlack,
+        backdropMaterial: .liquidGlass,
+        backdropCornerRadius: 22,
+        showPlaybackControls: true,
+        controlsPlacement: .inlineWithText,
+        controlsSize: .medium,
+        showLikeControl: false,
+        showProgressBar: false,
+        trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 15, isWhiteText: true, shadow: .none),
+        artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 12, isWhiteText: true, shadow: .none),
+        albumStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .regular, fontSize: 11, isWhiteText: true, shadow: .none),
+        windowPlacement: .desktop
+    )
+
+    public static let presetArtworkCard = SleeveThemeConfig(
+        id: "preset-artwork-card",
+        name: "Squircle Card",
+        layout: .artworkCard,
+        flipHorizontal: false,
+        horizontalAlign: .center,
+        verticalAlign: .middle,
+        containerWidth: 150,
+        artworkSize: 150,
+        cornerRadius: 22,
+        artworkShadow: .deep,
+        lightingEffect: .none,
+        showSpinningRecord: false,
+        shelfFinish: .matteBlack,
+        backdropMaterial: .clear,
+        backdropCornerRadius: 22,
+        showPlaybackControls: true,
+        controlsPlacement: .inlineWithText,
+        controlsSize: .medium,
+        showLikeControl: false,
+        showProgressBar: false,
+        trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 14, isWhiteText: true, shadow: .subtle),
+        artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 11, isWhiteText: true, shadow: .subtle),
+        albumStyle: TypographyLineConfig(isVisible: false, fontDesign: .sans, fontWeight: .regular, fontSize: 10, isWhiteText: false, shadow: .none),
+        windowPlacement: .desktop
+    )
+
     public static let allPresets: [SleeveThemeConfig] = [
+        .presetTimeDashboard,
+        .presetSplitBanner,
+        .presetArtworkPoster,
+        .presetCompactSquare,
+        .presetArtworkCard,
         .presetStack,
         .presetHorizontalCard,
+        .presetRetroVinyl,
         .presetColeSerif,
         .presetMinimal,
-        .presetRetroVinyl,
         .presetWoodenShelf
     ]
 }

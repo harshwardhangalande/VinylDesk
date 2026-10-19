@@ -93,6 +93,77 @@ public struct LayoutInspectorView: View {
                                 RoundedRectangle(cornerRadius: 1).fill(Color.brown).frame(width: 30, height: 4)
                             }
                         }
+
+                        SleeveOptionCard(
+                            title: "Time Dashboard",
+                            isSelected: themeManager.currentTheme.layout == .timeDashboard,
+                            action: {
+                                themeManager.currentTheme.layout = .timeDashboard
+                                themeManager.saveCurrentTheme()
+                            }
+                        ) {
+                            VStack(spacing: 3) {
+                                HStack(spacing: 4) {
+                                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: 10, height: 4)
+                                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: 10, height: 4)
+                                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: 10, height: 4)
+                                }
+                                RoundedRectangle(cornerRadius: 2).fill(Color.cyan.opacity(0.4)).frame(width: 32, height: 10)
+                            }
+                        }
+
+                        SleeveOptionCard(
+                            title: "Split Banner",
+                            isSelected: themeManager.currentTheme.layout == .splitBanner,
+                            action: {
+                                themeManager.currentTheme.layout = .splitBanner
+                                themeManager.saveCurrentTheme()
+                            }
+                        ) {
+                            HStack(spacing: 4) {
+                                RoundedRectangle(cornerRadius: 3).fill(Color.orange).frame(width: 18, height: 18)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Rectangle().fill(Color.white.opacity(0.8)).frame(width: 16, height: 3)
+                                    Rectangle().fill(Color.white.opacity(0.4)).frame(width: 12, height: 2)
+                                }
+                            }
+                        }
+
+                        SleeveOptionCard(
+                            title: "Artwork Poster",
+                            isSelected: themeManager.currentTheme.layout == .artworkPoster,
+                            action: {
+                                themeManager.currentTheme.layout = .artworkPoster
+                                themeManager.saveCurrentTheme()
+                            }
+                        ) {
+                            RoundedRectangle(cornerRadius: 4).fill(Color.red.opacity(0.8)).frame(width: 24, height: 24)
+                        }
+
+                        SleeveOptionCard(
+                            title: "Compact Square",
+                            isSelected: themeManager.currentTheme.layout == .compactSquare,
+                            action: {
+                                themeManager.currentTheme.layout = .compactSquare
+                                themeManager.saveCurrentTheme()
+                            }
+                        ) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                RoundedRectangle(cornerRadius: 2).fill(Color.pink).frame(width: 12, height: 12)
+                                Rectangle().fill(Color.white.opacity(0.7)).frame(width: 18, height: 2)
+                            }
+                        }
+
+                        SleeveOptionCard(
+                            title: "Squircle Card",
+                            isSelected: themeManager.currentTheme.layout == .artworkCard,
+                            action: {
+                                themeManager.currentTheme.layout = .artworkCard
+                                themeManager.saveCurrentTheme()
+                            }
+                        ) {
+                            RoundedRectangle(cornerRadius: 6).fill(Color.indigo).frame(width: 22, height: 22)
+                        }
                     }
 
                     Toggle("Flip horizontally", isOn: Binding(

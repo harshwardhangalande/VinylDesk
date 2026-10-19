@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import VinylDeskCore
 
 @main
@@ -143,6 +144,59 @@ struct TestRunner {
             assert(decoded.liquidGlassLevel == .system, "Missing liquidGlassLevel should default to .system")
             assert(decoded.liquidGlassTint == .neutral, "Missing liquidGlassTint should default to .neutral")
             assert(decoded.liquidGlassFluidPulse == true, "Missing liquidGlassFluidPulse should default to true")
+        }
+
+        // Test 11: ArtworkCache caching & retrieval
+        test("ArtworkCache in-memory caching") {
+            let cache = ArtworkCache.shared
+            // Non-image data returns nil
+            let nonImageData = "invalid-data".data(using: .utf8)!
+            assert(cache.dominantColor(for: "invalid", data: nonImageData) == nil, "Invalid data should return nil")
+
+            // Create valid 10x10 bitmap image data
+            let rep = NSBitmapImageRep(
+                bitmapDataPlanes: nil,
+                pixelsWide: 10,
+                pixelsHigh: 10,
+                bitsPerSample: 8,
+                samplesPerPixel: 4,
+                hasAlpha: true,
+                isPlanar: false,
+                colorSpaceName: .deviceRGB,
+                bytesPerRow: 40,
+                bitsPerPixel: 32
+            )!
+            let tiffData = rep.tiffRepresentation!
+
+            // Dominant color calculation with valid image
+            let color = cache.dominantColor(for: "test-track-1", data: tiffData)
+            assert(color != nil, "Dominant color should compute for valid image data")
+
+            // Second call hits cache
+            let cachedColor = cache.dominantColor(for: "test-track-1", data: tiffData)
+            assert(cachedColor != nil, "Cached color should return successfully")
+
+            // Image retrieval and downscaling
+            let img = cache.image(for: "test-track-1", data: tiffData, maxDimension: 5)
+            assert(img != nil, "Downscaled image should return")
+            assert(img!.size.width <= 10, "Width should be <= max dimension")
+        }
+
+        // Test 12: New Screenshot Layouts and Presets Verification
+        test("Screenshot widget presets and layouts verification") {
+            let presets = SleeveThemeConfig.allPresets
+            let names = presets.map { $0.name }
+            assert(names.contains("Time Dashboard"), "Must contain Time Dashboard preset")
+            assert(names.contains("Split Banner"), "Must contain Split Banner preset")
+            assert(names.contains("Artwork Poster"), "Must contain Artwork Poster preset")
+            assert(names.contains("Compact Square"), "Must contain Compact Square preset")
+            assert(names.contains("Squircle Card"), "Must contain Squircle Card preset")
+
+            assert(SleeveLayout.allCases.contains(.timeDashboard), "SleeveLayout must contain timeDashboard")
+            assert(SleeveLayout.allCases.contains(.splitBanner), "SleeveLayout must contain splitBanner")
+            assert(SleeveLayout.allCases.contains(.artworkPoster), "SleeveLayout must contain artworkPoster")
+            assert(SleeveLayout.allCases.contains(.compactSquare), "SleeveLayout must contain compactSquare")
+            assert(SleeveLayout.allCases.contains(.artworkCard), "SleeveLayout must contain artworkCard")
         }
 
         print("\n===============================")

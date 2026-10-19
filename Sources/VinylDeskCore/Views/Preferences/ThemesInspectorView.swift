@@ -105,6 +105,16 @@ public struct ThemesInspectorView: View {
             Image(systemName: "record.circle").font(.system(size: 18)).foregroundColor(.yellow)
         case .woodenShelf:
             Image(systemName: "archivebox.fill").font(.system(size: 18)).foregroundColor(.brown)
+        case .timeDashboard:
+            Image(systemName: "timer").font(.system(size: 18)).foregroundColor(.green)
+        case .splitBanner:
+            Image(systemName: "rectangle.split.2x1.fill").font(.system(size: 18)).foregroundColor(.orange)
+        case .artworkPoster:
+            Image(systemName: "photo.fill").font(.system(size: 18)).foregroundColor(.red)
+        case .compactSquare:
+            Image(systemName: "square.fill").font(.system(size: 18)).foregroundColor(.pink)
+        case .artworkCard:
+            Image(systemName: "app.fill").font(.system(size: 18)).foregroundColor(.purple)
         }
     }
 }

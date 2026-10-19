@@ -65,6 +65,8 @@ public struct SleeveTypographyView: View {
 
             // Optional Progress Bar
             if theme.showProgressBar {
+                let duration = max(1.0, coordinator.currentTrack.duration)
+                let progress = min(max(coordinator.playbackPosition / duration, 0.0), 1.0)
                 VStack(spacing: 3) {
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
@@ -74,14 +76,14 @@ public struct SleeveTypographyView: View {
 
                             Capsule()
                                 .fill(Color.primary.opacity(0.75))
-                                .frame(width: max(0, min(geo.size.width * CGFloat(coordinator.currentTrack.progress), geo.size.width)), height: 3)
+                                .frame(width: max(0, min(geo.size.width * CGFloat(progress), geo.size.width)), height: 3)
                         }
                     }
                     .frame(height: 3)
                     .padding(.top, 4)
 
                     HStack {
-                        Text(coordinator.currentTrack.formattedPosition)
+                        Text(TrackInfo.formatTime(coordinator.playbackPosition))
                             .font(.system(size: 9, design: .monospaced))
                             .foregroundColor(Color.primary.opacity(0.5))
                         Spacer()

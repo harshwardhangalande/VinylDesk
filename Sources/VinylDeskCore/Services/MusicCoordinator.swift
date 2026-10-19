@@ -7,6 +7,7 @@ public final class MusicCoordinator: ObservableObject {
     public static let shared = MusicCoordinator()
 
     @Published public var currentTrack: TrackInfo = TrackInfo.demoTrack
+    @Published public var playbackPosition: TimeInterval = 42.0
     @Published public var isDemoModeForced: Bool = false
     @Published public var isScratching: Bool = false
     @Published public var scratchAngleOffset: Double = 0.0
@@ -14,15 +15,23 @@ public final class MusicCoordinator: ObservableObject {
     private var pollTimer: AnyCancellable?
     private var demoTimer: AnyCancellable?
     private var cancellables = Set<AnyCancellable>()
+    private var notificationTokens = [NSObjectProtocol]()
 
     public init() {
+        self.playbackPosition = currentTrack.position
         setupNotificationObservers()
         startPolling()
     }
 
+    deinit {
+        for token in notificationTokens {
+            DistributedNotificationCenter.default().removeObserver(token)
+        }
+    }
+
     private func setupNotificationObservers() {
         // Spotify distributed notification
-        DistributedNotificationCenter.default().addObserver(
+        let spotifyToken = DistributedNotificationCenter.default().addObserver(
             forName: NSNotification.Name("com.spotify.client.PlaybackStateChanged"),
             object: nil,
             queue: .main
@@ -31,9 +40,10 @@ public final class MusicCoordinator: ObservableObject {
                 self?.refreshTrack()
             }
         }
+        notificationTokens.append(spotifyToken)
 
         // Apple Music distributed notification
-        DistributedNotificationCenter.default().addObserver(
+        let appleMusicToken = DistributedNotificationCenter.default().addObserver(
             forName: NSNotification.Name("com.apple.Music.playerInfo"),
             object: nil,
             queue: .main
@@ -42,6 +52,7 @@ public final class MusicCoordinator: ObservableObject {
                 self?.refreshTrack()
             }
         }
+        notificationTokens.append(appleMusicToken)
     }
 
     public func startPolling() {
@@ -81,14 +92,28 @@ public final class MusicCoordinator: ObservableObject {
     }
 
     public func updateTrackIfChanged(_ newTrack: TrackInfo) {
-        if currentTrack.id != newTrack.id ||
-           currentTrack.title != newTrack.title ||
-           currentTrack.artist != newTrack.artist ||
-           currentTrack.isPlaying != newTrack.isPlaying ||
-           currentTrack.source != newTrack.source {
+        let metadataChanged = currentTrack.id != newTrack.id ||
+            currentTrack.title != newTrack.title ||
+            currentTrack.artist != newTrack.artist ||
+            currentTrack.isPlaying != newTrack.isPlaying ||
+            currentTrack.source != newTrack.source ||
+            (newTrack.artworkData != nil && currentTrack.artworkData == nil)
+
+        if metadataChanged {
             self.currentTrack = newTrack
+            self.playbackPosition = newTrack.position
         } else {
-            self.currentTrack.position = newTrack.position
+            // Only update position if drifted significantly (> 3 seconds)
+            if abs(self.playbackPosition - newTrack.position) > 3.0 {
+                self.playbackPosition = newTrack.position
+                self.currentTrack.position = newTrack.position
+            }
+        }
+    }
+
+    public func updateArtwork(_ data: Data, forTrackId trackId: String) {
+        if currentTrack.id == trackId {
+            self.currentTrack.artworkData = data
         }
     }
 
@@ -96,10 +121,11 @@ public final class MusicCoordinator: ObservableObject {
         guard !isScratching else { return }
 
         if currentTrack.isPlaying {
-            var newPos = currentTrack.position + 1.0
+            var newPos = playbackPosition + 1.0
             if newPos >= currentTrack.duration {
                 newPos = 0
             }
+            playbackPosition = newPos
             currentTrack.position = newPos
         }
     }
@@ -121,6 +147,7 @@ public final class MusicCoordinator: ObservableObject {
     public func nextTrack() {
         if isDemoModeForced || currentTrack.source == .demo {
             currentTrack.position = 0
+            playbackPosition = 0
             currentTrack.isPlaying = true
         } else if currentTrack.source == .spotify {
             SpotifyService.shared.nextTrack()
@@ -134,6 +161,7 @@ public final class MusicCoordinator: ObservableObject {
     public func previousTrack() {
         if isDemoModeForced || currentTrack.source == .demo {
             currentTrack.position = 0
+            playbackPosition = 0
         } else if currentTrack.source == .spotify {
             SpotifyService.shared.previousTrack()
             refreshTrack()
@@ -146,6 +174,7 @@ public final class MusicCoordinator: ObservableObject {
     public func seek(to progress: Double) {
         let clamped = max(0.0, min(progress, 1.0))
         let targetSeconds = currentTrack.duration * clamped
+        playbackPosition = targetSeconds
         currentTrack.position = targetSeconds
 
         if !isDemoModeForced {

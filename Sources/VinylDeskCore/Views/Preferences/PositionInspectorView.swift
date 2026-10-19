@@ -66,7 +66,7 @@ public struct PositionInspectorView: View {
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                         Button("Top-Left ↖") {
-                            snapWidget(to: .topLeft)
+                            DesktopWidgetController.shared.snap(to: .topLeft)
                         }
                         .buttonStyle(PlainButtonStyle())
                         .frame(maxWidth: .infinity)
@@ -74,7 +74,7 @@ public struct PositionInspectorView: View {
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color(white: 0.20)))
 
                         Button("Top-Right ↗") {
-                            snapWidget(to: .topRight)
+                            DesktopWidgetController.shared.snap(to: .topRight)
                         }
                         .buttonStyle(PlainButtonStyle())
                         .frame(maxWidth: .infinity)
@@ -82,7 +82,7 @@ public struct PositionInspectorView: View {
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color(white: 0.20)))
 
                         Button("Bottom-Left ↙") {
-                            snapWidget(to: .bottomLeft)
+                            DesktopWidgetController.shared.snap(to: .bottomLeft)
                         }
                         .buttonStyle(PlainButtonStyle())
                         .frame(maxWidth: .infinity)
@@ -90,7 +90,7 @@ public struct PositionInspectorView: View {
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color(white: 0.20)))
 
                         Button("Bottom-Right ↘") {
-                            snapWidget(to: .bottomRight)
+                            DesktopWidgetController.shared.snap(to: .bottomRight)
                         }
                         .buttonStyle(PlainButtonStyle())
                         .frame(maxWidth: .infinity)
@@ -100,34 +100,6 @@ public struct PositionInspectorView: View {
                 }
             }
             .padding(16)
-        }
-    }
-
-    private enum ScreenCorner {
-        case topLeft, topRight, bottomLeft, bottomRight
-    }
-
-    private func snapWidget(to corner: ScreenCorner) {
-        guard let screen = NSScreen.main else { return }
-        let screenFrame = screen.visibleFrame
-
-        for window in NSApp.windows where !window.title.contains("Preferences") && window.className.contains("SwiftUI") {
-            var newOrigin = window.frame.origin
-            let winWidth = window.frame.width
-            let winHeight = window.frame.height
-
-            switch corner {
-            case .topLeft:
-                newOrigin = CGPoint(x: screenFrame.minX + 30, y: screenFrame.maxY - winHeight - 30)
-            case .topRight:
-                newOrigin = CGPoint(x: screenFrame.maxX - winWidth - 30, y: screenFrame.maxY - winHeight - 30)
-            case .bottomLeft:
-                newOrigin = CGPoint(x: screenFrame.minX + 30, y: screenFrame.minY + 30)
-            case .bottomRight:
-                newOrigin = CGPoint(x: screenFrame.maxX - winWidth - 30, y: screenFrame.minY + 30)
-            }
-
-            window.setFrameOrigin(newOrigin)
         }
     }
 }

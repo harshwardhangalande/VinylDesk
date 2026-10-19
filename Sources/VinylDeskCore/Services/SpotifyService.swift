@@ -52,10 +52,7 @@ public final class SpotifyService: @unchecked Sendable {
 
         guard !name.isEmpty else { return nil }
 
-        var artworkData: Data? = nil
-        if let url = URL(string: artworkUrlString), !artworkUrlString.isEmpty {
-            artworkData = try? Data(contentsOf: url)
-        }
+        let artworkData = getOrFetchArtwork(for: trackId, urlString: artworkUrlString)
 
         return TrackInfo(
             id: trackId,
@@ -68,6 +65,32 @@ public final class SpotifyService: @unchecked Sendable {
             artworkData: artworkData,
             source: .spotify
         )
+    }
+
+    private var artworkDataCache = [String: Data]()
+    private let cacheQueue = DispatchQueue(label: "VinylDesk.SpotifyCache")
+
+    private func getOrFetchArtwork(for trackId: String, urlString: String) -> Data? {
+        let cached = cacheQueue.sync { artworkDataCache[trackId] }
+        if let cached = cached {
+            return cached
+        }
+
+        guard let url = URL(string: urlString), !urlString.isEmpty else { return nil }
+
+        // Fetch asynchronously off the main thread
+        Task.detached(priority: .userInitiated) { [weak self] in
+            guard let (data, _) = try? await URLSession.shared.data(from: url) else { return }
+            self?.cacheQueue.sync {
+                self?.artworkDataCache[trackId] = data
+            }
+
+            await MainActor.run {
+                MusicCoordinator.shared.updateArtwork(data, forTrackId: trackId)
+            }
+        }
+
+        return nil
     }
 
     public func togglePlayPause() {

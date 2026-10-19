@@ -261,8 +261,11 @@ public struct SleeveArtworkView: View {
 
     @ViewBuilder
     private var albumCoverImage: some View {
-        if let data = coordinator.currentTrack.artworkData,
-           let nsImage = NSImage(data: data) {
+        if let nsImage = ArtworkCache.shared.image(
+            for: coordinator.currentTrack.id,
+            data: coordinator.currentTrack.artworkData,
+            maxDimension: max(160, theme.artworkSize * 2)
+        ) {
             Image(nsImage: nsImage)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
