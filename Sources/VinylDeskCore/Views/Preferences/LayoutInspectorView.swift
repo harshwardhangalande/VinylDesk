@@ -148,10 +148,11 @@ public struct LayoutInspectorView: View {
                                 themeManager.saveCurrentTheme()
                             }
                         ) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                RoundedRectangle(cornerRadius: 2).fill(Color.pink).frame(width: 12, height: 12)
-                                Rectangle().fill(Color.white.opacity(0.7)).frame(width: 18, height: 2)
+                            ZStack(alignment: .bottom) {
+                                RoundedRectangle(cornerRadius: 3).fill(Color.pink).frame(width: 22, height: 22)
+                                Rectangle().fill(Color.black.opacity(0.6)).frame(width: 22, height: 6)
                             }
+                            .clipShape(RoundedRectangle(cornerRadius: 3))
                         }
 
                         SleeveOptionCard(

@@ -225,22 +225,47 @@ struct VinylDeskWidgetEntryView: View {
 
     // MARK: - System Small (Compact Square)
     private var smallWidgetView: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            let cornerR = max(4, min(14, entry.theme.cornerRadius))
-            widgetArtwork(size: 44, cornerRadius: cornerR)
+        ZStack(alignment: .bottomLeading) {
+            // Full background poster filling all available space - no margin or padding
+            GeometryReader { geo in
+                Group {
+                    if let artwork = entry.artwork {
+                        Image(nsImage: artwork)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else {
+                        ZStack {
+                            LinearGradient(
+                                colors: [Color.orange.opacity(0.85), Color.red.opacity(0.75)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            Image(systemName: "music.note")
+                                .font(.system(size: 36))
+                                .foregroundColor(.white.opacity(0.85))
+                        }
+                    }
+                }
+                .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
+                .overlay(lightingOverlay(size: max(geo.size.width, geo.size.height), cornerRadius: 0))
+            }
 
-            VStack(alignment: .leading, spacing: 2) {
+            // Dark gradient overlay for text readability at bottom
+            LinearGradient(
+                colors: [Color.clear, Color.black.opacity(0.35), Color.black.opacity(0.85)],
+                startPoint: .center,
+                endPoint: .bottom
+            )
+
+            // Overlaid track info & controls
+            VStack(alignment: .leading, spacing: 3) {
                 if entry.theme.trackNameStyle.isVisible {
-                    Text(entry.track.title)
+                    Text(entry.track.title.isEmpty ? "No Track Playing" : entry.track.title)
                         .font(fontFor(entry.theme.trackNameStyle, defaultSize: 13))
-                        .foregroundColor(colorFor(entry.theme.trackNameStyle))
+                        .foregroundColor(.white)
                         .lineLimit(1)
-                        .shadow(
-                            color: Color.black.opacity(entry.theme.trackNameStyle.shadow.opacity),
-                            radius: entry.theme.trackNameStyle.shadow.radius * 0.5,
-                            x: 0,
-                            y: entry.theme.trackNameStyle.shadow.yOffset * 0.5
-                        )
+                        .shadow(color: Color.black.opacity(0.8), radius: 3, x: 0, y: 1)
                 }
 
                 let showArtist = entry.theme.artistStyle.isVisible && !entry.track.artist.isEmpty
@@ -249,45 +274,44 @@ struct VinylDeskWidgetEntryView: View {
                     let sub = (showArtist ? entry.track.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? entry.track.album : "")
                     Text(sub)
                         .font(fontFor(entry.theme.artistStyle, defaultSize: 10))
-                        .foregroundColor(colorFor(entry.theme.artistStyle, opacity: 0.70))
+                        .foregroundColor(Color.white.opacity(0.85))
                         .lineLimit(1)
+                        .shadow(color: Color.black.opacity(0.8), radius: 2, x: 0, y: 1)
+                }
+
+                if entry.theme.showPlaybackControls {
+                    let iconSize = entry.theme.controlsSize.iconSize * 0.75
+                    HStack {
+                        Button(intent: PreviousTrackIntent()) {
+                            Image(systemName: "backward.fill")
+                                .font(.system(size: iconSize))
+                                .foregroundColor(.white)
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer()
+
+                        Button(intent: TogglePlayIntent()) {
+                            Image(systemName: entry.track.isPlaying ? "pause.fill" : "play.fill")
+                                .font(.system(size: iconSize * 1.15, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer()
+
+                        Button(intent: NextTrackIntent()) {
+                            Image(systemName: "forward.fill")
+                                .font(.system(size: iconSize))
+                                .foregroundColor(.white)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.top, 2)
                 }
             }
-
-            Spacer(minLength: 0)
-
-            if entry.theme.showPlaybackControls {
-                let iconSize = entry.theme.controlsSize.iconSize * 0.8
-                HStack {
-                    Button(intent: PreviousTrackIntent()) {
-                        Image(systemName: "backward.fill")
-                            .font(.system(size: iconSize))
-                            .foregroundColor(.white)
-                    }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-
-                    Button(intent: TogglePlayIntent()) {
-                        Image(systemName: entry.track.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: iconSize * 1.25, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-
-                    Button(intent: NextTrackIntent()) {
-                        Image(systemName: "forward.fill")
-                            .font(.system(size: iconSize))
-                            .foregroundColor(.white)
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal, 4)
-            }
+            .padding(10)
         }
-        .padding(12)
     }
 
     // MARK: - System Medium (Split Banner or Time Dashboard)
@@ -561,6 +585,7 @@ public struct VinylDeskWidget: Widget {
         .configurationDisplayName("VinylDesk Music")
         .description("Track metadata, cover art, and interactive playback controls right on your desktop.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .contentMarginsDisabled()
     }
 }
 

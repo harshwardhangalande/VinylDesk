@@ -30,13 +30,16 @@ public struct NativeDragHandleRepresentable: NSViewRepresentable {
 // MARK: - Window Drag Grip View
 
 public struct WindowDragGripView: View {
-    @StateObject private var hoverState = WidgetHoverState()
+    var isWidgetHovered: Bool = false
+    @StateObject private var localHoverState = WidgetHoverState()
 
-    public init() {}
+    public init(isWidgetHovered: Bool = false) {
+        self.isWidgetHovered = isWidgetHovered
+    }
 
     public var body: some View {
         ZStack {
-            // Visual Glass Grip Dot (Hidden until hovered)
+            // Visual Glass Grip Dot (Visible whenever widget is hovered or grip is hovered)
             ZStack {
                 Circle()
                     .fill(Color.white.opacity(0.35))
@@ -59,7 +62,7 @@ public struct WindowDragGripView: View {
                     }
                 }
             }
-            .opacity(hoverState.isHovered ? 1.0 : 0.0)
+            .opacity((isWidgetHovered || localHoverState.isHovered) ? 1.0 : 0.0)
 
             // Native NSView with open-hand cursor & performDrag
             NativeDragHandleRepresentable()
@@ -69,7 +72,7 @@ public struct WindowDragGripView: View {
         .contentShape(Circle())
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.18)) {
-                hoverState.isHovered = hovering
+                localHoverState.isHovered = hovering
             }
         }
         .help("Drag to reposition widget anywhere on your screen")

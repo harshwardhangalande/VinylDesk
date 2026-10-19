@@ -19,7 +19,7 @@ public struct SleeveWidgetView: View {
     }
 
     private var isEdgeToEdge: Bool {
-        theme.layout == .artworkPoster || theme.layout == .artworkCard
+        theme.layout == .artworkPoster || theme.layout == .artworkCard || theme.layout == .compactSquare
     }
 
     public var body: some View {
@@ -49,10 +49,10 @@ public struct SleeveWidgetView: View {
                 artworkCardLayout
             }
         }
-        .padding(isEdgeToEdge ? (theme.artworkShadow == .none ? 0 : 12) : (theme.backdropMaterial == .clear ? 8 : (theme.layout == .compactSquare ? 12 : 14)))
+        .padding(theme.layout == .compactSquare ? 0 : (isEdgeToEdge ? (theme.artworkShadow == .none ? 0 : 12) : (theme.backdropMaterial == .clear ? 8 : 14)))
         .background(isEdgeToEdge ? nil : backdropLayer)
         .overlay(
-            WindowDragGripView()
+            WindowDragGripView(isWidgetHovered: hoverState.isHovered)
                 .padding(isEdgeToEdge ? 8 : 6),
             alignment: .topTrailing
         )
@@ -419,22 +419,32 @@ public struct SleeveWidgetView: View {
 
     @ViewBuilder
     private var compactSquareLayout: some View {
-        VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 8) {
-            // Square poster thumbnail aligned symmetrically from top and leading (12pt from each edge)
-            posterThumbnail(size: 44, cornerRadius: max(4, min(14, theme.cornerRadius)))
+        let squareDim = max(150, min(240, theme.artworkSize > 0 ? theme.artworkSize : 160))
+        ZStack(alignment: .bottomLeading) {
+            // Full background poster filling all available space - no margin or padding
+            posterThumbnail(size: squareDim, cornerRadius: theme.cornerRadius)
 
-            VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 2) {
+            // Dark gradient overlay for text readability at bottom
+            LinearGradient(
+                colors: [Color.clear, Color.black.opacity(0.35), Color.black.opacity(0.85)],
+                startPoint: .center,
+                endPoint: .bottom
+            )
+            .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
+
+            // Overlaid track info & controls
+            VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 3) {
                 if theme.trackNameStyle.isVisible {
                     Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                        .font(fontFor(theme.trackNameStyle, defaultSize: 12))
+                        .font(fontFor(theme.trackNameStyle, defaultSize: 13))
                         .foregroundColor(colorFor(theme.trackNameStyle))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(1)
                         .shadow(
-                            color: Color.black.opacity(theme.trackNameStyle.shadow.opacity),
-                            radius: theme.trackNameStyle.shadow.radius,
+                            color: Color.black.opacity(max(0.4, theme.trackNameStyle.shadow.opacity)),
+                            radius: max(3, theme.trackNameStyle.shadow.radius),
                             x: 0,
-                            y: theme.trackNameStyle.shadow.yOffset
+                            y: max(1, theme.trackNameStyle.shadow.yOffset)
                         )
                 }
 
@@ -444,59 +454,61 @@ public struct SleeveWidgetView: View {
                     let sub = (showArtist ? coordinator.currentTrack.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? coordinator.currentTrack.album : "")
                     Text(sub)
                         .font(fontFor(theme.artistStyle, defaultSize: 10))
-                        .foregroundColor(colorFor(theme.artistStyle, opacity: 0.65))
+                        .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(1)
                         .shadow(
-                            color: Color.black.opacity(theme.artistStyle.shadow.opacity),
-                            radius: theme.artistStyle.shadow.radius,
+                            color: Color.black.opacity(max(0.3, theme.artistStyle.shadow.opacity)),
+                            radius: max(3, theme.artistStyle.shadow.radius),
                             x: 0,
-                            y: theme.artistStyle.shadow.yOffset
+                            y: max(1, theme.artistStyle.shadow.yOffset)
                         )
                 }
-            }
 
-            // Controls
-            if theme.showPlaybackControls {
-                let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
-                if isVisible {
-                    let iconSize = theme.controlsSize.iconSize * 0.75
-                    HStack(spacing: theme.controlsSize.buttonPadding) {
-                        Button(action: { coordinator.previousTrack() }) {
-                            Image(systemName: "backward.fill")
-                                .font(.system(size: iconSize))
-                                .foregroundColor(buttonColor)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        Button(action: { coordinator.togglePlayPause() }) {
-                            Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                                .font(.system(size: iconSize * 1.15, weight: .bold))
-                                .foregroundColor(buttonColor)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        Button(action: { coordinator.nextTrack() }) {
-                            Image(systemName: "forward.fill")
-                                .font(.system(size: iconSize))
-                                .foregroundColor(buttonColor)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        if theme.showLikeControl {
-                            Button(action: { controlsState.isLiked.toggle() }) {
-                                Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
+                // Controls
+                if theme.showPlaybackControls {
+                    let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
+                    if isVisible {
+                        let iconSize = theme.controlsSize.iconSize * 0.75
+                        HStack(spacing: theme.controlsSize.buttonPadding) {
+                            Button(action: { coordinator.previousTrack() }) {
+                                Image(systemName: "backward.fill")
                                     .font(.system(size: iconSize))
-                                    .foregroundColor(controlsState.isLiked ? Color.red : buttonColor)
+                                    .foregroundColor(.white)
                             }
                             .buttonStyle(PlainButtonStyle())
+
+                            Button(action: { coordinator.togglePlayPause() }) {
+                                Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
+                                    .font(.system(size: iconSize * 1.15, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            Button(action: { coordinator.nextTrack() }) {
+                                Image(systemName: "forward.fill")
+                                    .font(.system(size: iconSize))
+                                    .foregroundColor(.white)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            if theme.showLikeControl {
+                                Button(action: { controlsState.isLiked.toggle() }) {
+                                    Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
+                                        .font(.system(size: iconSize))
+                                        .foregroundColor(controlsState.isLiked ? Color.red : .white)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
                         }
+                        .padding(.top, 2)
+                        .transition(.opacity)
                     }
-                    .transition(.opacity)
                 }
             }
+            .padding(10)
         }
-        .frame(width: max(128, theme.containerWidth))
+        .frame(width: squareDim, height: squareDim)
     }
 
     @ViewBuilder
