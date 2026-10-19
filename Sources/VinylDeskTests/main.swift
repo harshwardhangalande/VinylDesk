@@ -346,6 +346,15 @@ struct TestRunner {
             assert(abs((leftW / totalW) - 0.4) < 0.001, "Left side must be exactly 4 out of 10 fractions (0.4)")
         }
 
+        // Test 21: Lighting Effect None by Default for All Presets
+        test("All presets default lightingEffect to none") {
+            for preset in VinylThemeConfig.allPresets {
+                assert(preset.lightingEffect == .none, "Preset '\(preset.name)' lightingEffect should default to .none, but found \(preset.lightingEffect)")
+            }
+            let defaultTheme = VinylThemeConfig()
+            assert(defaultTheme.lightingEffect == .none, "VinylThemeConfig() default lightingEffect must be .none")
+        }
+
         print("\n===============================")
         print("Test Suite Summary: \(passed) passed, \(failed) failed")
         print("===============================\n")

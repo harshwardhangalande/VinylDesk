@@ -333,7 +333,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         artworkSize: CGFloat = 140,
         cornerRadius: CGFloat = 32,
         artworkShadow: ShadowStyle = .regular,
-        lightingEffect: LightingEffect = .spotlight,
+        lightingEffect: LightingEffect = .none,
         showSpinningRecord: Bool = false,
         shelfFinish: ShelfFinish = .darkWalnut,
         backdropMaterial: BackdropMaterial = .glass,
@@ -417,7 +417,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.artworkSize = try container.decodeIfPresent(CGFloat.self, forKey: .artworkSize) ?? 140
         self.cornerRadius = try container.decodeIfPresent(CGFloat.self, forKey: .cornerRadius) ?? 32
         self.artworkShadow = try container.decodeIfPresent(ShadowStyle.self, forKey: .artworkShadow) ?? .regular
-        self.lightingEffect = try container.decodeIfPresent(LightingEffect.self, forKey: .lightingEffect) ?? .spotlight
+        self.lightingEffect = try container.decodeIfPresent(LightingEffect.self, forKey: .lightingEffect) ?? .none
         self.showSpinningRecord = try container.decodeIfPresent(Bool.self, forKey: .showSpinningRecord) ?? false
         self.shelfFinish = try container.decodeIfPresent(ShelfFinish.self, forKey: .shelfFinish) ?? .darkWalnut
         self.backdropMaterial = try container.decodeIfPresent(BackdropMaterial.self, forKey: .backdropMaterial) ?? .glass
@@ -502,7 +502,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         artworkSize: 180,
         cornerRadius: 32,
         artworkShadow: .regular,
-        lightingEffect: .glare,
+        lightingEffect: .none,
         showSpinningRecord: false,
         shelfFinish: .darkWalnut,
         backdropMaterial: .liquidGlass,
@@ -532,7 +532,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         artworkSize: 130,
         cornerRadius: 32,
         artworkShadow: .subtle,
-        lightingEffect: .spotlight,
+        lightingEffect: .none,
         showSpinningRecord: false,
         shelfFinish: .darkWalnut,
         backdropMaterial: .blur,
@@ -613,7 +613,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         artworkSize: 150,
         cornerRadius: 32,
         artworkShadow: .regular,
-        lightingEffect: .spotlight,
+        lightingEffect: .none,
         showSpinningRecord: true,
         shelfFinish: .darkWalnut,
         backdropMaterial: .clear,
@@ -640,7 +640,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         artworkSize: 140,
         cornerRadius: 32,
         artworkShadow: .deep,
-        lightingEffect: .spotlight,
+        lightingEffect: .none,
         showSpinningRecord: false,
         shelfFinish: .lightOak,
         backdropMaterial: .clear,
