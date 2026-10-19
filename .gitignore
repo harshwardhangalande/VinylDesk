@@ -1,0 +1,23 @@
+# Xcode & macOS
+.DS_Store
+*/.DS_Store
+.build/
+Packages/
+xcuserdata/
+DerivedData/
+*.xcworkspace
+!default.xcworkspace
+*.moved-aside
+*.xcuserstate
+*.xcuserdatad
+
+# Swift Package Manager
+Package.resolved
+.swiftpm/
+build/
+
+# App Archives & Builds
+*.app
+*.dSYM
+*.dmg
+*.zip
