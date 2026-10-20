@@ -66,21 +66,24 @@ public struct LiquidGlassBackdropView: View {
     let theme: VinylThemeConfig
     @ObservedObject var coordinator: MusicCoordinator
     var isLightBackground: Bool
+    var overrideCornerRadius: CGFloat?
     @StateObject private var shimmerState = LiquidShimmerState()
 
     @MainActor
     public init(
         theme: VinylThemeConfig,
         coordinator: MusicCoordinator,
-        isLightBackground: Bool = false
+        isLightBackground: Bool = false,
+        overrideCornerRadius: CGFloat? = nil
     ) {
         self.theme = theme
         self.coordinator = coordinator
         self.isLightBackground = isLightBackground
+        self.overrideCornerRadius = overrideCornerRadius
     }
 
     public var body: some View {
-        let cornerRadius = theme.backdropCornerRadius
+        let cornerRadius = overrideCornerRadius ?? theme.backdropCornerRadius
         let clipShape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
 
         ZStack {

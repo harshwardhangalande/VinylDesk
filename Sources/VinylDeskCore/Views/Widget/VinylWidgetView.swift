@@ -124,13 +124,15 @@ public struct VinylWidgetView: View {
     private var timeDashboardLayout: some View {
         let cardRadius: CGFloat = max(16, theme.cornerRadius)
         let cardWidth = max(330, theme.containerWidth)
+        let isCustomBackdrop = theme.backdropMaterial != .clear
+
         VStack(spacing: 0) {
             // Upper Section: Dark Time Dashboard
             HStack(alignment: .top) {
                 // Elapsed
                 VStack(alignment: .leading, spacing: 3) {
                     Text(formatTime(coordinator.playbackPosition))
-                        .font(.system(size: 26, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
+                        .font(fontFor(theme.trackNameStyle, defaultSize: 26))
                         .monospacedDigit()
                         .foregroundColor(colorFor(theme.trackNameStyle))
                     Text("ELAPSED TIME")
@@ -145,7 +147,7 @@ public struct VinylWidgetView: View {
                 let remaining = max(0, coordinator.currentTrack.duration - coordinator.playbackPosition)
                 VStack(alignment: .center, spacing: 3) {
                     Text("-" + formatTime(remaining))
-                        .font(.system(size: 26, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
+                        .font(fontFor(theme.trackNameStyle, defaultSize: 26))
                         .monospacedDigit()
                         .foregroundColor(colorFor(theme.trackNameStyle))
                     Text("REMAINING TIME")
@@ -159,7 +161,7 @@ public struct VinylWidgetView: View {
                 // Duration
                 VStack(alignment: .trailing, spacing: 3) {
                     Text(formatTime(coordinator.currentTrack.duration))
-                        .font(.system(size: 26, weight: .bold, design: theme.trackNameStyle.fontDesign.fontDesign))
+                        .font(fontFor(theme.trackNameStyle, defaultSize: 26))
                         .monospacedDigit()
                         .foregroundColor(colorFor(theme.trackNameStyle))
                     Text("DURATION")
@@ -170,7 +172,23 @@ public struct VinylWidgetView: View {
             }
             .padding(.horizontal, 22)
             .padding(.vertical, 16)
-            .background(isLightBackground ? Color(white: 0.88) : Color.black.opacity(0.85))
+            .background(
+                isCustomBackdrop
+                    ? (isLightBackground ? Color(white: 0.95).opacity(0.30) : Color.black.opacity(0.35))
+                    : (isLightBackground ? Color(white: 0.88) : Color.black.opacity(0.85))
+            )
+
+            // Progress Timeline
+            if theme.showProgressBar {
+                widgetProgressBar(width: cardWidth - 36)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 6)
+                    .background(
+                        isCustomBackdrop
+                            ? (isLightBackground ? Color(white: 0.9).opacity(0.20) : Color.black.opacity(0.20))
+                            : (isLightBackground ? Color(white: 0.82) : Color.black.opacity(0.65))
+                    )
+            }
 
             // Lower Section: Frosted Track & Controls Bar
             HStack(spacing: 12) {
@@ -192,9 +210,14 @@ public struct VinylWidgetView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(isLightBackground ? Color.black.opacity(0.08) : Color.white.opacity(0.18))
+            .background(
+                isCustomBackdrop
+                    ? (isLightBackground ? Color.black.opacity(0.04) : Color.white.opacity(0.08))
+                    : (isLightBackground ? Color.black.opacity(0.08) : Color.white.opacity(0.18))
+            )
         }
         .frame(width: cardWidth)
+        .background(backdropForCard(cornerRadius: cardRadius, defaultBackground: AnyView(Color.clear)))
         .clipShape(RoundedRectangle(cornerRadius: cardRadius, style: .continuous))
     }
 
@@ -207,6 +230,12 @@ public struct VinylWidgetView: View {
                     .foregroundColor(colorFor(theme.trackNameStyle))
                     .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                     .lineLimit(1)
+                    .shadow(
+                        color: Color.black.opacity(theme.trackNameStyle.shadow.opacity),
+                        radius: theme.trackNameStyle.shadow.radius,
+                        x: 0,
+                        y: theme.trackNameStyle.shadow.yOffset
+                    )
             }
 
             let showArtist = theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty
@@ -218,6 +247,12 @@ public struct VinylWidgetView: View {
                             .font(fontFor(theme.artistStyle, defaultSize: 10))
                             .foregroundColor(colorFor(theme.artistStyle, opacity: 0.70))
                             .lineLimit(1)
+                            .shadow(
+                                color: Color.black.opacity(theme.artistStyle.shadow.opacity),
+                                radius: theme.artistStyle.shadow.radius,
+                                x: 0,
+                                y: theme.artistStyle.shadow.yOffset
+                            )
                     }
                     if showArtist && showAlbum {
                         Text("—")
@@ -229,6 +264,12 @@ public struct VinylWidgetView: View {
                             .font(fontFor(theme.albumStyle, defaultSize: 10))
                             .foregroundColor(colorFor(theme.albumStyle, opacity: 0.65))
                             .lineLimit(1)
+                            .shadow(
+                                color: Color.black.opacity(theme.albumStyle.shadow.opacity),
+                                radius: theme.albumStyle.shadow.radius,
+                                x: 0,
+                                y: theme.albumStyle.shadow.yOffset
+                            )
                     }
                 }
             }
@@ -241,7 +282,7 @@ public struct VinylWidgetView: View {
             let iconSize = max(11, theme.controlsSize.iconSize * 0.85)
             let btnSize = max(28, iconSize * 2.2)
             let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
-            let buttonFg = isLightBackground ? Color.primary : Color.white
+            let buttonFg = isLightBackground ? Color.primary : (theme.trackNameStyle.isWhiteText ? Color.white : Color(white: 0.15))
 
             Button(action: { coordinator.togglePlayPause() }) {
                 Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
@@ -284,6 +325,7 @@ public struct VinylWidgetView: View {
             }
         }
         .frame(width: cardWidth, height: cardHeight)
+        .background(backdropForCard(cornerRadius: cardRadius, defaultBackground: AnyView(splitCardBackground)))
         .clipShape(RoundedRectangle(cornerRadius: cardRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: cardRadius, style: .continuous)
@@ -363,36 +405,64 @@ public struct VinylWidgetView: View {
 
     @ViewBuilder
     private func splitCardDetails(width: CGFloat, height: CGFloat) -> some View {
-        let circleSize: CGFloat = 36
-        let iconSize: CGFloat = 13
-        let playIconSize: CGFloat = 14
+        let iconSize = max(11, theme.controlsSize.iconSize * 0.9)
+        let circleSize = max(28, iconSize * 2.3)
+        let playCircleSize = max(32, iconSize * 2.6)
         let buttonBg = isLightBackground ? Color.black.opacity(0.09) : Color.white.opacity(0.18)
-        let buttonFg = isLightBackground ? Color.primary : Color.white
+        let buttonFg = isLightBackground ? Color.primary : (theme.trackNameStyle.isWhiteText ? Color.white : Color(white: 0.15))
 
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 4) {
             if theme.trackNameStyle.isVisible {
                 Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
-                    .font(.system(size: 18, weight: .bold))
+                    .font(fontFor(theme.trackNameStyle, defaultSize: 18))
                     .foregroundColor(colorFor(theme.trackNameStyle))
+                    .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                     .lineLimit(1)
+                    .shadow(
+                        color: Color.black.opacity(theme.trackNameStyle.shadow.opacity),
+                        radius: theme.trackNameStyle.shadow.radius,
+                        x: 0,
+                        y: theme.trackNameStyle.shadow.yOffset
+                    )
             }
 
-            let showArtist = theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty
-            let showAlbum = theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty
-            if showArtist || showAlbum {
-                let sub = (showArtist ? coordinator.currentTrack.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? coordinator.currentTrack.album : "")
-                Text(sub)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(isLightBackground ? Color.black.opacity(0.65) : Color.white.opacity(0.72))
-                    .lineLimit(2)
-                    .lineSpacing(2)
-                    .fixedSize(horizontal: false, vertical: true)
+            if theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty {
+                Text(coordinator.currentTrack.artist)
+                    .font(fontFor(theme.artistStyle, defaultSize: 13))
+                    .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
+                    .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                    .lineLimit(1)
+                    .shadow(
+                        color: Color.black.opacity(theme.artistStyle.shadow.opacity),
+                        radius: theme.artistStyle.shadow.radius,
+                        x: 0,
+                        y: theme.artistStyle.shadow.yOffset
+                    )
             }
 
-            Spacer(minLength: 8)
+            if theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty {
+                Text(coordinator.currentTrack.album)
+                    .font(fontFor(theme.albumStyle, defaultSize: 12))
+                    .foregroundColor(colorFor(theme.albumStyle, opacity: 0.65))
+                    .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                    .lineLimit(1)
+                    .shadow(
+                        color: Color.black.opacity(theme.albumStyle.shadow.opacity),
+                        radius: theme.albumStyle.shadow.radius,
+                        x: 0,
+                        y: theme.albumStyle.shadow.yOffset
+                    )
+            }
+
+            if theme.showProgressBar {
+                widgetProgressBar(width: width - 44)
+                    .padding(.top, 2)
+            }
+
+            Spacer(minLength: 4)
 
             if theme.showPlaybackControls {
-                HStack(spacing: 12) {
+                HStack(spacing: max(10, theme.controlsSize.buttonPadding * 1.2)) {
                     Button(action: { coordinator.previousTrack() }) {
                         Image(systemName: "backward.fill")
                             .font(.system(size: iconSize, weight: .semibold))
@@ -404,9 +474,9 @@ public struct VinylWidgetView: View {
 
                     Button(action: { coordinator.togglePlayPause() }) {
                         Image(systemName: coordinator.currentTrack.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: playIconSize, weight: .bold))
+                            .font(.system(size: iconSize * 1.15, weight: .bold))
                             .foregroundColor(buttonFg)
-                            .frame(width: circleSize, height: circleSize)
+                            .frame(width: playCircleSize, height: playCircleSize)
                             .background(Circle().fill(buttonBg))
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -423,9 +493,9 @@ public struct VinylWidgetView: View {
             }
         }
         .padding(.horizontal, 22)
-        .padding(.vertical, 20)
-        .frame(width: width, height: height, alignment: .leading)
-        .background(splitCardBackground)
+        .padding(.vertical, 16)
+        .frame(width: width, height: height, alignment: alignmentForTheme)
+        .background(theme.backdropMaterial == .clear ? AnyView(splitCardBackground) : AnyView(Color.clear))
     }
 
     @ViewBuilder
@@ -446,7 +516,7 @@ public struct VinylWidgetView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .frame(width: bannerWidth)
-        .background(splitCardBackground)
+        .background(backdropForCard(cornerRadius: outerRadius, defaultBackground: AnyView(splitCardBackground)))
         .clipShape(RoundedRectangle(cornerRadius: outerRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: outerRadius, style: .continuous)
@@ -531,6 +601,11 @@ public struct VinylWidgetView: View {
                     )
             }
 
+            if theme.showProgressBar {
+                widgetProgressBar()
+                    .padding(.top, 2)
+            }
+
             if theme.showPlaybackControls && theme.controlsPlacement == .inlineWithText {
                 Spacer(minLength: 4)
 
@@ -539,7 +614,7 @@ public struct VinylWidgetView: View {
                     let circleSize = max(28, iconSize * 2.2)
                     let playCircleSize = max(32, iconSize * 2.5)
                     let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
-                    let buttonFg = isLightBackground ? Color.primary : Color.white
+                    let buttonFg = isLightBackground ? Color.primary : (theme.trackNameStyle.isWhiteText ? Color.white : Color(white: 0.15))
 
                     Button(action: { coordinator.previousTrack() }) {
                         Image(systemName: "backward.fill")
@@ -578,22 +653,34 @@ public struct VinylWidgetView: View {
     // MARK: - Adaptive Poster Scrim Helper
     @ViewBuilder
     private func adaptivePosterScrim(cornerRadius: CGFloat) -> some View {
-        if isLightBackground {
-            // White light shadow with blur for light mode
-            LinearGradient(
-                colors: [Color.clear, Color.white.opacity(0.42), Color.white.opacity(0.88)],
-                startPoint: .center,
-                endPoint: .bottom
-            )
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        } else {
-            // Existing rich dark shadow for dark mode
-            LinearGradient(
-                colors: [Color.clear, Color.black.opacity(0.40), Color.black.opacity(0.85)],
-                startPoint: .center,
-                endPoint: .bottom
-            )
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        ZStack {
+            if theme.backdropMaterial == .liquidGlass || theme.backdropMaterial == .glass {
+                LiquidGlassBackdropView(
+                    theme: theme,
+                    coordinator: coordinator,
+                    isLightBackground: isLightBackground,
+                    overrideCornerRadius: cornerRadius
+                )
+                .opacity(0.65)
+            }
+
+            if isLightBackground {
+                // White light shadow with blur for light mode
+                LinearGradient(
+                    colors: [Color.clear, Color.white.opacity(0.42), Color.white.opacity(0.88)],
+                    startPoint: .center,
+                    endPoint: .bottom
+                )
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            } else {
+                // Existing rich dark shadow for dark mode
+                LinearGradient(
+                    colors: [Color.clear, Color.black.opacity(0.40), Color.black.opacity(0.85)],
+                    startPoint: .center,
+                    endPoint: .bottom
+                )
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            }
         }
     }
 
@@ -623,12 +710,9 @@ public struct VinylWidgetView: View {
                         )
                 }
 
-                let showArtist = theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty
-                let showAlbum = theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty
-                if showArtist || showAlbum {
-                    let sub = (showArtist ? coordinator.currentTrack.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? coordinator.currentTrack.album : "")
-                    Text(sub)
-                        .font(fontFor(theme.artistStyle, defaultSize: max(9, squareDim * 0.06)))
+                if theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty {
+                    Text(coordinator.currentTrack.artist)
+                        .font(fontFor(theme.artistStyle, defaultSize: max(9, squareDim * 0.065)))
                         .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
                         .lineLimit(1)
@@ -640,6 +724,25 @@ public struct VinylWidgetView: View {
                         )
                 }
 
+                if theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty {
+                    Text(coordinator.currentTrack.album)
+                        .font(fontFor(theme.albumStyle, defaultSize: max(8, squareDim * 0.055)))
+                        .foregroundColor(colorFor(theme.albumStyle, opacity: 0.70))
+                        .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                        .lineLimit(1)
+                        .shadow(
+                            color: isLightBackground ? Color.white.opacity(0.9) : Color.black.opacity(max(0.3, theme.albumStyle.shadow.opacity)),
+                            radius: max(3, theme.albumStyle.shadow.radius),
+                            x: 0,
+                            y: max(1, theme.albumStyle.shadow.yOffset)
+                        )
+                }
+
+                if theme.showProgressBar {
+                    widgetProgressBar(width: squareDim - 20)
+                        .padding(.top, 2)
+                }
+
                 // Controls
                 if theme.showPlaybackControls {
                     let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
@@ -648,7 +751,7 @@ public struct VinylWidgetView: View {
                         let circleSize = max(24, iconSize * 2.2)
                         let playCircleSize = max(28, iconSize * 2.5)
                         let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
-                        let buttonFg = isLightBackground ? Color.primary : Color.white
+                        let buttonFg = isLightBackground ? Color.primary : (theme.trackNameStyle.isWhiteText ? Color.white : Color(white: 0.15))
 
                         HStack(spacing: theme.controlsSize.buttonPadding) {
                             Button(action: { coordinator.previousTrack() }) {
@@ -687,6 +790,8 @@ public struct VinylWidgetView: View {
             .padding(10)
         }
         .frame(width: squareDim, height: squareDim)
+        .background(backdropForCard(cornerRadius: theme.cornerRadius, defaultBackground: AnyView(Color.clear)))
+        .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
     }
 
     @ViewBuilder
@@ -715,11 +820,8 @@ public struct VinylWidgetView: View {
                         )
                 }
 
-                let showArtist = theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty
-                let showAlbum = theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty
-                if showArtist || showAlbum {
-                    let sub = (showArtist ? coordinator.currentTrack.artist : "") + (showArtist && showAlbum ? " — " : "") + (showAlbum ? coordinator.currentTrack.album : "")
-                    Text(sub)
+                if theme.artistStyle.isVisible && !coordinator.currentTrack.artist.isEmpty {
+                    Text(coordinator.currentTrack.artist)
                         .font(fontFor(theme.artistStyle, defaultSize: max(10, posterDim * 0.05)))
                         .foregroundColor(colorFor(theme.artistStyle, opacity: 0.85))
                         .multilineTextAlignment(theme.horizontalAlign.textAlignment)
@@ -732,6 +834,25 @@ public struct VinylWidgetView: View {
                         )
                 }
 
+                if theme.albumStyle.isVisible && !coordinator.currentTrack.album.isEmpty {
+                    Text(coordinator.currentTrack.album)
+                        .font(fontFor(theme.albumStyle, defaultSize: max(9, posterDim * 0.045)))
+                        .foregroundColor(colorFor(theme.albumStyle, opacity: 0.70))
+                        .multilineTextAlignment(theme.horizontalAlign.textAlignment)
+                        .lineLimit(1)
+                        .shadow(
+                            color: isLightBackground ? Color.white.opacity(0.9) : Color.black.opacity(max(0.3, theme.albumStyle.shadow.opacity)),
+                            radius: max(2, theme.albumStyle.shadow.radius),
+                            x: 0,
+                            y: max(1, theme.albumStyle.shadow.yOffset)
+                        )
+                }
+
+                if theme.showProgressBar {
+                    widgetProgressBar(width: posterDim - max(20, posterDim * 0.12))
+                        .padding(.top, 2)
+                }
+
                 // Floating controls
                 if theme.showPlaybackControls {
                     let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
@@ -740,7 +861,7 @@ public struct VinylWidgetView: View {
                         let circleSize = iconSize * 2.2
                         let playCircleSize = iconSize * 2.6
                         let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
-                        let buttonFg = isLightBackground ? Color.primary : Color.white
+                        let buttonFg = isLightBackground ? Color.primary : (theme.trackNameStyle.isWhiteText ? Color.white : Color(white: 0.15))
 
                         HStack(spacing: theme.controlsSize.buttonPadding * 1.5) {
                             Button(action: { coordinator.previousTrack() }) {
@@ -780,6 +901,8 @@ public struct VinylWidgetView: View {
             .padding(.bottom, max(10, posterDim * 0.06))
         }
         .frame(width: posterDim, height: posterDim)
+        .background(backdropForCard(cornerRadius: theme.cornerRadius, defaultBackground: AnyView(Color.clear)))
+        .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
     }
 
     @ViewBuilder
@@ -836,6 +959,11 @@ public struct VinylWidgetView: View {
                         )
                 }
 
+                if theme.showProgressBar {
+                    widgetProgressBar(width: cardDim - 24)
+                        .padding(.top, 2)
+                }
+
                 if theme.showPlaybackControls {
                     let isVisible = theme.controlsPlacement == .inlineWithText || hoverState.isHovered
                     if isVisible {
@@ -843,7 +971,7 @@ public struct VinylWidgetView: View {
                         let circleSize = max(24, iconSize * 2.2)
                         let playCircleSize = max(28, iconSize * 2.5)
                         let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
-                        let buttonFg = isLightBackground ? Color.primary : Color.white
+                        let buttonFg = isLightBackground ? Color.primary : (theme.trackNameStyle.isWhiteText ? Color.white : Color(white: 0.15))
 
                         HStack(spacing: theme.controlsSize.buttonPadding) {
                             Button(action: { coordinator.previousTrack() }) {
@@ -882,6 +1010,8 @@ public struct VinylWidgetView: View {
             .padding(12)
         }
         .frame(width: cardDim, height: cardDim)
+        .background(backdropForCard(cornerRadius: theme.cornerRadius, defaultBackground: AnyView(Color.clear)))
+        .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous))
     }
 
     // MARK: - Typography & Color Helpers
@@ -896,20 +1026,85 @@ public struct VinylWidgetView: View {
     }
 
     private func colorFor(_ config: TypographyLineConfig, opacity: Double = 1.0) -> Color {
-        let baseColor: Color
-        if isLightBackground {
-            baseColor = config.isWhiteText ? Color.black : Color(white: 0.2)
-        } else {
-            baseColor = config.isWhiteText ? Color.white : Color(white: 0.9)
-        }
+        let baseColor: Color = config.isWhiteText ? Color.white : Color(white: 0.15)
         return baseColor.opacity(opacity)
     }
 
     private var buttonColor: Color {
-        if isLightBackground {
-            return Color.black
+        return theme.trackNameStyle.isWhiteText ? Color.white : Color(white: 0.15)
+    }
+
+    // MARK: - Progress Bar & Backdrop Helpers
+
+    @ViewBuilder
+    private func widgetProgressBar(width: CGFloat? = nil) -> some View {
+        let duration = max(1.0, coordinator.currentTrack.duration)
+        let progress = min(max(coordinator.playbackPosition / duration, 0.0), 1.0)
+        let barColor = colorFor(theme.trackNameStyle, opacity: 0.85)
+        let trackBgColor = colorFor(theme.trackNameStyle, opacity: 0.20)
+        let timeLabelColor = colorFor(theme.artistStyle, opacity: 0.65)
+
+        VStack(spacing: 3) {
+            GeometryReader { geo in
+                let barWidth = geo.size.width
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(trackBgColor)
+                        .frame(height: 3)
+
+                    Capsule()
+                        .fill(barColor)
+                        .frame(width: max(0, min(barWidth * CGFloat(progress), barWidth)), height: 3)
+                }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { gesture in
+                            let fraction = max(0, min(1, gesture.location.x / barWidth))
+                            coordinator.seek(to: Double(fraction) * duration)
+                        }
+                )
+            }
+            .frame(height: 3)
+
+            HStack {
+                Text(TrackInfo.formatTime(coordinator.playbackPosition))
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundColor(timeLabelColor)
+                Spacer()
+                Text(coordinator.currentTrack.formattedDuration)
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundColor(timeLabelColor)
+            }
         }
-        return Color.white
+        .frame(width: width)
+    }
+
+    @ViewBuilder
+    private func backdropForCard(cornerRadius: CGFloat, defaultBackground: AnyView) -> some View {
+        switch theme.backdropMaterial {
+        case .glass, .liquidGlass:
+            LiquidGlassBackdropView(
+                theme: theme,
+                coordinator: coordinator,
+                isLightBackground: isLightBackground,
+                overrideCornerRadius: cornerRadius
+            )
+        case .blur:
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(.thinMaterial)
+                .shadow(color: Color.black.opacity(0.18), radius: 10, x: 0, y: 4)
+        case .solid:
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(isLightBackground ? Color.white : Color(white: 0.12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.3), radius: 12, x: 0, y: 6)
+        case .clear:
+            defaultBackground
+        }
     }
 
     // MARK: - Lighting & Poster Thumbnail Helpers

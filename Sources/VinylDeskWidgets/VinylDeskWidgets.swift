@@ -159,7 +159,7 @@ struct VinylDeskWidgetEntryView: View {
     }
 
     private func colorFor(_ config: TypographyLineConfig, opacity: Double = 1.0) -> Color {
-        (config.isWhiteText ? Color.white : Color(white: 0.9)).opacity(opacity)
+        (config.isWhiteText ? Color.white : Color(white: 0.15)).opacity(opacity)
     }
 
     // MARK: - Lighting Effect Helper

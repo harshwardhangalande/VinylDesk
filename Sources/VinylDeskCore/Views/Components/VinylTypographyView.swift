@@ -67,17 +67,29 @@ public struct VinylTypographyView: View {
             if theme.showProgressBar {
                 let duration = max(1.0, coordinator.currentTrack.duration)
                 let progress = min(max(coordinator.playbackPosition / duration, 0.0), 1.0)
+                let barColor = colorFor(theme.trackNameStyle).opacity(0.80)
+                let trackBg = colorFor(theme.trackNameStyle).opacity(0.18)
+                let timeColor = colorFor(theme.artistStyle).opacity(0.60)
                 VStack(spacing: 3) {
                     GeometryReader { geo in
+                        let barWidth = geo.size.width
                         ZStack(alignment: .leading) {
                             Capsule()
-                                .fill(Color.primary.opacity(0.12))
+                                .fill(trackBg)
                                 .frame(height: 3)
 
                             Capsule()
-                                .fill(Color.primary.opacity(0.75))
-                                .frame(width: max(0, min(geo.size.width * CGFloat(progress), geo.size.width)), height: 3)
+                                .fill(barColor)
+                                .frame(width: max(0, min(barWidth * CGFloat(progress), barWidth)), height: 3)
                         }
+                        .contentShape(Rectangle())
+                        .gesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { gesture in
+                                    let fraction = max(0, min(1, gesture.location.x / barWidth))
+                                    coordinator.seek(to: Double(fraction) * duration)
+                                }
+                        )
                     }
                     .frame(height: 3)
                     .padding(.top, 4)
@@ -85,11 +97,11 @@ public struct VinylTypographyView: View {
                     HStack {
                         Text(TrackInfo.formatTime(coordinator.playbackPosition))
                             .font(.system(size: 9, design: .monospaced))
-                            .foregroundColor(Color.primary.opacity(0.5))
+                            .foregroundColor(timeColor)
                         Spacer()
                         Text(coordinator.currentTrack.formattedDuration)
                             .font(.system(size: 9, design: .monospaced))
-                            .foregroundColor(Color.primary.opacity(0.5))
+                            .foregroundColor(timeColor)
                     }
                 }
                 .frame(width: max(120, theme.containerWidth * 0.9))
@@ -113,10 +125,6 @@ public struct VinylTypographyView: View {
     }
 
     private func colorFor(_ config: TypographyLineConfig) -> Color {
-        if isLightBackground {
-            return config.isWhiteText ? Color.black : Color(white: 0.2)
-        } else {
-            return config.isWhiteText ? Color.white : Color(white: 0.9)
-        }
+        return config.isWhiteText ? Color.white : Color(white: 0.15)
     }
 }

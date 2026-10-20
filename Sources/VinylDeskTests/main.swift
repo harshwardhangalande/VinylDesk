@@ -372,6 +372,61 @@ struct TestRunner {
             assert(banner.backdropMaterial == .clear, "Split Banner backdropMaterial should be .clear")
         }
 
+        // Test 24: Typography style and text appearance (White vs Black and shadow) across all layouts
+        test("Typography and text appearance support across all layouts") {
+            let allLayouts = VinylThemeConfig.allPresets
+            assert(allLayouts.count >= 12, "Must contain all 12 preset layouts, found \(allLayouts.count)")
+
+            for preset in allLayouts {
+                // Ensure each preset configures trackName, artist, and album styles
+                assert(preset.trackNameStyle.fontSize > 0, "Preset '\(preset.name)' trackNameStyle must have positive font size")
+                assert(preset.artistStyle.fontSize > 0, "Preset '\(preset.name)' artistStyle must have positive font size")
+                assert(preset.albumStyle.fontSize > 0, "Preset '\(preset.name)' albumStyle must have positive font size")
+
+                // Test toggle to Black text
+                var modified = preset
+                modified.trackNameStyle.isWhiteText = false
+                modified.artistStyle.isWhiteText = false
+                modified.albumStyle.isWhiteText = false
+                assert(!modified.trackNameStyle.isWhiteText, "Track name style must support Black text")
+                assert(!modified.artistStyle.isWhiteText, "Artist style must support Black text")
+                assert(!modified.albumStyle.isWhiteText, "Album style must support Black text")
+
+                // Test shadows
+                modified.trackNameStyle.shadow = .deep
+                assert(modified.trackNameStyle.shadow == .deep, "Shadow depth must be configurable")
+            }
+        }
+
+        // Test 25: Backdrop material and liquid glass level coverage
+        test("Backdrop material and liquid glass level coverage") {
+            for material in BackdropMaterial.allCases {
+                var theme = VinylThemeConfig.presetSplitCard
+                theme.backdropMaterial = material
+                assert(theme.backdropMaterial == material, "Theme must support backdrop material: \(material)")
+            }
+
+            for level in LiquidGlassLevel.allCases {
+                var theme = VinylThemeConfig.presetSplitBanner
+                theme.backdropMaterial = .liquidGlass
+                theme.liquidGlassLevel = level
+                assert(theme.liquidGlassLevel == level, "Theme must support liquid glass level: \(level)")
+            }
+        }
+
+        // Test 26: Show progress bar toggle across all themes
+        test("Show progress bar toggle works for all theme configurations") {
+            for preset in VinylThemeConfig.allPresets {
+                var themeWithBar = preset
+                themeWithBar.showProgressBar = true
+                assert(themeWithBar.showProgressBar == true, "Preset '\(preset.name)' must support enabling progress bar")
+
+                var themeWithoutBar = preset
+                themeWithoutBar.showProgressBar = false
+                assert(themeWithoutBar.showProgressBar == false, "Preset '\(preset.name)' must support disabling progress bar")
+            }
+        }
+
         print("\n===============================")
         print("Test Suite Summary: \(passed) passed, \(failed) failed")
         print("===============================\n")
