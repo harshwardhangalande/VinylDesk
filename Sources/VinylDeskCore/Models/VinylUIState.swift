@@ -35,7 +35,7 @@ public final class ThemesInspectorState: ObservableObject {
 
 @MainActor
 public final class PreferencesWindowState: ObservableObject {
-    @Published public var selectedTab: PreferencesTab = .layout
+    @Published public var selectedTab: PreferencesTab = .themes
     @Published public var searchText: String = ""
     @Published public var previewIsLightMode: Bool = false
     @Published public var showLivePreview: Bool = true

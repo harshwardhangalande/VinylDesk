@@ -105,3 +105,93 @@ public struct VinylSectionCard<Content: View>: View {
         )
     }
 }
+
+// MARK: - Alignment & Orientation Card
+
+public struct VinylAlignmentCard: View {
+    @ObservedObject var themeManager: VinylThemeManager
+
+    public init(themeManager: VinylThemeManager) {
+        self.themeManager = themeManager
+    }
+
+    public var body: some View {
+        VinylSectionCard {
+            Text("Alignment")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.primary)
+
+            // Horizontal Alignment
+            HStack(spacing: 8) {
+                ForEach(HorizontalAlign.allCases, id: \.self) { align in
+                    Button(action: {
+                        themeManager.currentTheme.horizontalAlign = align
+                        themeManager.saveCurrentTheme()
+                    }) {
+                        Text(align.rawValue)
+                            .font(.system(size: 12, weight: themeManager.currentTheme.horizontalAlign == align ? .bold : .regular))
+                            .foregroundColor(themeManager.currentTheme.horizontalAlign == align ? .white : .primary.opacity(0.7))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(themeManager.currentTheme.horizontalAlign == align ? Color.blue : Color(white: 0.20))
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+
+            // Vertical Alignment
+            HStack(spacing: 8) {
+                ForEach(VerticalAlign.allCases, id: \.self) { vAlign in
+                    Button(action: {
+                        themeManager.currentTheme.verticalAlign = vAlign
+                        themeManager.saveCurrentTheme()
+                    }) {
+                        Text(vAlign.rawValue)
+                            .font(.system(size: 12, weight: themeManager.currentTheme.verticalAlign == vAlign ? .bold : .regular))
+                            .foregroundColor(themeManager.currentTheme.verticalAlign == vAlign ? .white : .primary.opacity(0.7))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(themeManager.currentTheme.verticalAlign == vAlign ? Color.blue : Color(white: 0.20))
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+
+            // Width Slider
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Width")
+                        .font(.system(size: 12, weight: .medium))
+                    Spacer()
+                    Text("\(Int(themeManager.currentTheme.containerWidth)) pt")
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundColor(.secondary)
+                }
+
+                Slider(
+                    value: Binding(
+                        get: { themeManager.currentTheme.containerWidth },
+                        set: { themeManager.currentTheme.containerWidth = $0; themeManager.saveCurrentTheme() }
+                    ),
+                    in: 140...380,
+                    step: 5
+                )
+            }
+            .padding(.top, 4)
+
+            Divider().background(Color.white.opacity(0.1)).padding(.vertical, 2)
+
+            Toggle("Flip horizontally", isOn: Binding(
+                get: { themeManager.currentTheme.flipHorizontal },
+                set: { themeManager.currentTheme.flipHorizontal = $0; themeManager.saveCurrentTheme() }
+            ))
+            .toggleStyle(SwitchToggleStyle())
+        }
+    }
+}

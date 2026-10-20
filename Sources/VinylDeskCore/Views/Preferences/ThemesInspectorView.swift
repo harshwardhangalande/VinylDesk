@@ -196,6 +196,9 @@ public struct ThemesInspectorView: View {
                             .transition(.opacity)
                     }
                 }
+
+                // MARK: - Alignment & Flip Horizontally
+                VinylAlignmentCard(themeManager: themeManager)
             }
             .padding(16)
         }
