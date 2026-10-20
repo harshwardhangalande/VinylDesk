@@ -54,7 +54,7 @@ public struct VinylPreferencesView: View {
             // MARK: - Center Inspector
             VStack(spacing: 0) {
                 // Inspector Header
-                HStack {
+                HStack(spacing: 10) {
                     Text(windowState.selectedTab.rawValue)
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.primary)
@@ -71,6 +71,31 @@ public struct VinylPreferencesView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     .help("Reset to defaults")
+
+                    // Toggle Live Preview button
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            windowState.showLivePreview.toggle()
+                        }
+                    }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: windowState.showLivePreview ? "eye.fill" : "eye.slash.fill")
+                                .font(.system(size: 12))
+                            if !windowState.showLivePreview {
+                                Text("Show Preview")
+                                    .font(.system(size: 11, weight: .medium))
+                            }
+                        }
+                        .foregroundColor(windowState.showLivePreview ? .secondary : .cyan)
+                        .padding(.horizontal, windowState.showLivePreview ? 4 : 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(windowState.showLivePreview ? Color.clear : Color.cyan.opacity(0.18))
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .help(windowState.showLivePreview ? "Hide Preview Canvas" : "Show Preview Canvas")
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -97,22 +122,23 @@ public struct VinylPreferencesView: View {
                         HotkeysInspectorView(themeManager: themeManager)
                     }
                 }
+                .frame(maxWidth: windowState.showLivePreview ? 320 : 640)
             }
-            .frame(width: 320)
-            .fixedSize(horizontal: true, vertical: false)
+            .frame(minWidth: 320, maxWidth: windowState.showLivePreview ? 320 : .infinity)
             .background(Color(white: 0.12))
             .layoutPriority(1)
 
-            Divider().background(Color.white.opacity(0.1))
-
             // MARK: - Right Live Preview Canvas
             if windowState.showLivePreview {
+                Divider().background(Color.white.opacity(0.1))
+
                 livePreviewCanvas
                     .frame(minWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
                     .layoutPriority(0)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
-        .frame(minWidth: 980, minHeight: 620)
+        .frame(minWidth: windowState.showLivePreview ? 980 : 540, minHeight: 620)
     }
 
     // MARK: - Sidebar View
@@ -266,7 +292,11 @@ public struct VinylPreferencesView: View {
                     .buttonStyle(PlainButtonStyle())
 
                     // Hide preview toggle
-                    Button(action: { windowState.showLivePreview.toggle() }) {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            windowState.showLivePreview = false
+                        }
+                    }) {
                         Image(systemName: "eye.fill")
                             .font(.system(size: 13))
                             .foregroundColor(.white.opacity(0.85))
@@ -274,6 +304,7 @@ public struct VinylPreferencesView: View {
                             .background(Circle().fill(Color.black.opacity(0.35)))
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .help("Hide Live Preview")
                 }
                 .padding(14)
 

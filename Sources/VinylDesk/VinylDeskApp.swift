@@ -346,7 +346,7 @@ final class PreferencesWindowController {
 
         newWindow.center()
         newWindow.title = "VinylDesk Preferences"
-        newWindow.minSize = NSSize(width: 980, height: 620)
+        newWindow.minSize = NSSize(width: 560, height: 600)
         newWindow.contentViewController = hostingController
         newWindow.isReleasedWhenClosed = false
         newWindow.makeKeyAndOrderFront(nil)
