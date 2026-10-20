@@ -285,21 +285,6 @@ public struct VinylPreferencesView: View {
                             .background(Circle().fill(Color.black.opacity(0.35)))
                     }
                     .buttonStyle(PlainButtonStyle())
-
-                    // Hide preview toggle
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            windowState.showLivePreview = false
-                        }
-                    }) {
-                        Image(systemName: "eye.fill")
-                            .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.85))
-                            .padding(6)
-                            .background(Circle().fill(Color.black.opacity(0.35)))
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .help("Hide Live Preview")
                 }
                 .padding(14)
 

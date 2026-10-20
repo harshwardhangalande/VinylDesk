@@ -91,4 +91,19 @@ public final class ArtworkCache: @unchecked Sendable {
         newImage.unlockFocus()
         return newImage
     }
+
+    public func fetchRemoteArtwork(from urlString: String, completion: @escaping (Data?) -> Void) {
+        guard let url = URL(string: urlString) else {
+            completion(nil)
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            guard let data = data, error == nil else {
+                completion(nil)
+                return
+            }
+            completion(data)
+        }.resume()
+    }
 }

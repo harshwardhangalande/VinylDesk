@@ -58,6 +58,7 @@ public struct VinylWidgetView: View {
         }
         .padding(isEdgeToEdge ? 0 : (theme.backdropMaterial == .clear ? 8 : 14))
         .background(isEdgeToEdge ? AnyView(Color.clear) : AnyView(backdropLayer))
+        .opacity(theme.widgetOpacity)
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.2)) {
                 hoverState.isHovered = hovering
@@ -191,6 +192,8 @@ public struct VinylWidgetView: View {
             }
 
             // Lower Section: Frosted Track & Controls Bar
+            let thumbDim = max(36, min(140, theme.artworkSize > 0 ? theme.artworkSize : 44))
+            let thumbRadius = max(6, min(16, theme.cornerRadius))
             HStack(spacing: 12) {
                 if theme.flipHorizontal {
                     if theme.showPlaybackControls && (theme.controlsPlacement == .inlineWithText || hoverState.isHovered) {
@@ -198,9 +201,9 @@ public struct VinylWidgetView: View {
                     }
                     Spacer()
                     timeDashboardTextStack
-                    posterThumbnail(size: 42, cornerRadius: max(6, min(12, theme.cornerRadius)))
+                    posterThumbnail(size: thumbDim, cornerRadius: thumbRadius)
                 } else {
-                    posterThumbnail(size: 42, cornerRadius: max(6, min(12, theme.cornerRadius)))
+                    posterThumbnail(size: thumbDim, cornerRadius: thumbRadius)
                     timeDashboardTextStack
                     Spacer()
                     if theme.showPlaybackControls && (theme.controlsPlacement == .inlineWithText || hoverState.isHovered) {
@@ -311,9 +314,10 @@ public struct VinylWidgetView: View {
     private var splitCardLayout: some View {
         let cardRadius: CGFloat = theme.cornerRadius
         let cardWidth = max(360, theme.containerWidth)
-        let leftWidth = cardWidth * 0.4
-        let rightWidth = cardWidth * 0.6
-        let cardHeight: CGFloat = (theme.artworkSize > 0 && theme.artworkSize <= 220) ? theme.artworkSize : leftWidth
+        let artDim: CGFloat = max(80, min(260, theme.artworkSize > 0 ? theme.artworkSize : 150))
+        let leftWidth = artDim
+        let cardHeight = artDim
+        let rightWidth = max(200, cardWidth - leftWidth)
 
         HStack(spacing: 0) {
             if theme.flipHorizontal {
@@ -501,7 +505,7 @@ public struct VinylWidgetView: View {
     @ViewBuilder
     private var splitBannerLayout: some View {
         let outerRadius: CGFloat = 32
-        let thumbDim: CGFloat = max(70, min(120, theme.artworkSize > 0 ? theme.artworkSize : 100))
+        let thumbDim: CGFloat = max(50, min(200, theme.artworkSize > 0 ? theme.artworkSize : 100))
         let bannerWidth = max(290, theme.containerWidth)
         let bannerHeight = thumbDim + 24
 
@@ -652,14 +656,10 @@ public struct VinylWidgetView: View {
     @ViewBuilder
     private func adaptivePosterScrim(cornerRadius: CGFloat) -> some View {
         ZStack {
-            if theme.backdropMaterial == .liquidGlass || theme.backdropMaterial == .glass {
-                LiquidGlassBackdropView(
-                    theme: theme,
-                    coordinator: coordinator,
-                    isLightBackground: isLightBackground,
-                    overrideCornerRadius: cornerRadius
-                )
-                .opacity(0.65)
+            if theme.backdropMaterial == .blur {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.thinMaterial)
+                    .opacity(0.65)
             }
 
             if isLightBackground {
@@ -684,7 +684,7 @@ public struct VinylWidgetView: View {
 
     @ViewBuilder
     private var compactSquareLayout: some View {
-        let squareDim = max(100, min(320, theme.artworkSize > 0 ? theme.artworkSize : 160))
+        let squareDim = max(80, min(380, theme.artworkSize > 0 ? theme.artworkSize : 160))
         ZStack(alignment: .bottomLeading) {
             // Full background poster filling all available space - no margin or padding
             posterThumbnail(size: squareDim, cornerRadius: theme.cornerRadius)
@@ -794,7 +794,7 @@ public struct VinylWidgetView: View {
 
     @ViewBuilder
     private var artworkPosterLayout: some View {
-        let posterDim = max(80, theme.artworkSize > 0 ? theme.artworkSize : 240)
+        let posterDim = max(80, min(420, theme.artworkSize > 0 ? theme.artworkSize : 240))
         ZStack(alignment: .bottom) {
             // Full background poster image
             posterThumbnail(size: posterDim, cornerRadius: theme.cornerRadius)
@@ -905,7 +905,7 @@ public struct VinylWidgetView: View {
 
     @ViewBuilder
     private var artworkCardLayout: some View {
-        let cardDim = max(100, min(360, theme.artworkSize > 0 ? theme.artworkSize : 150))
+        let cardDim = max(80, min(380, theme.artworkSize > 0 ? theme.artworkSize : 150))
         ZStack {
             // Full background poster image
             posterThumbnail(size: cardDim, cornerRadius: theme.cornerRadius)
@@ -1081,13 +1081,6 @@ public struct VinylWidgetView: View {
     @ViewBuilder
     private func backdropForCard(cornerRadius: CGFloat, defaultBackground: AnyView) -> some View {
         switch theme.backdropMaterial {
-        case .glass, .liquidGlass:
-            LiquidGlassBackdropView(
-                theme: theme,
-                coordinator: coordinator,
-                isLightBackground: isLightBackground,
-                overrideCornerRadius: cornerRadius
-            )
         case .blur:
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(.thinMaterial)
@@ -1209,12 +1202,6 @@ public struct VinylWidgetView: View {
     @ViewBuilder
     private var backdropLayer: some View {
         switch theme.backdropMaterial {
-        case .glass, .liquidGlass:
-            LiquidGlassBackdropView(
-                theme: theme,
-                coordinator: coordinator,
-                isLightBackground: isLightBackground
-            )
         case .blur:
             RoundedRectangle(cornerRadius: theme.backdropCornerRadius, style: .continuous)
                 .fill(.thinMaterial)

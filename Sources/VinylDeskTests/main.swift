@@ -61,12 +61,27 @@ struct TestRunner {
             assert(TrackInfo.formatTime(3599) == "59:59", "3599 should format as 59:59")
         }
 
-        // Test 4: Demo track fallback
-        test("Demo track fallback") {
-            let demo = TrackInfo.demoTrack
-            assert(demo.source == .demo, "Demo track should have demo source")
-            assert(demo.duration > 0, "Demo track must have positive duration")
-            assert(!demo.title.isEmpty, "Demo track must have title")
+        // Test 4: Idle track fallback and Web Sources
+        test("Idle track fallback and Web Sources") {
+            let empty = TrackInfo.empty
+            assert(empty.source == .none, "Idle track should have none source")
+            assert(empty.title == "No Track Playing", "Idle track must have 'No Track Playing' title")
+            assert(!empty.isPlaying, "Idle track must not be playing")
+
+            // Test web music parser
+            let spotifyParsed = WebMusicService.shared.parseWebTrack(
+                url: "https://open.spotify.com/track/123",
+                tabTitle: "Blinding Lights • The Weeknd"
+            )
+            assert(spotifyParsed?.title == "Blinding Lights", "Spotify title should parse correctly")
+            assert(spotifyParsed?.artist == "The Weeknd", "Spotify artist should parse correctly")
+
+            let appleParsed = WebMusicService.shared.parseWebTrack(
+                url: "https://music.apple.com/us/album/espresso/123",
+                tabTitle: "Espresso - Single by Sabrina Carpenter - Apple Music"
+            )
+            assert(appleParsed?.title == "Espresso", "Apple music title should parse correctly")
+            assert(appleParsed?.artist == "Sabrina Carpenter", "Apple music artist should parse correctly")
         }
 
         // Test 5: Vinyl Theme Presets Verification
@@ -398,20 +413,26 @@ struct TestRunner {
             }
         }
 
-        // Test 25: Backdrop material and liquid glass level coverage
-        test("Backdrop material and liquid glass level coverage") {
+        // Test 25: Backdrop material and Widget Opacity coverage
+        test("Backdrop material and Widget Opacity coverage") {
+            assert(BackdropMaterial.allCases.count == 3, "BackdropMaterial should have Clear, Blur, and Solid")
             for material in BackdropMaterial.allCases {
                 var theme = VinylThemeConfig.presetSplitCard
                 theme.backdropMaterial = material
                 assert(theme.backdropMaterial == material, "Theme must support backdrop material: \(material)")
             }
 
-            for level in LiquidGlassLevel.allCases {
-                var theme = VinylThemeConfig.presetSplitBanner
-                theme.backdropMaterial = .liquidGlass
-                theme.liquidGlassLevel = level
-                assert(theme.liquidGlassLevel == level, "Theme must support liquid glass level: \(level)")
-            }
+            // Test Widget Opacity
+            var theme = VinylThemeConfig.presetSplitCard
+            theme.widgetOpacity = 0.65
+            assert(theme.widgetOpacity == 0.65, "Theme must support widget opacity")
+
+            // Test backward-compatible decoding of legacy glass materials
+            let legacyJson = """
+            {"backdropMaterial": "Liquid Glass", "name": "Legacy Theme"}
+            """.data(using: .utf8)!
+            let decoded = try? JSONDecoder().decode(VinylThemeConfig.self, from: legacyJson)
+            assert(decoded?.backdropMaterial == .blur, "Legacy Liquid Glass material must decode to .blur")
         }
 
         // Test 26: Show progress bar toggle across all themes

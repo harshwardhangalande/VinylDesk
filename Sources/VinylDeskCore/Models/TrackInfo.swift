@@ -1,10 +1,24 @@
 import Foundation
 import AppKit
 
-public enum MusicSource: String, Sendable, CaseIterable {
+public enum MusicSource: String, Sendable, CaseIterable, Codable {
     case spotify = "Spotify"
     case appleMusic = "Apple Music"
-    case demo = "Demo Player"
+    case spotifyWeb = "Spotify Web"
+    case appleMusicWeb = "Apple Music Web"
+    case none = "None"
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        switch raw.lowercased() {
+        case "spotify": self = .spotify
+        case "apple music", "applemusic": self = .appleMusic
+        case "spotify web", "spotifyweb": self = .spotifyWeb
+        case "apple music web", "applemusicweb": self = .appleMusicWeb
+        default: self = .none
+        }
+    }
 }
 
 public struct TrackInfo: Equatable, Sendable {
@@ -22,12 +36,12 @@ public struct TrackInfo: Equatable, Sendable {
         id: String = UUID().uuidString,
         title: String,
         artist: String,
-        album: String,
-        duration: TimeInterval,
+        album: String = "",
+        duration: TimeInterval = 180,
         position: TimeInterval = 0,
         isPlaying: Bool = false,
         artworkData: Data? = nil,
-        source: MusicSource = .demo
+        source: MusicSource = .none
     ) {
         self.id = id
         self.title = title
@@ -59,14 +73,19 @@ public struct TrackInfo: Equatable, Sendable {
         return String(format: "%02d:%02d", mins, secs)
     }
 
-    public static let demoTrack = TrackInfo(
-        id: "demo-track-1",
-        title: "Midnight Tokyo Lofi",
-        artist: "The Analog Collective",
-        album: "Vinyl Session Vol. 1",
-        duration: 194.0,
-        position: 42.0,
-        isPlaying: true,
-        source: .demo
+    public static let empty = TrackInfo(
+        id: "empty-track",
+        title: "No Track Playing",
+        artist: "Spotify or Apple Music",
+        album: "",
+        duration: 180.0,
+        position: 0.0,
+        isPlaying: false,
+        artworkData: nil,
+        source: .none
     )
+
+    public static var demoTrack: TrackInfo {
+        empty
+    }
 }

@@ -209,12 +209,12 @@ public struct TurntableControlsView: View {
 
     private var sourceColor: Color {
         switch coordinator.currentTrack.source {
-        case .spotify:
+        case .spotify, .spotifyWeb:
             return Color.green
-        case .appleMusic:
+        case .appleMusic, .appleMusicWeb:
             return Color.pink
-        case .demo:
-            return Color.cyan
+        case .none:
+            return Color.secondary
         }
     }
 }

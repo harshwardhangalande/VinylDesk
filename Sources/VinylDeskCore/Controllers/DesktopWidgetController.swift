@@ -101,6 +101,14 @@ public final class DesktopWidgetController {
                 self?.applyVisibility(visibility, fallbackPlacement: placement)
             }
             .store(in: &cancellables)
+
+        VinylThemeManager.shared.$currentTheme
+            .map { $0.widgetOpacity }
+            .removeDuplicates()
+            .sink { [weak self] opacity in
+                self?.window?.alphaValue = CGFloat(opacity)
+            }
+            .store(in: &cancellables)
     }
 
     public func applyVisibility(_ visibility: WidgetVisibility, fallbackPlacement: WindowLevelPlacement? = nil) {
@@ -148,6 +156,7 @@ public final class DesktopWidgetController {
         panel.hasShadow = false
         panel.isMovableByWindowBackground = true
         panel.isReleasedWhenClosed = false
+        panel.alphaValue = CGFloat(VinylThemeManager.shared.currentTheme.widgetOpacity)
 
         let wrapper = DesktopWidgetWrapperView { [weak self] newSize in
             self?.updateSize(newSize)

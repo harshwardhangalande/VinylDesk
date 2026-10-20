@@ -153,45 +153,6 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
         posParentItem.submenu = posMenu
         menu.addItem(posParentItem)
 
-        // Liquid Glass Submenu
-        let glassMenu = NSMenu(title: "Liquid Glass")
-        for level in LiquidGlassLevel.allCases {
-            let item = NSMenuItem(title: level.displayName, action: #selector(selectLiquidGlassLevel(_:)), keyEquivalent: "")
-            item.target = self
-            item.representedObject = level
-            if themeManager.currentTheme.liquidGlassLevel == level && (themeManager.currentTheme.backdropMaterial == .liquidGlass || themeManager.currentTheme.backdropMaterial == .glass) {
-                item.state = .on
-            }
-            glassMenu.addItem(item)
-        }
-        glassMenu.addItem(NSMenuItem.separator())
-
-        let pulseItem = NSMenuItem(title: "Fluid Breathing Pulse", action: #selector(toggleLiquidGlassPulse), keyEquivalent: "")
-        pulseItem.target = self
-        if themeManager.currentTheme.liquidGlassFluidPulse {
-            pulseItem.state = .on
-        }
-        glassMenu.addItem(pulseItem)
-
-        glassMenu.addItem(NSMenuItem.separator())
-        let tintHeader = NSMenuItem(title: "Tint Mode:", action: nil, keyEquivalent: "")
-        tintHeader.isEnabled = false
-        glassMenu.addItem(tintHeader)
-
-        for tint in LiquidGlassTint.allCases {
-            let item = NSMenuItem(title: "  " + tint.rawValue, action: #selector(selectLiquidGlassTint(_:)), keyEquivalent: "")
-            item.target = self
-            item.representedObject = tint
-            if themeManager.currentTheme.liquidGlassTint == tint {
-                item.state = .on
-            }
-            glassMenu.addItem(item)
-        }
-
-        let glassParentItem = NSMenuItem(title: "Liquid Glass", action: nil, keyEquivalent: "")
-        glassParentItem.submenu = glassMenu
-        menu.addItem(glassParentItem)
-
         menu.addItem(NSMenuItem.separator())
 
         // Visibility Submenu
@@ -243,47 +204,12 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
     }
 
     @objc private func selectMusicSource(_ sender: NSMenuItem) {
-        if let src = sender.representedObject as? MusicSource {
-            switch src {
-            case .spotify:
-                MusicCoordinator.shared.isDemoModeForced = false
-                MusicCoordinator.shared.refreshTrack()
-            case .appleMusic:
-                MusicCoordinator.shared.isDemoModeForced = false
-                MusicCoordinator.shared.refreshTrack()
-            case .demo:
-                MusicCoordinator.shared.isDemoModeForced = true
-                MusicCoordinator.shared.currentTrack = TrackInfo.demoTrack
-            }
-        }
+        MusicCoordinator.shared.refreshTrack()
     }
 
     @objc private func snapToPosition(_ sender: NSMenuItem) {
         if let loc = sender.representedObject as? DesktopWidgetController.SnapLocation {
             DesktopWidgetController.shared.snap(to: loc)
-        }
-    }
-
-    @objc private func selectLiquidGlassLevel(_ sender: NSMenuItem) {
-        if let level = sender.representedObject as? LiquidGlassLevel {
-            VinylThemeManager.shared.currentTheme.backdropMaterial = .liquidGlass
-            VinylThemeManager.shared.currentTheme.liquidGlassLevel = level
-            VinylThemeManager.shared.currentTheme.liquidGlassCustomOpacity = 0
-            VinylThemeManager.shared.currentTheme.liquidGlassCustomBlur = 0
-            VinylThemeManager.shared.currentTheme.liquidGlassRimShine = 0
-            VinylThemeManager.shared.saveCurrentTheme()
-        }
-    }
-
-    @objc private func toggleLiquidGlassPulse() {
-        VinylThemeManager.shared.currentTheme.liquidGlassFluidPulse.toggle()
-        VinylThemeManager.shared.saveCurrentTheme()
-    }
-
-    @objc private func selectLiquidGlassTint(_ sender: NSMenuItem) {
-        if let tint = sender.representedObject as? LiquidGlassTint {
-            VinylThemeManager.shared.currentTheme.liquidGlassTint = tint
-            VinylThemeManager.shared.saveCurrentTheme()
         }
     }
 

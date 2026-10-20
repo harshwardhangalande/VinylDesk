@@ -130,15 +130,6 @@ struct VinylDeskWidgetEntryView: View {
     @ViewBuilder
     private var widgetBackground: some View {
         switch entry.theme.backdropMaterial {
-        case .liquidGlass, .glass:
-            ZStack {
-                Color(red: 0.08, green: 0.10, blue: 0.16)
-                LinearGradient(
-                    colors: [Color.cyan.opacity(0.18), Color.purple.opacity(0.12), Color.black.opacity(0.4)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            }
         case .blur:
             Color(white: 0.15)
         case .solid:

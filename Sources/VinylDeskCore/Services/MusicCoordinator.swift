@@ -6,16 +6,16 @@ import AppKit
 public final class MusicCoordinator: ObservableObject {
     public static let shared = MusicCoordinator()
 
-    @Published public var currentTrack: TrackInfo = TrackInfo.demoTrack
-    @Published public var playbackPosition: TimeInterval = 42.0
+    @Published public var currentTrack: TrackInfo = TrackInfo.empty
+    @Published public var playbackPosition: TimeInterval = 0.0
     @Published public var isDemoModeForced: Bool = false
     @Published public var isScratching: Bool = false
     @Published public var scratchAngleOffset: Double = 0.0
 
     private var pollTimer: AnyCancellable?
-    private var demoTimer: AnyCancellable?
     private var cancellables = Set<AnyCancellable>()
     private var notificationTokens = [NSObjectProtocol]()
+    private var tickCount = 0
 
     public init() {
         self.playbackPosition = currentTrack.position
@@ -79,7 +79,7 @@ public final class MusicCoordinator: ObservableObject {
     public func refreshTrack() {
         guard !isDemoModeForced else { return }
 
-        // Priority 1: Spotify if playing or running
+        // Priority 1: Spotify native if running
         if SpotifyService.shared.isRunning, let spotifyTrack = SpotifyService.shared.fetchCurrentTrack() {
             if spotifyTrack.isPlaying || currentTrack.source == .spotify {
                 self.updateTrackIfChanged(spotifyTrack)
@@ -87,7 +87,7 @@ public final class MusicCoordinator: ObservableObject {
             }
         }
 
-        // Priority 2: Apple Music
+        // Priority 2: Apple Music native if running
         if AppleMusicService.shared.isRunning, let musicTrack = AppleMusicService.shared.fetchCurrentTrack() {
             if musicTrack.isPlaying || currentTrack.source == .appleMusic {
                 self.updateTrackIfChanged(musicTrack)
@@ -95,11 +95,15 @@ public final class MusicCoordinator: ObservableObject {
             }
         }
 
-        // If neither is running and current is not demo, revert gracefully to demo
-        if !SpotifyService.shared.isRunning && !AppleMusicService.shared.isRunning {
-            if currentTrack.source != .demo {
-                self.currentTrack = TrackInfo.demoTrack
-            }
+        // Priority 3: Spotify Web or Apple Music Web in Safari, Chrome, Brave, Arc, Edge
+        if let webTrack = WebMusicService.shared.fetchCurrentTrack() {
+            self.updateTrackIfChanged(webTrack)
+            return
+        }
+
+        // If neither is running and nothing is playing on the web, revert to empty state (no fake demo)
+        if currentTrack != TrackInfo.empty {
+            self.updateTrackIfChanged(TrackInfo.empty)
         }
     }
 
@@ -150,47 +154,61 @@ public final class MusicCoordinator: ObservableObject {
             playbackPosition = newPos
             currentTrack.position = newPos
         }
+
+        tickCount += 1
+        if tickCount % 2 == 0 {
+            refreshTrack()
+        }
     }
 
     // MARK: - Playback Controls
 
     public func togglePlayPause() {
-        if isDemoModeForced || currentTrack.source == .demo {
-            currentTrack.isPlaying.toggle()
-        } else if currentTrack.source == .spotify {
+        if currentTrack.source == .spotify {
             SpotifyService.shared.togglePlayPause()
             currentTrack.isPlaying.toggle()
         } else if currentTrack.source == .appleMusic {
             AppleMusicService.shared.togglePlayPause()
+            currentTrack.isPlaying.toggle()
+        } else if currentTrack.source == .spotifyWeb || currentTrack.source == .appleMusicWeb {
+            WebMusicService.shared.togglePlayPause(for: currentTrack)
+            currentTrack.isPlaying.toggle()
+        } else if isDemoModeForced {
             currentTrack.isPlaying.toggle()
         }
         SharedWidgetStorage.shared.saveTrack(currentTrack)
     }
 
     public func nextTrack() {
-        if isDemoModeForced || currentTrack.source == .demo {
-            currentTrack.position = 0
-            playbackPosition = 0
-            currentTrack.isPlaying = true
-        } else if currentTrack.source == .spotify {
+        if currentTrack.source == .spotify {
             SpotifyService.shared.nextTrack()
             refreshTrack()
         } else if currentTrack.source == .appleMusic {
             AppleMusicService.shared.nextTrack()
             refreshTrack()
+        } else if currentTrack.source == .spotifyWeb || currentTrack.source == .appleMusicWeb {
+            WebMusicService.shared.nextTrack(for: currentTrack)
+            refreshTrack()
+        } else if isDemoModeForced {
+            currentTrack.position = 0
+            playbackPosition = 0
+            currentTrack.isPlaying = true
         }
     }
 
     public func previousTrack() {
-        if isDemoModeForced || currentTrack.source == .demo {
-            currentTrack.position = 0
-            playbackPosition = 0
-        } else if currentTrack.source == .spotify {
+        if currentTrack.source == .spotify {
             SpotifyService.shared.previousTrack()
             refreshTrack()
         } else if currentTrack.source == .appleMusic {
             AppleMusicService.shared.previousTrack()
             refreshTrack()
+        } else if currentTrack.source == .spotifyWeb || currentTrack.source == .appleMusicWeb {
+            WebMusicService.shared.previousTrack(for: currentTrack)
+            refreshTrack()
+        } else if isDemoModeForced {
+            currentTrack.position = 0
+            playbackPosition = 0
         }
     }
 
@@ -200,12 +218,10 @@ public final class MusicCoordinator: ObservableObject {
         playbackPosition = targetSeconds
         currentTrack.position = targetSeconds
 
-        if !isDemoModeForced {
-            if currentTrack.source == .spotify {
-                SpotifyService.shared.seek(to: targetSeconds)
-            } else if currentTrack.source == .appleMusic {
-                AppleMusicService.shared.seek(to: targetSeconds)
-            }
+        if currentTrack.source == .spotify {
+            SpotifyService.shared.seek(to: targetSeconds)
+        } else if currentTrack.source == .appleMusic {
+            AppleMusicService.shared.seek(to: targetSeconds)
         }
     }
 }

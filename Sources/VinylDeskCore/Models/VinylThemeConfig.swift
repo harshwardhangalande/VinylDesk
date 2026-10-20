@@ -214,11 +214,20 @@ public enum LiquidGlassTint: String, CaseIterable, Codable, Sendable {
 }
 
 public enum BackdropMaterial: String, CaseIterable, Codable, Sendable {
-    case blur = "Blur"
-    case glass = "Glass"
-    case liquidGlass = "Liquid Glass"
-    case solid = "Solid"
     case clear = "Clear"
+    case blur = "Blur"
+    case solid = "Solid"
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        switch raw.lowercased() {
+        case "clear": self = .clear
+        case "solid": self = .solid
+        case "blur", "glass", "liquid glass", "liquidglass": self = .blur
+        default: self = .clear
+        }
+    }
 }
 
 public enum ShelfFinish: String, CaseIterable, Codable, Sendable {
@@ -295,6 +304,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
     // Interface
     public var backdropMaterial: BackdropMaterial
     public var backdropCornerRadius: CGFloat
+    public var widgetOpacity: Double
     public var showPlaybackControls: Bool
     public var controlsPlacement: ControlsPlacement
     public var controlsSize: ControlsSize
@@ -336,8 +346,9 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         lightingEffect: LightingEffect = .none,
         showSpinningRecord: Bool = false,
         shelfFinish: ShelfFinish = .darkWalnut,
-        backdropMaterial: BackdropMaterial = .glass,
+        backdropMaterial: BackdropMaterial = .blur,
         backdropCornerRadius: CGFloat = 32,
+        widgetOpacity: Double = 1.0,
         showPlaybackControls: Bool = true,
         controlsPlacement: ControlsPlacement = .onHover,
         controlsSize: ControlsSize = .medium,
@@ -374,6 +385,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.shelfFinish = shelfFinish
         self.backdropMaterial = backdropMaterial
         self.backdropCornerRadius = backdropCornerRadius
+        self.widgetOpacity = widgetOpacity
         self.showPlaybackControls = showPlaybackControls
         self.controlsPlacement = controlsPlacement
         self.controlsSize = controlsSize
@@ -399,7 +411,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
     enum CodingKeys: String, CodingKey {
         case id, name, layout, flipHorizontal, horizontalAlign, verticalAlign, containerWidth
         case artworkSize, cornerRadius, artworkShadow, lightingEffect, showSpinningRecord, shelfFinish
-        case backdropMaterial, backdropCornerRadius, showPlaybackControls, controlsPlacement, controlsSize, showLikeControl, showProgressBar
+        case backdropMaterial, backdropCornerRadius, widgetOpacity, showPlaybackControls, controlsPlacement, controlsSize, showLikeControl, showProgressBar
         case trackNameStyle, artistStyle, albumStyle, windowPlacement, floatOnTrackChange
         case experienceMode, isFloatingOverlayVisible, showAlbumArtworkInDock, visibility
         case liquidGlassLevel, liquidGlassTint, liquidGlassFluidPulse, liquidGlassCustomOpacity, liquidGlassCustomBlur, liquidGlassRimShine
@@ -420,8 +432,9 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.lightingEffect = try container.decodeIfPresent(LightingEffect.self, forKey: .lightingEffect) ?? .none
         self.showSpinningRecord = try container.decodeIfPresent(Bool.self, forKey: .showSpinningRecord) ?? false
         self.shelfFinish = try container.decodeIfPresent(ShelfFinish.self, forKey: .shelfFinish) ?? .darkWalnut
-        self.backdropMaterial = try container.decodeIfPresent(BackdropMaterial.self, forKey: .backdropMaterial) ?? .glass
+        self.backdropMaterial = try container.decodeIfPresent(BackdropMaterial.self, forKey: .backdropMaterial) ?? .blur
         self.backdropCornerRadius = try container.decodeIfPresent(CGFloat.self, forKey: .backdropCornerRadius) ?? 32
+        self.widgetOpacity = try container.decodeIfPresent(Double.self, forKey: .widgetOpacity) ?? 1.0
         self.showPlaybackControls = try container.decodeIfPresent(Bool.self, forKey: .showPlaybackControls) ?? true
         self.controlsPlacement = try container.decodeIfPresent(ControlsPlacement.self, forKey: .controlsPlacement) ?? .onHover
         self.controlsSize = try container.decodeIfPresent(ControlsSize.self, forKey: .controlsSize) ?? .medium
@@ -467,6 +480,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         try container.encode(shelfFinish, forKey: .shelfFinish)
         try container.encode(backdropMaterial, forKey: .backdropMaterial)
         try container.encode(backdropCornerRadius, forKey: .backdropCornerRadius)
+        try container.encode(widgetOpacity, forKey: .widgetOpacity)
         try container.encode(showPlaybackControls, forKey: .showPlaybackControls)
         try container.encode(controlsPlacement, forKey: .controlsPlacement)
         try container.encode(controlsSize, forKey: .controlsSize)
@@ -505,7 +519,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         lightingEffect: .none,
         showSpinningRecord: false,
         shelfFinish: .darkWalnut,
-        backdropMaterial: .liquidGlass,
+        backdropMaterial: .blur,
         backdropCornerRadius: 32,
         showPlaybackControls: true,
         controlsPlacement: .onHover,
@@ -670,7 +684,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         lightingEffect: .none,
         showSpinningRecord: false,
         shelfFinish: .matteBlack,
-        backdropMaterial: .liquidGlass,
+        backdropMaterial: .blur,
         backdropCornerRadius: 32,
         showPlaybackControls: true,
         controlsPlacement: .inlineWithText,
