@@ -503,8 +503,9 @@ public struct VinylWidgetView: View {
         let outerRadius: CGFloat = 32
         let thumbDim: CGFloat = max(70, min(120, theme.artworkSize > 0 ? theme.artworkSize : 100))
         let bannerWidth = max(290, theme.containerWidth)
+        let bannerHeight = thumbDim + 24
 
-        HStack(spacing: 14) {
+        HStack(alignment: .center, spacing: 14) {
             if theme.flipHorizontal {
                 splitBannerTextAndControls
                 splitBannerThumbnail(size: thumbDim)
@@ -515,7 +516,7 @@ public struct VinylWidgetView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .frame(width: bannerWidth)
+        .frame(width: bannerWidth, height: bannerHeight)
         .background(backdropForCard(cornerRadius: outerRadius, defaultBackground: AnyView(splitCardBackground)))
         .clipShape(RoundedRectangle(cornerRadius: outerRadius, style: .continuous))
         .overlay(
@@ -558,7 +559,7 @@ public struct VinylWidgetView: View {
 
     @ViewBuilder
     private var splitBannerTextAndControls: some View {
-        VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 4) {
+        VStack(alignment: theme.horizontalAlign.horizontalAlignment, spacing: 3) {
             if theme.trackNameStyle.isVisible {
                 Text(coordinator.currentTrack.title.isEmpty ? "No Track Playing" : coordinator.currentTrack.title)
                     .font(fontFor(theme.trackNameStyle, defaultSize: 15))
@@ -607,12 +608,10 @@ public struct VinylWidgetView: View {
             }
 
             if theme.showPlaybackControls && theme.controlsPlacement == .inlineWithText {
-                Spacer(minLength: 4)
-
                 HStack(spacing: theme.controlsSize.buttonPadding * 1.2) {
                     let iconSize = max(11, theme.controlsSize.iconSize * 0.85)
-                    let circleSize = max(28, iconSize * 2.2)
-                    let playCircleSize = max(32, iconSize * 2.5)
+                    let circleSize = max(26, iconSize * 2.2)
+                    let playCircleSize = max(30, iconSize * 2.5)
                     let buttonBg = isLightBackground ? Color.black.opacity(0.12) : Color.white.opacity(0.24)
                     let buttonFg = isLightBackground ? Color.primary : (theme.trackNameStyle.isWhiteText ? Color.white : Color(white: 0.15))
 
@@ -643,8 +642,7 @@ public struct VinylWidgetView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
-            } else {
-                Spacer(minLength: 0)
+                .padding(.top, 2)
             }
         }
         .frame(maxWidth: .infinity, alignment: alignmentForTheme)
