@@ -778,7 +778,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         lightingEffect: .none,
         showSpinningRecord: false,
         shelfFinish: .matteBlack,
-        backdropMaterial: .liquidGlass,
+        backdropMaterial: .clear,
         backdropCornerRadius: 32,
         showPlaybackControls: true,
         controlsPlacement: .inlineWithText,

@@ -364,6 +364,14 @@ struct TestRunner {
             assert(defaultTheme.showLikeControl == false, "VinylThemeConfig() default showLikeControl must be false")
         }
 
+        // Test 23: Split Banner outer radius 32 and clear backdrop
+        test("Split Banner outer radius 32 and clear backdrop") {
+            let banner = VinylThemeConfig.presetSplitBanner
+            assert(banner.backdropCornerRadius == 32, "Split Banner backdropCornerRadius should be 32")
+            assert(banner.cornerRadius == 32, "Split Banner cornerRadius should be 32")
+            assert(banner.backdropMaterial == .clear, "Split Banner backdropMaterial should be .clear")
+        }
+
         print("\n===============================")
         print("Test Suite Summary: \(passed) passed, \(failed) failed")
         print("===============================\n")

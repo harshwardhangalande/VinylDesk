@@ -23,7 +23,8 @@ public struct VinylWidgetView: View {
         theme.layout == .artworkCard ||
         theme.layout == .compactSquare ||
         theme.layout == .splitCard ||
-        theme.layout == .timeDashboard
+        theme.layout == .timeDashboard ||
+        theme.layout == .splitBanner
     }
 
     public var body: some View {
@@ -429,7 +430,10 @@ public struct VinylWidgetView: View {
 
     @ViewBuilder
     private var splitBannerLayout: some View {
+        let outerRadius: CGFloat = 32
         let thumbDim: CGFloat = max(70, min(120, theme.artworkSize > 0 ? theme.artworkSize : 100))
+        let bannerWidth = max(290, theme.containerWidth)
+
         HStack(spacing: 14) {
             if theme.flipHorizontal {
                 splitBannerTextAndControls
@@ -439,17 +443,39 @@ public struct VinylWidgetView: View {
                 splitBannerTextAndControls
             }
         }
-        .frame(width: max(290, theme.containerWidth), height: thumbDim)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(width: bannerWidth)
+        .background(splitCardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: outerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: outerRadius, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.20),
+                            Color.white.opacity(0.08),
+                            Color.white.opacity(0.04),
+                            Color.white.opacity(0.12)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: Color.black.opacity(0.38), radius: 14, x: 0, y: 7)
     }
 
     @ViewBuilder
     private func splitBannerThumbnail(size: CGFloat) -> some View {
+        let thumbCornerRadius: CGFloat = min(20, theme.cornerRadius)
         ZStack {
             // Strictly equal margins from top and leading (or trailing when flipped)
-            posterThumbnail(size: size, cornerRadius: theme.cornerRadius)
+            posterThumbnail(size: size, cornerRadius: thumbCornerRadius)
 
             if theme.showPlaybackControls && theme.controlsPlacement == .onHover && hoverState.isHovered {
-                RoundedRectangle(cornerRadius: theme.cornerRadius, style: .continuous)
+                RoundedRectangle(cornerRadius: thumbCornerRadius, style: .continuous)
                     .fill(Color.black.opacity(0.45))
                     .frame(width: size, height: size)
                     .overlay(
@@ -947,10 +973,10 @@ public struct VinylWidgetView: View {
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .overlay(lightingOverlay(size: size, cornerRadius: cornerRadius))
         .shadow(
-            color: isEdgeToEdge ? Color.clear : Color.black.opacity(theme.artworkShadow.opacity),
-            radius: isEdgeToEdge ? 0 : theme.artworkShadow.radius,
+            color: (theme.layout == .splitBanner) ? Color.black.opacity(0.24) : (isEdgeToEdge ? Color.clear : Color.black.opacity(theme.artworkShadow.opacity)),
+            radius: (theme.layout == .splitBanner) ? 6 : (isEdgeToEdge ? 0 : theme.artworkShadow.radius),
             x: 0,
-            y: isEdgeToEdge ? 0 : theme.artworkShadow.yOffset
+            y: (theme.layout == .splitBanner) ? 3 : (isEdgeToEdge ? 0 : theme.artworkShadow.yOffset)
         )
     }
 
