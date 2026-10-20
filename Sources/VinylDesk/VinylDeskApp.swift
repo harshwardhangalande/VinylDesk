@@ -128,16 +128,26 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
 
         // Source Submenu
         let sourceMenu = NSMenu(title: "Source")
-        for src in MusicSource.allCases {
+
+        let autoItem = NSMenuItem(title: "Auto (Active Player)", action: #selector(selectAutoSource), keyEquivalent: "")
+        autoItem.target = self
+        if coordinator.preferredSource == nil {
+            autoItem.state = .on
+        }
+        sourceMenu.addItem(autoItem)
+        sourceMenu.addItem(NSMenuItem.separator())
+
+        for src in MusicSource.allCases where src != .none {
             let item = NSMenuItem(title: src.rawValue, action: #selector(selectMusicSource(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = src
-            if coordinator.currentTrack.source == src {
+            if coordinator.preferredSource == src || (coordinator.preferredSource == nil && coordinator.currentTrack.source == src) {
                 item.state = .on
             }
             sourceMenu.addItem(item)
         }
-        let sourceParentItem = NSMenuItem(title: "Source: \(coordinator.currentTrack.source.rawValue)", action: nil, keyEquivalent: "")
+        let currentTitle = coordinator.preferredSource != nil ? "\(coordinator.preferredSource!.rawValue)" : (coordinator.currentTrack.source != .none ? coordinator.currentTrack.source.rawValue : "Auto")
+        let sourceParentItem = NSMenuItem(title: "Source: \(currentTitle)", action: nil, keyEquivalent: "")
         sourceParentItem.submenu = sourceMenu
         menu.addItem(sourceParentItem)
 
@@ -203,8 +213,16 @@ final class StatusItemManager: NSObject, NSMenuDelegate {
         }
     }
 
-    @objc private func selectMusicSource(_ sender: NSMenuItem) {
+    @objc private func selectAutoSource() {
+        MusicCoordinator.shared.preferredSource = nil
         MusicCoordinator.shared.refreshTrack()
+    }
+
+    @objc private func selectMusicSource(_ sender: NSMenuItem) {
+        if let src = sender.representedObject as? MusicSource {
+            MusicCoordinator.shared.preferredSource = src
+            MusicCoordinator.shared.refreshTrack()
+        }
     }
 
     @objc private func snapToPosition(_ sender: NSMenuItem) {

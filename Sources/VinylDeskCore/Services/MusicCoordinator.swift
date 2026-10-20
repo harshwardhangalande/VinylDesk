@@ -8,6 +8,7 @@ public final class MusicCoordinator: ObservableObject {
 
     @Published public var currentTrack: TrackInfo = TrackInfo.empty
     @Published public var playbackPosition: TimeInterval = 0.0
+    @Published public var preferredSource: MusicSource? = nil
     @Published public var isDemoModeForced: Bool = false
     @Published public var isScratching: Bool = false
     @Published public var scratchAngleOffset: Double = 0.0
@@ -65,6 +66,18 @@ public final class MusicCoordinator: ObservableObject {
             }
         }
         notificationTokens.append(appleMusicToken)
+
+        // MediaRemote notification
+        let mrToken = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("kMRMediaRemoteNowPlayingInfoDidChangeNotification"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.refreshTrack()
+            }
+        }
+        notificationTokens.append(mrToken)
     }
 
     public func startPolling() {
@@ -79,29 +92,64 @@ public final class MusicCoordinator: ObservableObject {
     public func refreshTrack() {
         guard !isDemoModeForced else { return }
 
-        // Priority 1: Spotify native if running
-        if SpotifyService.shared.isRunning, let spotifyTrack = SpotifyService.shared.fetchCurrentTrack() {
-            if spotifyTrack.isPlaying || currentTrack.source == .spotify {
-                self.updateTrackIfChanged(spotifyTrack)
-                return
+        // 1. Honor user-selected preferred source if set
+        if let pref = preferredSource {
+            switch pref {
+            case .spotifyWeb, .appleMusicWeb:
+                if let webTrack = WebMusicService.shared.fetchCurrentTrack() {
+                    self.updateTrackIfChanged(webTrack)
+                    return
+                }
+            case .spotify:
+                if SpotifyService.shared.isRunning, let spotifyTrack = SpotifyService.shared.fetchCurrentTrack() {
+                    self.updateTrackIfChanged(spotifyTrack)
+                    return
+                }
+            case .appleMusic:
+                if AppleMusicService.shared.isRunning, let musicTrack = AppleMusicService.shared.fetchCurrentTrack() {
+                    self.updateTrackIfChanged(musicTrack)
+                    return
+                }
+            case .none:
+                break
             }
         }
 
-        // Priority 2: Apple Music native if running
-        if AppleMusicService.shared.isRunning, let musicTrack = AppleMusicService.shared.fetchCurrentTrack() {
-            if musicTrack.isPlaying || currentTrack.source == .appleMusic {
-                self.updateTrackIfChanged(musicTrack)
-                return
-            }
+        // 2. Auto-Detection: Priority goes to whichever source is ACTIVELY PLAYING
+        if SpotifyService.shared.isRunning, let spotifyTrack = SpotifyService.shared.fetchCurrentTrack(), spotifyTrack.isPlaying {
+            self.updateTrackIfChanged(spotifyTrack)
+            return
         }
 
-        // Priority 3: Spotify Web or Apple Music Web in Safari, Chrome, Brave, Arc, Edge
+        if let webTrack = WebMusicService.shared.fetchCurrentTrack(), webTrack.isPlaying {
+            self.updateTrackIfChanged(webTrack)
+            return
+        }
+
+        if AppleMusicService.shared.isRunning, let musicTrack = AppleMusicService.shared.fetchCurrentTrack(), musicTrack.isPlaying {
+            self.updateTrackIfChanged(musicTrack)
+            return
+        }
+
+        // 3. If none is playing, check if Spotify Web or Apple Music Web is open in a browser
         if let webTrack = WebMusicService.shared.fetchCurrentTrack() {
             self.updateTrackIfChanged(webTrack)
             return
         }
 
-        // If neither is running and nothing is playing on the web, revert to empty state (no fake demo)
+        // 4. Check native Spotify paused track
+        if SpotifyService.shared.isRunning, let spotifyTrack = SpotifyService.shared.fetchCurrentTrack() {
+            self.updateTrackIfChanged(spotifyTrack)
+            return
+        }
+
+        // 5. Check native Apple Music paused track
+        if AppleMusicService.shared.isRunning, let musicTrack = AppleMusicService.shared.fetchCurrentTrack() {
+            self.updateTrackIfChanged(musicTrack)
+            return
+        }
+
+        // 6. Nothing active -> Idle empty state
         if currentTrack != TrackInfo.empty {
             self.updateTrackIfChanged(TrackInfo.empty)
         }
@@ -173,8 +221,8 @@ public final class MusicCoordinator: ObservableObject {
         } else if currentTrack.source == .spotifyWeb || currentTrack.source == .appleMusicWeb {
             WebMusicService.shared.togglePlayPause(for: currentTrack)
             currentTrack.isPlaying.toggle()
-        } else if isDemoModeForced {
-            currentTrack.isPlaying.toggle()
+        } else {
+            MediaRemoteBridge.shared.togglePlayPause()
         }
         SharedWidgetStorage.shared.saveTrack(currentTrack)
     }
@@ -189,10 +237,8 @@ public final class MusicCoordinator: ObservableObject {
         } else if currentTrack.source == .spotifyWeb || currentTrack.source == .appleMusicWeb {
             WebMusicService.shared.nextTrack(for: currentTrack)
             refreshTrack()
-        } else if isDemoModeForced {
-            currentTrack.position = 0
-            playbackPosition = 0
-            currentTrack.isPlaying = true
+        } else {
+            MediaRemoteBridge.shared.nextTrack()
         }
     }
 
@@ -206,9 +252,8 @@ public final class MusicCoordinator: ObservableObject {
         } else if currentTrack.source == .spotifyWeb || currentTrack.source == .appleMusicWeb {
             WebMusicService.shared.previousTrack(for: currentTrack)
             refreshTrack()
-        } else if isDemoModeForced {
-            currentTrack.position = 0
-            playbackPosition = 0
+        } else {
+            MediaRemoteBridge.shared.previousTrack()
         }
     }
 
