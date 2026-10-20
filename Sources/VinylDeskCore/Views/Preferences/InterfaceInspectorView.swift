@@ -384,12 +384,6 @@ public struct InterfaceInspectorView: View {
                             }
                         }
 
-                        Toggle("Show 'Favorite' control (heart)", isOn: Binding(
-                            get: { themeManager.currentTheme.showLikeControl },
-                            set: { themeManager.currentTheme.showLikeControl = $0; themeManager.saveCurrentTheme() }
-                        ))
-                        .toggleStyle(SwitchToggleStyle())
-
                         Toggle("Show progress timeline", isOn: Binding(
                             get: { themeManager.currentTheme.showProgressBar },
                             set: { themeManager.currentTheme.showProgressBar = $0; themeManager.saveCurrentTheme() }

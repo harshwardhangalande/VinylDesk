@@ -259,17 +259,6 @@ public struct VinylWidgetView: View {
                     .background(Circle().fill(buttonBg))
             }
             .buttonStyle(PlainButtonStyle())
-
-            if theme.showLikeControl {
-                Button(action: { controlsState.isLiked.toggle() }) {
-                    Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
-                        .font(.system(size: iconSize, weight: .medium))
-                        .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
-                        .frame(width: btnSize, height: btnSize)
-                        .background(Circle().fill(buttonBg))
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
         }
         .transition(.opacity)
     }
@@ -429,17 +418,6 @@ public struct VinylWidgetView: View {
                             .background(Circle().fill(buttonBg))
                     }
                     .buttonStyle(PlainButtonStyle())
-
-                    if theme.showLikeControl {
-                        Button(action: { controlsState.isLiked.toggle() }) {
-                            Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
-                                .font(.system(size: iconSize, weight: .medium))
-                                .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
-                                .frame(width: circleSize, height: circleSize)
-                                .background(Circle().fill(buttonBg))
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
                 }
             }
         }
@@ -563,17 +541,6 @@ public struct VinylWidgetView: View {
                             .background(Circle().fill(buttonBg))
                     }
                     .buttonStyle(PlainButtonStyle())
-
-                    if theme.showLikeControl {
-                        Button(action: { controlsState.isLiked.toggle() }) {
-                            Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
-                                .font(.system(size: iconSize, weight: .medium))
-                                .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
-                                .frame(width: circleSize, height: circleSize)
-                                .background(Circle().fill(buttonBg))
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
                 }
             } else {
                 Spacer(minLength: 0)
@@ -684,17 +651,6 @@ public struct VinylWidgetView: View {
                                     .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
-
-                            if theme.showLikeControl {
-                                Button(action: { controlsState.isLiked.toggle() }) {
-                                    Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
-                                        .font(.system(size: iconSize, weight: .medium))
-                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
-                                        .frame(width: circleSize, height: circleSize)
-                                        .background(Circle().fill(buttonBg))
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
                         }
                         .padding(.top, 2)
                         .transition(.opacity)
@@ -787,17 +743,6 @@ public struct VinylWidgetView: View {
                                     .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
-
-                            if theme.showLikeControl {
-                                Button(action: { controlsState.isLiked.toggle() }) {
-                                    Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
-                                        .font(.system(size: iconSize, weight: .medium))
-                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
-                                        .frame(width: circleSize, height: circleSize)
-                                        .background(Circle().fill(buttonBg))
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
                         }
                         .padding(.top, 2)
                         .transition(.opacity)
@@ -901,17 +846,6 @@ public struct VinylWidgetView: View {
                                     .background(Circle().fill(buttonBg))
                             }
                             .buttonStyle(PlainButtonStyle())
-
-                            if theme.showLikeControl {
-                                Button(action: { controlsState.isLiked.toggle() }) {
-                                    Image(systemName: controlsState.isLiked ? "heart.fill" : "heart")
-                                        .font(.system(size: iconSize, weight: .medium))
-                                        .foregroundColor(controlsState.isLiked ? Color.red : buttonFg)
-                                        .frame(width: circleSize, height: circleSize)
-                                        .background(Circle().fill(buttonBg))
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
                         }
                         .padding(.top, 2)
                         .transition(.opacity)

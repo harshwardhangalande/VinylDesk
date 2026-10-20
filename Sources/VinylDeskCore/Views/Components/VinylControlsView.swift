@@ -60,19 +60,6 @@ public struct VinylControlsView: View {
                     .background(isOverlay ? Circle().fill(circleBg) : nil)
             }
             .buttonStyle(PlainButtonStyle())
-
-            // Like / Favorite Button
-            if theme.showLikeControl {
-                Button(action: {
-                    state.isLiked.toggle()
-                }) {
-                    Image(systemName: state.isLiked ? "heart.fill" : "heart")
-                        .font(.system(size: theme.controlsSize.iconSize, weight: .medium))
-                        .foregroundColor(state.isLiked ? Color.red : buttonColor.opacity(0.8))
-                }
-                .buttonStyle(PlainButtonStyle())
-                .padding(.leading, 2)
-            }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)

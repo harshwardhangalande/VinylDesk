@@ -1,0 +1,46 @@
+name: Build and Release VinylDesk
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release macOS App
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Icon Generation Dependencies
+        run: |
+          pip install pillow
+
+      - name: Build and Package App Bundle
+        run: |
+          chmod +x build_app.sh
+          ./build_app.sh
+
+      - name: Create Distributable Zip
+        run: |
+          zip -r -q VinylDesk-macOS.zip VinylDesk.app
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: VinylDesk-macOS.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true

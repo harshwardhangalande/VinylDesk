@@ -15,7 +15,7 @@ public struct HotkeysInspectorView: View {
                     Text("Keyboard Shortcuts")
                         .font(.system(size: 13, weight: .semibold))
 
-                    Text("Control playback, like tracks, and adjust music from anywhere with global shortcuts.")
+                    Text("Control playback and adjust music from anywhere with global shortcuts.")
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
 
@@ -25,7 +25,6 @@ public struct HotkeysInspectorView: View {
                         shortcutRow(label: "Previous Track", shortcut: "⇧ ⌘ ←")
                         shortcutRow(label: "Volume Up", shortcut: "⌥ ⌘ ↑")
                         shortcutRow(label: "Volume Down", shortcut: "⌥ ⌘ ↓")
-                        shortcutRow(label: "Favorite Track", shortcut: "⌥ ⌘ F")
                     }
                 }
 

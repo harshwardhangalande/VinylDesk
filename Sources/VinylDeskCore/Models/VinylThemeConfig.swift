@@ -341,7 +341,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         showPlaybackControls: Bool = true,
         controlsPlacement: ControlsPlacement = .onHover,
         controlsSize: ControlsSize = .medium,
-        showLikeControl: Bool = true,
+        showLikeControl: Bool = false,
         showProgressBar: Bool = true,
         trackNameStyle: TypographyLineConfig = TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 15, isWhiteText: true, shadow: .subtle),
         artistStyle: TypographyLineConfig = TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle),
@@ -425,7 +425,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         self.showPlaybackControls = try container.decodeIfPresent(Bool.self, forKey: .showPlaybackControls) ?? true
         self.controlsPlacement = try container.decodeIfPresent(ControlsPlacement.self, forKey: .controlsPlacement) ?? .onHover
         self.controlsSize = try container.decodeIfPresent(ControlsSize.self, forKey: .controlsSize) ?? .medium
-        self.showLikeControl = try container.decodeIfPresent(Bool.self, forKey: .showLikeControl) ?? true
+        self.showLikeControl = try container.decodeIfPresent(Bool.self, forKey: .showLikeControl) ?? false
         self.showProgressBar = try container.decodeIfPresent(Bool.self, forKey: .showProgressBar) ?? true
         self.trackNameStyle = try container.decodeIfPresent(TypographyLineConfig.self, forKey: .trackNameStyle) ?? TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 15, isWhiteText: true, shadow: .subtle)
         self.artistStyle = try container.decodeIfPresent(TypographyLineConfig.self, forKey: .artistStyle) ?? TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle)
@@ -510,7 +510,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         showPlaybackControls: true,
         controlsPlacement: .onHover,
         controlsSize: .medium,
-        showLikeControl: true,
+        showLikeControl: false,
         showProgressBar: true,
         trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 15, isWhiteText: true, shadow: .subtle),
         artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle),
@@ -540,7 +540,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         showPlaybackControls: true,
         controlsPlacement: .inlineWithText,
         controlsSize: .small,
-        showLikeControl: true,
+        showLikeControl: false,
         showProgressBar: true,
         trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .bold, fontSize: 16, isWhiteText: true, shadow: .subtle),
         artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .semibold, fontSize: 13, isWhiteText: true, shadow: .subtle),
@@ -567,7 +567,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         showPlaybackControls: true,
         controlsPlacement: .inlineWithText,
         controlsSize: .medium,
-        showLikeControl: true,
+        showLikeControl: false,
         showProgressBar: false,
         trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .serif, fontWeight: .bold, fontSize: 17, isWhiteText: true, shadow: .none),
         artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .serif, fontWeight: .medium, fontSize: 14, isWhiteText: true, shadow: .none),
@@ -621,7 +621,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         showPlaybackControls: true,
         controlsPlacement: .onHover,
         controlsSize: .medium,
-        showLikeControl: true,
+        showLikeControl: false,
         showProgressBar: true,
         trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .round, fontWeight: .bold, fontSize: 15, isWhiteText: true, shadow: .subtle),
         artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .round, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle),
@@ -648,7 +648,7 @@ public struct VinylThemeConfig: Identifiable, Codable, Equatable, Sendable {
         showPlaybackControls: true,
         controlsPlacement: .inlineWithText,
         controlsSize: .medium,
-        showLikeControl: true,
+        showLikeControl: false,
         showProgressBar: true,
         trackNameStyle: TypographyLineConfig(isVisible: true, fontDesign: .serif, fontWeight: .bold, fontSize: 16, isWhiteText: true, shadow: .subtle),
         artistStyle: TypographyLineConfig(isVisible: true, fontDesign: .sans, fontWeight: .medium, fontSize: 13, isWhiteText: true, shadow: .subtle),

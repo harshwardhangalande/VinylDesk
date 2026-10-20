@@ -355,6 +355,15 @@ struct TestRunner {
             assert(defaultTheme.lightingEffect == .none, "VinylThemeConfig() default lightingEffect must be .none")
         }
 
+        // Test 22: Like control disabled by default
+        test("All presets default showLikeControl to false") {
+            for preset in VinylThemeConfig.allPresets {
+                assert(preset.showLikeControl == false, "Preset '\(preset.name)' showLikeControl should default to false")
+            }
+            let defaultTheme = VinylThemeConfig()
+            assert(defaultTheme.showLikeControl == false, "VinylThemeConfig() default showLikeControl must be false")
+        }
+
         print("\n===============================")
         print("Test Suite Summary: \(passed) passed, \(failed) failed")
         print("===============================\n")
