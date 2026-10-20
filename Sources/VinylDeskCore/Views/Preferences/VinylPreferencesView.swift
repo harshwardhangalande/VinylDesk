@@ -2,7 +2,6 @@ import SwiftUI
 
 public enum PreferencesTab: String, CaseIterable, Identifiable {
     case themes = "Themes"
-    case layout = "Layout"
     case artwork = "Artwork"
     case interface = "Interface"
     case typography = "Track Info"
@@ -15,7 +14,6 @@ public enum PreferencesTab: String, CaseIterable, Identifiable {
     public var systemImage: String {
         switch self {
         case .themes: return "wand.and.stars"
-        case .layout: return "square.grid.2x2"
         case .artwork: return "photo"
         case .interface: return "play.circle"
         case .typography: return "textformat"
@@ -108,8 +106,6 @@ public struct VinylPreferencesView: View {
                     switch windowState.selectedTab {
                     case .themes:
                         ThemesInspectorView(themeManager: themeManager)
-                    case .layout:
-                        LayoutInspectorView(themeManager: themeManager)
                     case .artwork:
                         ArtworkInspectorView(themeManager: themeManager)
                     case .interface:
@@ -173,7 +169,6 @@ public struct VinylPreferencesView: View {
                         .padding(.top, 10)
                         .padding(.bottom, 2)
 
-                    sidebarRow(tab: .layout)
                     sidebarRow(tab: .artwork)
                     sidebarRow(tab: .interface)
                     sidebarRow(tab: .typography)
