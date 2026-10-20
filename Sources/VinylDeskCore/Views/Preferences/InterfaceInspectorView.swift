@@ -129,16 +129,20 @@ public struct InterfaceInspectorView: View {
                     }
                 }
 
-                // Widget Opacity
+                // Background Opacity
                 VinylSectionCard {
                     HStack {
-                        Text("Widget Opacity")
+                        Text("Background Opacity")
                             .font(.system(size: 13, weight: .semibold))
                         Spacer()
                         Text("\(Int(round(themeManager.currentTheme.widgetOpacity * 100)))%")
                             .font(.system(size: 11, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
+
+                    Text("Adjust background card transparency without affecting text and album artwork:")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
 
                     VStack(alignment: .leading, spacing: 6) {
                         Slider(
@@ -149,16 +153,16 @@ public struct InterfaceInspectorView: View {
                                     themeManager.saveCurrentTheme()
                                 }
                             ),
-                            in: 0.20...1.0,
+                            in: 0.0...1.0,
                             step: 0.05
                         )
 
                         HStack {
-                            Text("20%")
+                            Text("0% (Transparent)")
                                 .font(.system(size: 10))
                                 .foregroundColor(.secondary)
                             Spacer()
-                            Text("100%")
+                            Text("100% (Solid)")
                                 .font(.system(size: 10))
                                 .foregroundColor(.secondary)
                         }

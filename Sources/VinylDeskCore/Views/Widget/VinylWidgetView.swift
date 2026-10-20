@@ -58,7 +58,6 @@ public struct VinylWidgetView: View {
         }
         .padding(isEdgeToEdge ? 0 : (theme.backdropMaterial == .clear ? 8 : 14))
         .background(isEdgeToEdge ? AnyView(Color.clear) : AnyView(backdropLayer))
-        .opacity(theme.widgetOpacity)
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.2)) {
                 hoverState.isHovered = hovering
@@ -174,9 +173,10 @@ public struct VinylWidgetView: View {
             .padding(.horizontal, 22)
             .padding(.vertical, 16)
             .background(
-                isCustomBackdrop
+                (isCustomBackdrop
                     ? (isLightBackground ? Color(white: 0.95).opacity(0.30) : Color.black.opacity(0.35))
-                    : (isLightBackground ? Color(white: 0.88) : Color.black.opacity(0.85))
+                    : (isLightBackground ? Color(white: 0.88) : Color.black.opacity(0.85)))
+                .opacity(theme.widgetOpacity)
             )
 
             // Progress Timeline
@@ -185,9 +185,10 @@ public struct VinylWidgetView: View {
                     .padding(.horizontal, 18)
                     .padding(.vertical, 6)
                     .background(
-                        isCustomBackdrop
+                        (isCustomBackdrop
                             ? (isLightBackground ? Color(white: 0.9).opacity(0.20) : Color.black.opacity(0.20))
-                            : (isLightBackground ? Color(white: 0.82) : Color.black.opacity(0.65))
+                            : (isLightBackground ? Color(white: 0.82) : Color.black.opacity(0.65)))
+                        .opacity(theme.widgetOpacity)
                     )
             }
 
@@ -214,9 +215,10 @@ public struct VinylWidgetView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .background(
-                isCustomBackdrop
+                (isCustomBackdrop
                     ? (isLightBackground ? Color.black.opacity(0.04) : Color.white.opacity(0.08))
-                    : (isLightBackground ? Color.black.opacity(0.08) : Color.white.opacity(0.18))
+                    : (isLightBackground ? Color.black.opacity(0.08) : Color.white.opacity(0.18)))
+                .opacity(theme.widgetOpacity)
             )
         }
         .frame(width: cardWidth)
@@ -336,10 +338,10 @@ public struct VinylWidgetView: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.20),
-                            Color.white.opacity(0.08),
-                            Color.white.opacity(0.04),
-                            Color.white.opacity(0.12)
+                            Color.white.opacity(0.20 * theme.widgetOpacity),
+                            Color.white.opacity(0.08 * theme.widgetOpacity),
+                            Color.white.opacity(0.04 * theme.widgetOpacity),
+                            Color.white.opacity(0.12 * theme.widgetOpacity)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -347,7 +349,7 @@ public struct VinylWidgetView: View {
                     lineWidth: 1
                 )
         )
-        .shadow(color: Color.black.opacity(0.38), radius: 14, x: 0, y: 7)
+        .shadow(color: Color.black.opacity(0.38 * theme.widgetOpacity), radius: 14, x: 0, y: 7)
     }
 
     private var splitCardBackground: some View {
@@ -499,7 +501,7 @@ public struct VinylWidgetView: View {
         .padding(.horizontal, 22)
         .padding(.vertical, 16)
         .frame(width: width, height: height, alignment: alignmentForTheme)
-        .background(theme.backdropMaterial == .clear ? AnyView(splitCardBackground) : AnyView(Color.clear))
+        .background(theme.backdropMaterial == .clear ? AnyView(splitCardBackground.opacity(theme.widgetOpacity)) : AnyView(Color.clear))
     }
 
     @ViewBuilder
@@ -528,10 +530,10 @@ public struct VinylWidgetView: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.20),
-                            Color.white.opacity(0.08),
-                            Color.white.opacity(0.04),
-                            Color.white.opacity(0.12)
+                            Color.white.opacity(0.20 * theme.widgetOpacity),
+                            Color.white.opacity(0.08 * theme.widgetOpacity),
+                            Color.white.opacity(0.04 * theme.widgetOpacity),
+                            Color.white.opacity(0.12 * theme.widgetOpacity)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -539,7 +541,7 @@ public struct VinylWidgetView: View {
                     lineWidth: 1
                 )
         )
-        .shadow(color: Color.black.opacity(0.38), radius: 14, x: 0, y: 7)
+        .shadow(color: Color.black.opacity(0.38 * theme.widgetOpacity), radius: 14, x: 0, y: 7)
     }
 
     @ViewBuilder
@@ -659,7 +661,7 @@ public struct VinylWidgetView: View {
             if theme.backdropMaterial == .blur {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .fill(.thinMaterial)
-                    .opacity(0.65)
+                    .opacity(0.65 * theme.widgetOpacity)
             }
 
             if isLightBackground {
@@ -1084,17 +1086,20 @@ public struct VinylWidgetView: View {
         case .blur:
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(.thinMaterial)
-                .shadow(color: Color.black.opacity(0.18), radius: 10, x: 0, y: 4)
+                .opacity(theme.widgetOpacity)
+                .shadow(color: Color.black.opacity(0.18 * theme.widgetOpacity), radius: 10, x: 0, y: 4)
         case .solid:
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(isLightBackground ? Color.white : Color(white: 0.12))
+                .opacity(theme.widgetOpacity)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                        .stroke(Color.primary.opacity(0.1 * theme.widgetOpacity), lineWidth: 1)
                 )
-                .shadow(color: Color.black.opacity(0.3), radius: 12, x: 0, y: 6)
+                .shadow(color: Color.black.opacity(0.3 * theme.widgetOpacity), radius: 12, x: 0, y: 6)
         case .clear:
             defaultBackground
+                .opacity(theme.widgetOpacity)
         }
     }
 
@@ -1205,15 +1210,17 @@ public struct VinylWidgetView: View {
         case .blur:
             RoundedRectangle(cornerRadius: theme.backdropCornerRadius, style: .continuous)
                 .fill(.thinMaterial)
-                .shadow(color: Color.black.opacity(0.18), radius: 10, x: 0, y: 4)
+                .opacity(theme.widgetOpacity)
+                .shadow(color: Color.black.opacity(0.18 * theme.widgetOpacity), radius: 10, x: 0, y: 4)
         case .solid:
             RoundedRectangle(cornerRadius: theme.backdropCornerRadius, style: .continuous)
                 .fill(isLightBackground ? Color.white : Color(white: 0.12))
+                .opacity(theme.widgetOpacity)
                 .overlay(
                     RoundedRectangle(cornerRadius: theme.backdropCornerRadius, style: .continuous)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                        .stroke(Color.primary.opacity(0.1 * theme.widgetOpacity), lineWidth: 1)
                 )
-                .shadow(color: Color.black.opacity(0.3), radius: 12, x: 0, y: 6)
+                .shadow(color: Color.black.opacity(0.3 * theme.widgetOpacity), radius: 12, x: 0, y: 6)
         case .clear:
             Color.clear
         }
